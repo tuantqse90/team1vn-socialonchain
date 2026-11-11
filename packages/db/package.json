@@ -1,0 +1,25 @@
+{
+  "name": "@socialonchain/db",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx src/migrate.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11",
+    "@types/pg": "^8.23.1",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3"
+  }
+}

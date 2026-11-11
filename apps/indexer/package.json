@@ -1,0 +1,35 @@
+{
+  "name": "@socialonchain/indexer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
+    "start": "tsx src/main.ts",
+    "replay": "tsx --env-file-if-exists=../../.env src/replay.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@socialonchain/db": "workspace:*",
+    "@socialonchain/feed-sdk": "workspace:*",
+    "@socialonchain/protocol": "workspace:*",
+    "@hono/node-server": "^2.0.0",
+    "@hono/zod-openapi": "^1.6.3",
+    "@sentry/node": "^11.0.0",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.12.0",
+    "jose": "^6.2.17",
+    "pg": "^8.23.1",
+    "pino": "^10.4.0",
+    "viem": "^2.50.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "^5.1.0"
+  }
+}

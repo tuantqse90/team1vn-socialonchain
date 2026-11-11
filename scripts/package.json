@@ -1,0 +1,29 @@
+{
+  "name": "@socialonchain/scripts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "seed": "tsx --env-file-if-exists=../.env seed/main.ts",
+    "eval:labeler": "tsx --env-file-if-exists=../.env eval/labeler.ts",
+    "snapshot:export": "tsx --env-file-if-exists=../.env snapshot/export.ts",
+    "smoke": "tsx --env-file-if-exists=../.env smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.0.0",
+    "@socialonchain/db": "workspace:*",
+    "@socialonchain/feed-sdk": "workspace:*",
+    "@socialonchain/protocol": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1",
+    "viem": "^2.50.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3"
+  }
+}

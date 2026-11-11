@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: forge test
+        working-directory: contracts
+        run: forge test --gas-report
+
+  ts:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: soc
+          POSTGRES_PASSWORD: soc
+          POSTGRES_DB: socialonchain_test
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U soc" --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      TEST_DATABASE_URL: postgres://soc:soc@localhost:5433/socialonchain_test
+      DATABASE_URL: postgres://soc:soc@localhost:5433/socialonchain_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
