@@ -20,7 +20,8 @@
     "seed": "pnpm --filter @socialonchain/scripts seed",
     "eval:labeler": "pnpm --filter @socialonchain/scripts eval:labeler",
     "snapshot:export": "pnpm --filter @socialonchain/scripts snapshot:export",
-    "e2e": "pnpm --filter @socialonchain/web e2e"
+    "e2e": "pnpm --filter @socialonchain/web e2e",
+    "db:backup": "node --env-file-if-exists=.env scripts/db-backup.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",

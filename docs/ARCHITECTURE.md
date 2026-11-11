@@ -1,6 +1,6 @@
-# Kiến trúc · bản đầu (trước P0)
+# Kiến trúc
 
-> Bản thiết kế trước khi có code. Mục 6 (schema event) sẽ được chốt ở P1 [REVIEW]. File này cập nhật lại ở P8.
+> Cập nhật theo code (P0–P14, Giai đoạn 0–1). Schema event ở mục 6 là bản đã deploy; từ P8 coi là đóng băng.
 > Spec đầy đủ nằm trong `INIT_PROMPT.md`; các luật bắt buộc nằm trong `CLAUDE.md`.
 
 ## 1. Tổng quan
@@ -24,9 +24,9 @@ flowchart LR
     PAY["TestUSD<br/>PlanPayments (P13)"]
   end
   subgraph Railway["Railway"]
-    IDX["indexer<br/>Ponder + REST API"]
+    IDX["indexer<br/>viem getLogs + Hono REST API"]
     WRK["worker (pg-boss)<br/>labeler · ingest-farcaster<br/>notifier · onchain-builder"]
-    PG[("Postgres<br/>schema Ponder + schema app")]
+    PG[("Postgres<br/>schema chain + schema app")]
   end
   NEY["Neynar<br/>(Farcaster)"]
   ANT["Anthropic API"]
@@ -55,18 +55,21 @@ flowchart LR
 | `apps/web` | UI, quản lý session key, Feed Builder (chạy `rank()` trong trình duyệt) | Không giữ secret phía server ngoài phần SSR |
 | `packages/feed-sdk` | FeedSpec, nhãn, tín hiệu, `rank()`, `compileFeed()`, moderation | Không I/O (trừ `compileFeed` gọi LLM) |
 | `packages/protocol` | ABI, địa chỉ theo chainId + version, helper session key | |
-| `packages/db` | Drizzle schema `app` + migrations | Không đụng tới schema của Ponder |
+| `packages/db` | Drizzle: schema `chain` (dựng lại được) + schema `app` (phải backup) + migrations | |
+| `packages/farcaster` | Nguồn Farcaster: Neynar hoặc fixture | Chỉ đọc |
+| `packages/llm` | Wrapper Anthropic SDK (cache system prompt, xử lý refusal/max_tokens) | |
+| `packages/ui` | Icon + component React thuần dùng chung | Không phụ thuộc Next |
 
 ## 3. Dữ liệu nằm ở đâu
 
 | Dữ liệu | Nơi lưu | Dựng lại được? |
 |---|---|---|
 | Identity, handle, delegate, follow, bài native, reaction, tombstone | Event trên Fuji | Là nguồn gốc |
-| Bảng index của các dữ liệu trên | Postgres, schema của Ponder | Có, bằng `pnpm indexer:replay` |
+| Bảng index của các dữ liệu trên | Postgres, schema `chain` | Có, bằng `pnpm indexer:replay` |
 | Bài và user Farcaster | Postgres, schema `app` | Có, ingest lại từ Neynar |
 | Nhãn bài và nhãn tác giả | Postgres, schema `app` | Có, lấy lại từ labeler (batch có chữ ký) |
 | Feed cá nhân, quota, thông báo, báo cáo, danh sách chặn, `pending_follows`, `events` | Postgres, schema `app` | **Không**, nên phải backup |
-| Thông tin profile (tên, bio, avatar) | JSON offchain, trỏ tới qua `profileURI` | Phụ thuộc nơi lưu |
+| Thông tin profile (tên, bio, avatar) | `app.profiles`, phục vụ ở `GET /profiles/{address}`; `profileURI` onchain trỏ tới đó | Không (backup cùng schema `app`) |
 | Bản sao công khai của graph và bài onchain | `pnpm snapshot:export` (JSON) | Phòng trường hợp Fuji gặp sự cố |
 
 ## 4. Xác thực và quyền
@@ -137,24 +140,32 @@ Khi không có key thì dùng chế độ heuristic.
 3. Indexer cập nhật `entitlements`.
 4. Quota Pro có hiệu lực.
 
-## 6. Schema event (bản nháp, chốt ở P1)
+## 6. Schema event (đã deploy, đóng băng từ P8)
 
-| Contract | Event | Field (dự kiến) |
-|---|---|---|
-| IdentityRegistry | `Registered` | owner, handle, profileURI |
-| | `ProfileUpdated` | owner, profileURI |
-| | `DelegateAdded` | owner, key, expiresAt |
-| | `DelegateRemoved` | owner, key |
-| SocialGraph | `Followed` / `Unfollowed` | follower, target |
-| Posts | `Posted` | id, author, parentId, channel, text, meta, timestamp |
-| | `Reacted` / `Unreacted` | actor, postId, kind |
-| | `Deleted` | author, id |
-| PlanPayments (P13) | `Paid` | user, planId, amount, paidUntil |
-| FeedRegistry (GĐ2) | `FeedRegistered`, `FeedUpdated`, `Subscribed`, `Tipped` | xem INIT_PROMPT §6 |
+| Contract | Event |
+|---|---|
+| IdentityRegistry | `Registered(address indexed owner, string handle, string profileURI)` |
+| | `ProfileUpdated(address indexed owner, string profileURI)` |
+| | `DelegateAdded(address indexed owner, address indexed key, uint64 expiresAt)` |
+| | `DelegateRemoved(address indexed owner, address indexed key)` |
+| SocialGraph | `Followed(address indexed follower, address indexed target)` |
+| | `Unfollowed(address indexed follower, address indexed target)` |
+| Posts | `Posted(bytes32 id, address indexed author, bytes32 indexed parentId, bytes32 indexed channel, string text, bytes meta, uint64 timestamp)` |
+| | `Reacted(address indexed actor, bytes32 indexed postId, uint8 kind)` / `Unreacted(...)` (kind 1 = like, 2 = repost) |
+| | `Deleted(address indexed author, bytes32 indexed id)` |
+| PlanPayments | `Paid(address indexed user, uint8 indexed planId, uint256 amount, uint64 paidUntil)` |
+| FeedRegistry (GĐ2) | Chưa làm |
 
-Cần chốt ở P1:
-- Mỗi event chọn tối đa 3 field `indexed`, sao cho client nhẹ (không có indexer) vẫn lọc log được. Ví dụ với `Posted`: author, channel, parentId.
-- Có thêm field `signer` (session key nào đã ký) vào event hay không.
+Quyết định đã chốt:
+- `Posted` index `author`, `parentId`, `channel` để client nhẹ (không indexer) lọc log theo tác giả, thread, kênh.
+- Không có field `signer` trong event: ai ký (owner hay session key) không quan trọng với người đọc; `actor`/`author` luôn là owner.
+- `id = keccak256(abi.encode(author, postNonce[author]))`: client tính trước được id trước khi tx mined.
+- `channel = keccak256(tên kênh viết thường)`; `0x0` = không kênh. Tên kênh đã biết nằm trong `KNOWN_CHANNELS`.
+- Reaction không lưu storage (stateless); indexer khử trùng lặp.
+
+## Indexer (không dùng Ponder)
+
+Indexer tự viết bằng viem `getLogs` (`apps/indexer/src/sync.ts`) thay vì Ponder, vì: (1) cần chung DB với schema `app` và sinh thông báo trong cùng transaction; (2) REST API dùng `@hono/zod-openapi` có OpenAPI; (3) Fuji/Avalanche có finality tức thì nên không cần xử lý reorg. Mỗi chunk log (5000 block local / 2000 Fuji, tự chia đôi khi RPC lỗi) được áp trong **một** transaction Postgres cùng con trỏ `indexer_state`, nên dừng/chạy lại bất kỳ lúc nào cũng nhất quán. `pnpm indexer:replay` xoá schema `chain` và dựng lại từ block deploy (test: state sau replay giống hệt).
 
 ## 7. Feed engine
 
@@ -174,16 +185,16 @@ sources ──► moderation stack ──► rules của feed ──► diversit
 | Local | Anvil | mock/fixture (không cần key) | `pnpm dev:local`, có seed data hư cấu |
 | Fuji | Fuji (43113) | Neynar, Anthropic, Avalanche Data API | Bản chạy thật. Trước P8 được deploy lại contract; từ P8 đóng băng schema |
 
-## 9. Giới hạn đã biết (chi tiết ở LIMITATIONS.md từ P8)
+## 9. Giới hạn đã biết (chi tiết ở LIMITATIONS.md)
 
 - Mất ví chính thì mất identity, chưa có cơ chế recovery.
 - Dữ liệu onchain không xoá được: xoá bài chỉ tạo tombstone. Vì vậy không đưa thông tin cá nhân lên chain.
 - Fuji là testnet: không có cam kết lưu dữ liệu vĩnh viễn (giảm thiểu bằng snapshot); test AVAX không có giá trị nên spam rẻ (giảm thiểu bằng feed và labeler).
 - Doanh thu bằng tUSD chỉ là giả lập.
 
-## 10. Câu hỏi mở về kỹ thuật
+## 10. Câu hỏi kỹ thuật đã trả lời
 
-- Ponder có cho chạy custom Hono route với `@hono/zod-openapi`, và có sống chung với schema `app` trong cùng DB được không? (kiểm ở P2)
-- Ponder và Next.js có chạy được trên Node 26 không? (kiểm ở P0)
-- Có endpoint nào liệt kê các contract mà một địa chỉ đã deploy? (kiểm ở P7; đã có 3 phương án dự phòng)
-- Tên chính xác của các channel Farcaster về Avalanche là gì? (kiểm ở P5)
+- **Ponder:** không dùng (xem mục Indexer).
+- **Node 26:** Next 16, Hono, pg-boss, Foundry chạy được trên Node 26.7 (build + test pass). `.nvmrc` ghim 26.
+- **Liệt kê contract đã deploy:** Avalanche Data API (Glacier) `GET /v1/chains/{chainId}/contracts/{address}/deployments` (`apps/worker/src/jobs/builder.ts`), cần `GLACIER_API_KEY` ở môi trường thật; local dùng fixture.
+- **Channel Farcaster:** cấu hình qua `FC_CHANNELS` (mặc định `avalanche,avax-builders`); chưa kiểm với Neynar thật (thiếu key).

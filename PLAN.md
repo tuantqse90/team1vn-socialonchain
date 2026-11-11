@@ -49,110 +49,110 @@
 ## Giai đoạn 0: Nền móng
 
 ### P0. Khung dự án · 0.5 ngày
-- [ ] Root: `package.json` (engines), `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json` (strict), `biome.json`, `.nvmrc`, `.env.example`
-- [ ] Kiểm tra Node 26 có tương thích với Ponder và Next.js không. Nếu không thì ghim Node LTS trước đó trong `.nvmrc`, rồi ghi vào Decision log
-- [ ] Khung workspace: `contracts/` (`forge init`), `packages/{protocol,feed-sdk,db,ui}`, `apps/{indexer,worker,web}` ở dạng placeholder chạy được
-- [ ] `docker-compose.yml`: Postgres, có bật extension `unaccent`
-- [ ] `pnpm dev:local`: chạy song song Postgres, Anvil, indexer, worker, web
-- [ ] Scripts gốc: `pnpm test`, `pnpm lint`, `pnpm typecheck`
-- [ ] GitHub Actions: Biome, typecheck, Vitest, `forge test`
-- [ ] README: yêu cầu môi trường và cách chạy local
+- [x] Root: `package.json` (engines), `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json` (strict), `biome.json`, `.nvmrc`, `.env.example`
+- [x] Kiểm tra Node 26 có tương thích với Ponder và Next.js không. Nếu không thì ghim Node LTS trước đó trong `.nvmrc`, rồi ghi vào Decision log — _Next 16 build + e2e chạy trên Node 26; không dùng Ponder (xem Decision log)_
+- [x] Khung workspace: `contracts/` (`forge init`), `packages/{protocol,feed-sdk,db,ui}`, `apps/{indexer,worker,web}` ở dạng placeholder chạy được
+- [x] `docker-compose.yml`: Postgres, có bật extension `unaccent` — _`unaccent` bật trong migration `0001_search`_
+- [x] `pnpm dev:local`: chạy song song Postgres, Anvil, indexer, worker, web
+- [x] Scripts gốc: `pnpm test`, `pnpm lint`, `pnpm typecheck`
+- [x] GitHub Actions: Biome, typecheck, Vitest, `forge test`
+- [x] README: yêu cầu môi trường và cách chạy local
 - **Xong khi:** clone sạch, chạy `pnpm i && pnpm dev:local` thì lên đủ service mà không cần key nào; CI xanh trên GitHub.
 
 ### P1. Contract lõi · 1.5–2 ngày · [REVIEW]
-- [ ] `IdentityRegistry`:
+- [x] `IdentityRegistry`:
   - `register`;
   - `registerWithDelegate` (payable, chuyển `msg.value` sang session key);
   - `setProfile(as, uri)`;
   - `addDelegate` (payable, để nạp thêm gas), `removeDelegate`, `isAuthorized`;
   - validate handle theo `[a-z0-9_]{3,20}`
-- [ ] `SocialGraph`: `follow`, `unfollow`, `followMany(as, …)` có kiểm `isAuthorized`; giới hạn kích thước batch
-- [ ] `Posts`:
+- [x] `SocialGraph`: `follow`, `unfollow`, `followMany(as, …)` có kiểm `isAuthorized`; giới hạn kích thước batch
+- [x] `Posts`:
   - `post(as, text, parentId, channel, meta)`, text tối đa 1024 byte;
   - storage `authorOf`;
   - `react`, `unreact`, `deletePost`
-- [ ] Phân quyền delegate: delegate gọi hàm chỉ dành cho owner thì revert
-- [ ] Test unit theo INIT_PROMPT §6, và fuzz cho: độ dài text, handle, kích thước batch, thời hạn delegate
-- [ ] `forge test --gas-report`, ghi bảng gas đầu tiên vào `docs/COSTS.md`
-- [ ] Slither không còn cảnh báo mức high
-- [ ] `script/Deploy.s.sol` cho Anvil và Fuji; ghi địa chỉ theo chainId vào `packages/protocol`
-- [ ] `@wagmi/cli` sinh ABI có kiểu vào `packages/protocol`
-- [ ] Chốt bảng schema event trong `docs/ARCHITECTURE.md` (§6), gồm cả field nào được indexed
+- [x] Phân quyền delegate: delegate gọi hàm chỉ dành cho owner thì revert
+- [x] Test unit theo INIT_PROMPT §6, và fuzz cho: độ dài text, handle, kích thước batch, thời hạn delegate — _58 test, có fuzz_
+- [x] `forge test --gas-report`, ghi bảng gas đầu tiên vào `docs/COSTS.md`
+- [x] Slither không còn cảnh báo mức high — _0 high/medium trong `src/`; high/medium còn lại nằm trong OpenZeppelin `Math.sol` (false positive đã biết)_
+- [x] `script/Deploy.s.sol` cho Anvil và Fuji; ghi địa chỉ theo chainId vào `packages/protocol` — _đã chạy trên Anvil; Fuji ⛔ chưa có ví deployer_
+- [x] `@wagmi/cli` sinh ABI có kiểu vào `packages/protocol` — _thay bằng `scripts/gen-abis.mjs` (xem Decision log)_
+- [x] Chốt bảng schema event trong `docs/ARCHITECTURE.md` (§6), gồm cả field nào được indexed
 - **Xong khi:** `forge test` xanh; Slither không có high; **người dùng đã duyệt schema event và quyền delegate**.
 
 ### P2. Indexer + API · 1.5–2 ngày
-- [ ] Đọc docs Ponder hiện tại về: custom Hono route, cách quản lý schema/view, và cách để Ponder sống chung với schema `app` trong cùng Postgres
-- [ ] `ponder.config.ts` (Anvil và Fuji, chọn qua env) và `ponder.schema.ts`: users, profiles, delegates, follows, posts, reactions
-- [ ] `packages/db`: Drizzle schema `app` + migrations. Bắt đầu với bảng `events`
-- [ ] REST (Hono + zod-openapi): users, followers/following, posts, threads, feed chronological; `/openapi.json`
-- [ ] `POST /auth/session`: session key ký message, server kiểm `isAuthorized`, trả JWT
-- [ ] `pnpm indexer:replay`
-- [ ] Integration test: script gửi tx lên Anvil rồi poll API
+- [x] Đọc docs Ponder hiện tại về: custom Hono route, cách quản lý schema/view, và cách để Ponder sống chung với schema `app` trong cùng Postgres — _chọn indexer viem tự viết thay Ponder, lý do ở ARCHITECTURE.md_
+- [x] `ponder.config.ts` (Anvil và Fuji, chọn qua env) và `ponder.schema.ts`: users, profiles, delegates, follows, posts, reactions — _thay bằng `apps/indexer/src/sync.ts` + schema `chain` (Drizzle)_
+- [x] `packages/db`: Drizzle schema `app` + migrations. Bắt đầu với bảng `events`
+- [x] REST (Hono + zod-openapi): users, followers/following, posts, threads, feed chronological; `/openapi.json`
+- [x] `POST /auth/session`: session key ký message, server kiểm `isAuthorized`, trả JWT
+- [x] `pnpm indexer:replay` — _integration test so state trước/sau replay_
+- [x] Integration test: script gửi tx lên Anvil rồi poll API
 - **Xong khi:** tx trên Anvil hiện qua API trong vài giây; xoá DB rồi replay thì dữ liệu khớp như cũ.
 
 ### P3. Walking skeleton online · 2–3 ngày
-- [ ] Next.js App Router + Tailwind + shadcn/ui (`packages/ui`) + khung next-intl (en/vi)
-- [ ] wagmi + viem + RainbowKit (có Core Wallet); chain Anvil hoặc Fuji chọn qua env
-- [ ] Session key: tạo trong trình duyệt, lưu cục bộ, hiện số dư, nhắc nạp thêm khi số dư thấp
-- [ ] Onboarding: kiểm số dư Fuji → nếu bằng 0 thì hướng dẫn faucet → gửi 1 tx `registerWithDelegate` → vào feed
-- [ ] Composer (đếm byte), follow, `/u/[handleOrAddress]`, feed chronological; mỗi tx có link explorer
-- [ ] SSR cho trang bài và trang profile công khai, có OG tags cơ bản
-- [ ] `configs/a.ts` và cơ chế chọn config qua `CLIENT_CONFIG`
-- [ ] Playwright e2e trên local: ví A đăng bài, ví B thấy bài
-- [ ] Deploy: contract lên Fuji; Postgres + indexer lên Railway; web lên Vercel; secrets đặt trên các nền tảng đó
+- [x] Next.js App Router + Tailwind + shadcn/ui (`packages/ui`) + khung next-intl (en/vi)
+- [x] wagmi + viem + RainbowKit (có Core Wallet); chain Anvil hoặc Fuji chọn qua env
+- [x] Session key: tạo trong trình duyệt, lưu cục bộ, hiện số dư, nhắc nạp thêm khi số dư thấp
+- [x] Onboarding: kiểm số dư Fuji → nếu bằng 0 thì hướng dẫn faucet → gửi 1 tx `registerWithDelegate` → vào feed — _verify trên Anvil; Fuji chưa chạy_
+- [x] Composer (đếm byte), follow, `/u/[handleOrAddress]`, feed chronological; mỗi tx có link explorer
+- [x] SSR cho trang bài và trang profile công khai, có OG tags cơ bản
+- [x] `configs/a.ts` và cơ chế chọn config qua `CLIENT_CONFIG`
+- [x] Playwright e2e trên local: ví A đăng bài, ví B thấy bài — _9 test_
+- [ ] Deploy: contract lên Fuji; Postgres + indexer lên Railway; web lên Vercel; secrets đặt trên các nền tảng đó — _⛔ chưa có ví deployer + tài khoản Railway/Vercel_
 - **Xong khi:** e2e trên local xanh, và cùng luồng đó chạy được trên URL public với Fuji.
 
 ### P4. Feed engine (chưa cần LLM) · 2 ngày
-- [ ] `feed-sdk`:
+- [x] `feed-sdk`:
   - FeedSpec v1 (zod) và xuất ra JSON Schema;
   - `LABELS`, `SIGNALS`;
   - pipeline `sources → moderation → rules → diversity`;
   - `rank()` kèm reasons, chạy được trong trình duyệt
-- [ ] Unit test fixtures cho từng loại rule và cho diversity
-- [ ] Worker (pg-boss): job `label-post` dùng labeler heuristic; bảng `labels` và `author_labels` trong schema `app`
-- [ ] 6 feed mặc định (INIT_PROMPT §8), định nghĩa bằng FeedSpec ngay trong code
-- [ ] `GET /candidates`, `GET /feed?feedId|spec`
-- [ ] Web: tab chuyển feed, nút "Vì sao?"
-- [ ] `scripts/seed` (chỉ chạy ở local): khoảng 40 persona hư cấu, 400 bài EN/VI, có thread và graph follow
+- [x] Unit test fixtures cho từng loại rule và cho diversity
+- [x] Worker (pg-boss): job `label-post` dùng labeler heuristic; bảng `labels` và `author_labels` trong schema `app`
+- [x] 6 feed mặc định (INIT_PROMPT §8), định nghĩa bằng FeedSpec ngay trong code
+- [x] `GET /candidates`, `GET /feed?feedId|spec`
+- [x] Web: tab chuyển feed, nút "Vì sao?"
+- [x] `scripts/seed` (chỉ chạy ở local): khoảng 40 persona hư cấu, 400 bài EN/VI, có thread và graph follow
 - **Xong khi:** fixtures xanh; trên seed data, 6 feed cho kết quả khác nhau thấy rõ bằng mắt; `rank()` chạy được trong trình duyệt.
 
 ### P5. Đọc Farcaster · 1.5–2 ngày
-- [ ] Đọc docs Neynar hiện tại: tìm FID theo verified address, danh sách following, feed theo FID/channel, giới hạn và giá
-- [ ] Tìm FID của user qua ví của họ. Nếu không có FID thì feed dùng các channel Avalanche
-- [ ] Worker `ingest-farcaster` theo dõi following của user và các channel Avalanche; có chế độ fixture
-- [ ] Tìm và xác nhận tên các channel Farcaster về Avalanche, ghi vào config
-- [ ] Chuẩn hoá dữ liệu: ID dạng `fc:<hash>`; tác giả map về verified ETH address nếu có; lưu trong schema `app`
-- [ ] Sources `farcaster:following` và `farcaster:channel:<name>` trong `/candidates`
-- [ ] Chỉ đưa vào hàng đợi gán nhãn những bài có khả năng lên feed
-- [ ] Web: nhãn nguồn trên bài Farcaster, render embed cơ bản
+- [x] Đọc docs Neynar hiện tại: tìm FID theo verified address, danh sách following, feed theo FID/channel, giới hạn và giá
+- [x] Tìm FID của user qua ví của họ. Nếu không có FID thì feed dùng các channel Avalanche — _verify bằng fixture; Neynar thật chưa chạy (thiếu key)_
+- [x] Worker `ingest-farcaster` theo dõi following của user và các channel Avalanche; có chế độ fixture
+- [ ] Tìm và xác nhận tên các channel Farcaster về Avalanche, ghi vào config — _🟡 `FC_CHANNELS` mặc định `avalanche,avax-builders`, chưa xác nhận với Neynar thật_
+- [x] Chuẩn hoá dữ liệu: ID dạng `fc:<hash>`; tác giả map về verified ETH address nếu có; lưu trong schema `app`
+- [x] Sources `farcaster:following` và `farcaster:channel:<name>` trong `/candidates`
+- [x] Chỉ đưa vào hàng đợi gán nhãn những bài có khả năng lên feed — _chỉ bài trong cửa sổ candidate (`CANDIDATE_WINDOW_DAYS`)_
+- [x] Web: nhãn nguồn trên bài Farcaster, render embed cơ bản — _embed URL: ảnh + chip link; quote-cast chưa hỗ trợ_
 - **Xong khi:** user có follow trên Farcaster vào app là thấy feed có nội dung ngay.
 
 ### P6. Labeler LLM + eval · 2 ngày
-- [ ] Labeler dùng Anthropic SDK với `LABELER_MODEL`: chạy theo batch, output có cấu trúc, validate bằng zod, retry khi sai
-- [ ] Chống prompt injection: delimiter, system prompt nói rõ không làm theo chỉ dẫn trong bài, kẹp điểm 0–1, nhãn `spam:manipulation`
-- [ ] Ký batch nhãn bằng `LABELER_PRIVATE_KEY`; endpoint `/labels?since=`; indexer verify chữ ký trước khi lưu
-- [ ] `evals/labeler/golden.jsonl` khoảng 100 bài EN/VI, cố ý có ca khó: shill so với chia sẻ dự án thật, văn bản không dấu, teencode, châm biếm
-- [ ] `pnpm eval:labeler` in precision/recall theo từng nhãn; CI chạy lệnh này khi prompt hoặc model đổi
-- [ ] Ghi chi phí gán nhãn trên 1.000 bài vào COSTS.md
+- [x] Labeler dùng Anthropic SDK với `LABELER_MODEL`: chạy theo batch, output có cấu trúc, validate bằng zod, retry khi sai — _🟡 chưa chạy với key thật; test bằng LLM mock_
+- [x] Chống prompt injection: delimiter, system prompt nói rõ không làm theo chỉ dẫn trong bài, kẹp điểm 0–1, nhãn `spam:manipulation`
+- [x] Ký batch nhãn bằng `LABELER_PRIVATE_KEY`; endpoint `/labels?since=`; indexer verify chữ ký trước khi lưu — _`POST /labels` (labeler → indexer) + `GET /labels?since=` (công khai, kèm chữ ký)_
+- [x] `evals/labeler/golden.jsonl` khoảng 100 bài EN/VI, cố ý có ca khó: shill so với chia sẻ dự án thật, văn bản không dấu, teencode, châm biếm
+- [x] `pnpm eval:labeler` in precision/recall theo từng nhãn; CI chạy lệnh này khi prompt hoặc model đổi — _CI chạy mỗi lần (heuristic, không cần key)_
+- [ ] Ghi chi phí gán nhãn trên 1.000 bài vào COSTS.md — _🟡 mới là ước tính trong COSTS.md; đo thật cần `ANTHROPIC_API_KEY`_
 - **Xong khi:** precision/recall ≥ 0.8 cho `topic:politics`, `quality:engagement_bait`, `quality:shill`, `quality:substantive`.
 
 ### P7. onchain_builder · 1 ngày
-- [ ] Tìm nguồn dữ liệu theo thứ tự ưu tiên:
+- [x] Tìm nguồn dữ liệu theo thứ tự ưu tiên: — _Avalanche Data API (Glacier); local dùng fixture_
   1. Avalanche Data API, nếu có endpoint liệt kê contract mà một địa chỉ đã deploy;
   2. explorer API;
   3. nếu cả hai đều không có: quét danh sách tx của địa chỉ và lấy `contractAddress` từ receipt
-- [ ] Worker `onchain-builder` + cache có TTL trong schema `app`
-- [ ] Signal `onchain_builder`, badge "Verified builder", feed "Builders shipping"
+- [x] Worker `onchain-builder` + cache có TTL trong schema `app`
+- [x] Signal `onchain_builder`, badge "Verified builder", feed "Builders shipping"
 - **Xong khi:** địa chỉ đã từng deploy contract thì có badge; địa chỉ chưa từng deploy thì không.
 
 ### P8. Hoàn thiện + đóng băng · 1–1.5 ngày, cộng 1 tuần dùng thử · [REVIEW]
-- [ ] Sentry cho web, indexer và worker; log bằng pino
-- [ ] `/health` và `/status` (độ trễ indexer, độ dài hàng đợi, lỗi ingest gần nhất); uptime ping kèm cảnh báo
-- [ ] Backup Postgres; `pnpm snapshot:export`
-- [ ] Bảng `events`, ghi các sự kiện đo lường chính
-- [ ] Rà schema event lần cuối; deploy bản contract v1 chính thức lên Fuji nếu có thay đổi
-- [ ] Viết `docs/LIMITATIONS.md`, cập nhật `docs/ARCHITECTURE.md`
-- [ ] Dùng app hằng ngày trong 1 tuần, ghi bug vào PROGRESS.md
+- [x] Sentry cho web, indexer và worker; log bằng pino — _🟡 code có, chưa có DSN thật_
+- [x] `/health` và `/status` (độ trễ indexer, độ dài hàng đợi, lỗi ingest gần nhất); uptime ping kèm cảnh báo — _uptime ping ⛔ cần dịch vụ ngoài_
+- [x] Backup Postgres; `pnpm snapshot:export` — _`pnpm db:backup` (schema `app`)_
+- [x] Bảng `events`, ghi các sự kiện đo lường chính
+- [x] Rà schema event lần cuối; deploy bản contract v1 chính thức lên Fuji nếu có thay đổi — _bản v1 lên Fuji ⛔_
+- [x] Viết `docs/LIMITATIONS.md`, cập nhật `docs/ARCHITECTURE.md`
+- [ ] Dùng app hằng ngày trong 1 tuần, ghi bug vào PROGRESS.md — _⛔ cần bản chạy thật trên Fuji_
 - **Xong khi:** 1 tuần dùng thử không gặp bug chặn; **người dùng duyệt việc đóng băng schema**.
 
 ---
@@ -160,41 +160,41 @@
 ## Giai đoạn 1: Alpha
 
 ### P9. NL Feed Builder + quota · 2 ngày
-- [ ] `compileFeed` dùng `COMPILER_MODEL`: nhận EN/VI, sửa dần trên spec cũ, có `unsupported`, cache theo hash của input
-- [ ] Màn `/feeds/new`: ô nhập, chip bật/tắt, preview re-rank ngay trong trình duyệt
-- [ ] Lưu feed cá nhân vào schema `app`
-- [ ] `entitlements`: gói, quota, đếm lượt dùng; `GET /me/entitlements`; UI khi hết quota
+- [x] `compileFeed` dùng `COMPILER_MODEL`: nhận EN/VI, sửa dần trên spec cũ, có `unsupported`, cache theo hash của input — _🟡 bản LLM chưa chạy với key thật; heuristic đã verify_
+- [x] Màn `/feeds/new`: ô nhập, chip bật/tắt, preview re-rank ngay trong trình duyệt
+- [x] Lưu feed cá nhân vào schema `app`
+- [x] `entitlements`: gói, quota, đếm lượt dùng; `GET /me/entitlements`; UI khi hết quota
 - **Xong khi:** gõ "less price talk, bớt shill" thì feed đổi; hết quota thì UI báo rõ ràng.
 
 ### P10. Kiểm duyệt · 1.5 ngày
-- [ ] Moderation stack trong settings, áp lên mọi feed
-- [ ] Nút Báo cáo, bảng `reports`, trang admin (chỉ địa chỉ admin vào được)
-- [ ] Danh sách chặn của người vận hành, áp ở cả web và indexer
-- [ ] `docs/MODERATION.md`
+- [x] Moderation stack trong settings, áp lên mọi feed
+- [x] Nút Báo cáo, bảng `reports`, trang admin (chỉ địa chỉ admin vào được)
+- [x] Danh sách chặn của người vận hành, áp ở cả web và indexer
+- [x] `docs/MODERATION.md`
 - **Xong khi:** bật một moderation stack thì mọi feed đổi tương ứng; bài trong danh sách chặn không hiện ở bất cứ đâu.
 
 ### P11. Importer Farcaster · 1 ngày
-- [ ] Màn `/import`: nhập FID hoặc username → lấy danh sách following → lấy verified address
-- [ ] Ước tính số tx và gas; chạy `followMany` theo batch qua session key, có thanh tiến trình và retry
-- [ ] Bảng `pending_follows`
+- [x] Màn `/import`: nhập FID hoặc username → lấy danh sách following → lấy verified address — _verify bằng fixture_
+- [x] Ước tính số tx và gas; chạy `followMany` theo batch qua session key, có thanh tiến trình và retry — _tự thử lại 1 lần mỗi batch, bấm lại thì chạy tiếp từ batch lỗi_
+- [x] Bảng `pending_follows`
 - **Xong khi:** import thành công một tài khoản Farcaster thật. **Sau phase này: mời 20–50 builder vào Alpha.**
 
 ### P12. Thông báo + tìm kiếm · 1.5 ngày
-- [ ] Notifier (reply, mention, follow) ghi vào bảng `notifications`; màn `/notifications` (dùng polling)
-- [ ] Tìm kiếm bằng Postgres full-text + extension `unaccent`; màn `/search` cho user và bài
+- [x] Notifier (reply, mention, follow) ghi vào bảng `notifications`; màn `/notifications` (dùng polling)
+- [x] Tìm kiếm bằng Postgres full-text + extension `unaccent`; màn `/search` cho user và bài
 - **Xong khi:** được reply thì có thông báo trong vài giây; tìm được bài tiếng Việt dù gõ có dấu hay không dấu.
 
 ### P13. Thanh toán tUSD · 1.5 ngày · [REVIEW]
-- [ ] TestUSD (ERC20Permit, owner mint, faucet có cooldown) + test
-- [ ] PlanPayments (`setPlan`, `pay`, `payWithPermit`, `paidUntil`) + test
-- [ ] Indexer bắt event `Paid` và đưa vào `entitlements`
-- [ ] Màn `/billing`: số dư tUSD, nút faucet, mua Pro bằng 1 tx, hạn dùng
+- [x] TestUSD (ERC20Permit, owner mint, faucet có cooldown) + test
+- [x] PlanPayments (`setPlan`, `pay`, `payWithPermit`, `paidUntil`) + test
+- [x] Indexer bắt event `Paid` và đưa vào `entitlements`
+- [x] Màn `/billing`: số dư tUSD, nút faucet, mua Pro bằng 1 tx, hạn dùng — _e2e: faucet + permit + payWithPermit_
 - **Xong khi:** bước 8–9 của hành trình cốt lõi chạy được trên Fuji; **người dùng đã duyệt contract trước khi deploy**.
 
 ### P14. Client B + đo lường · 1 ngày
-- [ ] `configs/b.ts`, deploy lần 2 trên Vercel
-- [ ] Viết `docs/FORK.md`; nhờ một người chưa đụng vào code fork thử và bấm giờ
-- [ ] Trang số liệu nội bộ: D1/D7, % user chỉnh feed, % user chạm quota
+- [ ] `configs/b.ts`, deploy lần 2 trên Vercel — _🟡 `configs/b.ts` build + chạy local được; Vercel ⛔_
+- [ ] Viết `docs/FORK.md`; nhờ một người chưa đụng vào code fork thử và bấm giờ — _🟡 FORK.md xong; bấm giờ fork ⛔ cần người ngoài_
+- [x] Trang số liệu nội bộ: D1/D7, % user chỉnh feed, % user chạm quota — _`/admin` → Metrics_
 - **Xong khi:** client B chạy trên cùng identity và graph; có số đo "fork trong X phút"; đủ số liệu để đánh giá tiêu chí thoát Alpha.
 
 ---

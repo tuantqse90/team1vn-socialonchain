@@ -41,17 +41,17 @@ Câu hỏi trước mọi quyết định: *việc này có làm người dùng 
 | Thành phần | Nội dung | Host |
 |---|---|---|
 | `contracts` | Lõi: IdentityRegistry, SocialGraph, Posts, FeedRegistry (GĐ2). Của client: TestUSD, PlanPayments (P13) | Fuji |
-| `apps/indexer` | Ponder: index event + REST API (Hono + zod-openapi) | Railway |
+| `apps/indexer` | Indexer tự viết bằng viem `getLogs` + REST API (Hono + zod-openapi) | Railway |
 | `apps/worker` | Node + pg-boss: labeler, ingest-farcaster, notifier, onchain-builder | Railway |
 | `apps/web` | Next.js PWA. Client B là cùng app với `CLIENT_CONFIG=b` | Vercel |
 
 Postgres dùng chung, chia 2 schema:
-- schema của Ponder: dựng lại được bằng replay;
+- schema `chain` (Drizzle, do indexer ghi): dựng lại được bằng replay;
 - schema `app` (Drizzle): dữ liệu offchain, phải backup.
 
 Chưa dùng Redis.
 
-**Stack:** Node LTS, pnpm, Turborepo, Biome · Foundry, OpenZeppelin v5, Slither · `@wagmi/cli` sinh ABI · Ponder · Drizzle · pg-boss · `@anthropic-ai/sdk` · Next.js App Router, Tailwind, shadcn/ui, wagmi, viem, RainbowKit (có Core Wallet), TanStack Query/Virtual, next-intl · Vitest, Playwright · Sentry, pino · Neynar · Avalanche Data API.
+**Stack:** Node LTS, pnpm, Turborepo, Biome · Foundry, OpenZeppelin v5, Slither · `scripts/gen-abis.mjs` sinh ABI · indexer viem tự viết · Drizzle · pg-boss · `@anthropic-ai/sdk` · Next.js App Router, Tailwind, shadcn/ui, wagmi, viem, RainbowKit (có Core Wallet), TanStack Query/Virtual, next-intl · Vitest, Playwright · Sentry, pino · Neynar · Avalanche Data API.
 
 ## Luật kiến trúc
 
@@ -87,7 +87,7 @@ packages/protocol/      ABI (wagmi cli), địa chỉ theo chainId + version, ty
 packages/feed-sdk/      FeedSpec (zod + JSON Schema), LABELS, SIGNALS, rank(), compileFeed(), moderation
 packages/db/            Drizzle: schema "app" + migrations
 packages/ui/            component shadcn dùng chung
-apps/indexer/           Ponder + REST API
+apps/indexer/           indexer (viem getLogs) + REST API
 apps/worker/            labeler, ingest-farcaster, notifier, onchain-builder
 apps/web/               Next.js PWA; configs/a.ts, configs/b.ts
 evals/labeler/          golden set + script đo
@@ -99,22 +99,24 @@ docs/                   ARCHITECTURE.md, COSTS.md, LIMITATIONS.md, MODERATION.md
 
 - TypeScript strict. Dùng zod ở **mọi biên**: API, output LLM (sai schema thì retry), manifest, batch nhãn. Lint/format bằng Biome.
 - Mọi dịch vụ ngoài (Anthropic, Neynar, Avalanche Data API, RPC) đều có chế độ mock/fixture. Thiếu key không được chặn tiến độ.
-- Thư viện/API ngoài: đọc docs hiện tại, không đoán version hay API. Đặc biệt là Ponder (custom route, schema), Neynar và Avalanche Data API.
+- Thư viện/API ngoài: đọc docs hiện tại, không đoán version hay API. Đặc biệt là Neynar, Avalanche Data API và Next.js (đọc `apps/web/node_modules/next/dist/docs/`).
 - Mỗi tx trên UI đều có link explorer Fuji.
 - Seed data hư cấu chỉ dùng ở local. Không dùng tên/ảnh người thật, không nhắc chính trị Việt Nam có thật.
 - Báo cáo trung thực: tách rõ phần "đã verify thật" và phần "chưa verify".
 - Quyết định đảo ngược được thì tự quyết và ghi vào Decision log trong PROGRESS.md. Quyết định không đảo ngược được (schema, interface công khai, tiền, mainnet) thì hỏi trước.
 
-## Lệnh (dự kiến, cập nhật sau P0)
+## Lệnh
 
 ```bash
-pnpm i && pnpm dev:local               # Postgres (Docker) + Anvil + deploy + indexer + worker + web, không cần key
-pnpm test                              # Vitest (feed-sdk fixtures, ...)
+pnpm i && pnpm dev:local --seed        # Postgres (Docker) + Anvil + deploy + migrate + seed + indexer + worker + web, không cần key
+pnpm test                              # Vitest; test integration cần TEST_DATABASE_URL (xem .env.example)
 pnpm lint && pnpm typecheck            # Biome + tsc
 cd contracts && forge test --gas-report
-pnpm indexer:replay                    # dựng lại state từ block deploy (từ P2)
-pnpm eval:labeler                      # đo precision/recall của labeler (từ P6)
-pnpm snapshot:export                   # xuất graph + bài onchain ra JSON (từ P8)
+pnpm e2e                               # Playwright, chạy khi `pnpm dev:local --seed --no-web` đang chạy
+pnpm indexer:replay                    # dựng lại schema `chain` từ block deploy
+pnpm eval:labeler                      # precision/recall của labeler trên golden set
+pnpm snapshot:export                   # xuất graph + bài onchain ra JSON
+pnpm db:backup                         # pg_dump schema `app` (dữ liệu offchain) ra backups/
 ```
 
 ## Secrets

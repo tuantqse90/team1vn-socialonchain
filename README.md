@@ -40,7 +40,8 @@ pnpm contracts:test       # forge test
 pnpm indexer:replay       # rebuild chain state from the deploy block
 pnpm eval:labeler         # precision/recall on evals/labeler/golden.jsonl
 pnpm snapshot:export      # dump graph + onchain posts to JSON
-pnpm e2e                  # Playwright (needs dev:local running)
+pnpm db:backup            # pg_dump schema `app` (offchain data) to backups/
+pnpm e2e                  # Playwright, against `pnpm dev:local --seed --no-web`
 ```
 
 ## Build your own client
