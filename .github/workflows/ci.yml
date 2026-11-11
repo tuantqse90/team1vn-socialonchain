@@ -44,8 +44,11 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # anvil + forge cho integration test của indexer
+      - uses: foundry-rs/foundry-toolchain@v1
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
+      # forge test đã chạy ở job `contracts`.
+      - run: pnpm turbo run test --filter='!@socialonchain/contracts'
       # Heuristic labeler (không cần key): fail nếu macro F1 tụt dưới ngưỡng.
       - run: pnpm eval:labeler
