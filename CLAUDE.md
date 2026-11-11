@@ -1,92 +1,132 @@
 # CLAUDE.md: socialonchain
 
 Claude Code tự load file này mỗi session. Chỉ ghi **luật và quyết định ổn định** ở đây, giữ dưới ~200 dòng.
-Trạng thái công việc (đang ở đâu, làm gì tiếp) nằm trong `PROGRESS.md`, được import ở cuối file.
-Spec đầy đủ (contract, API, FeedSpec, seed, demo) nằm trong `INIT_PROMPT.md`. Đó là nguồn sự thật về phạm vi; đọc mục liên quan khi cần chi tiết.
+- Trạng thái công việc (đang ở phase nào, việc dở, blocker) nằm trong `PROGRESS.md`, được import ở cuối file.
+- Kế hoạch chi tiết từng phase (sub-task, ước lượng, rủi ro) nằm trong `PLAN.md`.
+- Spec đầy đủ nằm trong `INIT_PROMPT.md` (v6). Đó là nguồn sự thật về phạm vi; cần chi tiết thì đọc mục liên quan.
 
 ## Quy trình mỗi session
 
-1. **Đầu session:** xem PROGRESS.md (import bên dưới) để biết phase hiện tại, việc dở và blocker. Nếu đã có test thì chạy `pnpm test` để biết repo đang xanh hay đỏ trước khi sửa.
-2. **Trong session:** làm theo phase. Phase trước chạy được thì mới sang phase sau. Ưu tiên walking skeleton end-to-end, polish để sau.
-3. **Cuối session hoặc cuối phase:** chạy test/lint rồi cập nhật PROGRESS.md: việc đã xong (ghi rõ **đã verify thật** hay **chưa**), việc dở, bước tiếp theo, blocker. Quyết định mới thì ghi vào Decision log; nếu nó thành luật lâu dài thì chuyển lên mục "Quyết định kiến trúc" bên dưới.
+1. **Đầu session:** xem PROGRESS.md (import bên dưới). Nếu đã có test thì chạy `pnpm test` để biết repo đang xanh hay đỏ.
+2. **Làm đúng phase hiện tại** theo PLAN.md. Phase trước chưa đạt "Xong khi" thì không sang phase sau.
+   - **P1, P8, P13 là phase [REVIEW]:** bắt buộc dừng chờ duyệt.
+   - Các phase khác: báo cáo xong thì chờ người dùng nói "tiếp".
+3. Mỗi phase làm trên nhánh `phase-N-<tên>`, commit nhỏ.
+4. **Cuối session hoặc cuối phase:** chạy test/lint, cập nhật PROGRESS.md, tick checkbox trong PLAN.md. Báo cáo gồm: đã làm gì; verify bằng lệnh nào, kèm kết quả; còn nợ gì; đề xuất cho phase sau.
 
-Câu hỏi trước mọi quyết định: *việc này có làm demo 3 phút mạnh hơn không?* (kịch bản demo: INIT_PROMPT.md §13)
+Câu hỏi trước mọi quyết định: *việc này có làm người dùng quay lại vào ngày mai không? Có làm dev bên ngoài muốn build plugin trên nền này không?*
 
-## Luận điểm
+## Sản phẩm
 
-**"Một danh tính, một graph, hàng nghìn feed."** Không làm "Twitter onchain". Có 3 thứ phải demo được:
+- **"Một danh tính, một graph, hàng nghìn feed."** Đây là sản phẩm cho người dùng thật, không phải bài thi.
+- Cộng đồng đầu tiên: builder Avalanche (Team1) trong và ngoài nước. UI song ngữ EN/VI.
+- Cold start theo hướng "đọc trước, viết sau": feed xếp hạng cả nội dung Farcaster (chỉ đọc), còn bài mới thì đăng native onchain.
+- Hai tính năng chủ lực:
+  - Feed Builder bằng lời (EN/VI).
+  - Tín hiệu `onchain_builder`: đếm số contract tác giả đã deploy trên Avalanche, kiểm chứng được onchain.
 
-1. **Lõi onchain thật mỏng** trên Avalanche: `IdentityRegistry`, `SocialGraph`, `Posts`, `FeedRegistry`.
-2. **Chợ feed:** mỗi feed là một plugin. User viết feed bằng tiếng Việt tự nhiên, LLM biên dịch thành `FeedSpec` minh bạch. Dev ship feed và thu phí onchain.
-3. **Portability:** 2 client fork từ cùng template, chỉ khác `client.config.ts`, cùng đọc một identity và một graph.
+## Quyết định đã chốt (muốn đổi thì hỏi trước)
 
-## Tham số (đang dùng mặc định, cần đội xác nhận)
+| Mục | Quyết định |
+|---|---|
+| Đội | 1 người + Claude Code |
+| Chain | Avalanche Fuji (chainId 43113) cho cả dev lẫn bản chạy thật |
+| Gas | User tự trả, qua session key do chính họ nạp. Không relayer, không meta-tx |
+| Thanh toán | tUSD: TestUSD tự deploy, 6 decimals, có permit. Khi lên mainnet thì thay bằng USDC thật |
+| Thu phí | Freemium ở client. Protocol không thu phí. Spec feed luôn miễn phí |
+| Ngôn ngữ | TypeScript end-to-end + Solidity |
 
-- Chain: Avalanche Fuji C-Chain, chainId `43113`
-- Ngôn ngữ UI: tiếng Việt
-- Thời gian: 7 ngày. Đội 2–3 người (TypeScript fullstack + 1 người Solidity)
+## Kiến trúc: 4 thứ cần deploy
 
-## Stack
+| Thành phần | Nội dung | Host |
+|---|---|---|
+| `contracts` | Lõi: IdentityRegistry, SocialGraph, Posts, FeedRegistry (GĐ2). Của client: TestUSD, PlanPayments (P13) | Fuji |
+| `apps/indexer` | Ponder: index event + REST API (Hono + zod-openapi) | Railway |
+| `apps/worker` | Node + pg-boss: labeler, ingest-farcaster, notifier, onchain-builder | Railway |
+| `apps/web` | Next.js PWA. Client B là cùng app với `CLIENT_CONFIG=b` | Vercel |
 
-- Monorepo: pnpm workspaces + Turborepo, TypeScript strict
-- Contracts: Solidity ^0.8.24, Foundry, OpenZeppelin (EIP712, ECDSA, Nonces)
-- Indexer: Ponder (nếu vướng thì dùng viem `getLogs` + `watchContractEvent`) → Postgres (dev dùng PGlite) + REST
-- Client: Next.js App Router + wagmi + viem + RainbowKit (có Core Wallet) + Tailwind
-- Relayer: Hono hoặc Next.js route handler, dùng một ví nóng trả gas
-- LLM (Anthropic API): labeler dùng `claude-haiku-5-5`, NL→FeedSpec dùng `claude-sonnet-5-5`
+Postgres dùng chung, chia 2 schema:
+- schema của Ponder: dựng lại được bằng replay;
+- schema `app` (Drizzle): dữ liệu offchain, phải backup.
+
+Chưa dùng Redis.
+
+**Stack:** Node LTS, pnpm, Turborepo, Biome · Foundry, OpenZeppelin v5, Slither · `@wagmi/cli` sinh ABI · Ponder · Drizzle · pg-boss · `@anthropic-ai/sdk` · Next.js App Router, Tailwind, shadcn/ui, wagmi, viem, RainbowKit (có Core Wallet), TanStack Query/Virtual, next-intl · Vitest, Playwright · Sentry, pino · Neynar · Avalanche Data API.
+
+## Luật kiến trúc
+
+**Contract**
+- Contract lõi **không có admin, không thu phí, không upgrade được**. Muốn thay đổi thì deploy version mới chạy song song. Schema event đóng băng từ P8. Trước P8, contract trên Fuji được phép deploy lại.
+- Identity chính là `address`. Mất ví là mất identity; đây là giới hạn đã biết.
+- **Session key:**
+  - Owner cấp quyền một lần qua `registerWithDelegate` (payable), đồng thời nạp gas cho key.
+  - Mọi hàm ghi đều nhận tham số `as` và kiểm tra `isAuthorized(as, msg.sender)`.
+  - Delegate **chỉ** được: `post`, `react`, `unreact`, `deletePost`, `follow`, `unfollow`, `followMany`, `setProfile`.
+  - Delegate không được đụng tới: quản lý delegate, handle, FeedRegistry, tiền.
+  - Hết hạn mặc định sau 30 ngày.
+- **Posts:** storage chỉ có `authorOf`. Text tối đa 1024 byte, nằm trong event. Có field `channel` và `meta` để mở rộng.
+- **SocialGraph:** storage chỉ có `isFollowing`; số đếm do indexer tính. Được follow cả địa chỉ chưa đăng ký.
+- Không đưa thông tin cá nhân lên chain.
+
+**Feed**
+- LLM chỉ chạy lúc **ghi** (labeler) và lúc **biên dịch** feed (`compileFeed`).
+- Lúc **đọc** chỉ chạy `rank()` thuần: không I/O, tất định, chạy được cả trên server lẫn trong trình duyệt. Mỗi phần tử `reasons` trỏ về đúng 1 rule.
+- Pipeline: `sources → moderation stack → rules → diversity`.
+- Bộ nhãn là tập đóng trong `packages/feed-sdk/labels.ts`. `compileFeed` không được bịa rule; yêu cầu nào không map được thì trả về trong `unsupported[]`.
+- Labeler coi nội dung bài là dữ liệu không đáng tin (chống prompt injection). Indexer không tự gán nhãn; nhãn đến từ labeler, có chữ ký.
+
+**Chung**
+- Mọi thứ mang thương hiệu nằm trong `apps/web/configs/*.ts`.
+- **Interface công khai** (ABI, schema event, FeedSpec, REST API): muốn đổi thì hỏi trước.
 
 ## Cấu trúc repo
 
 ```
-contracts/                      Foundry: src/, test/, script/Deploy.s.sol
-packages/protocol/              ABI, địa chỉ deploy, typed client, helper EIP-712
-packages/feed-sdk/              FeedSpec (zod), LABELS, SIGNALS, rank(), compileFeed()
-services/indexer/               Ponder + REST API
-services/labeler/               worker gán nhãn
-services/relayer/               nhận chữ ký, submit tx
-services/feed-server-example/   remote feed mẫu, kiểm subscription
-apps/client/                    Next.js; mọi thứ mang thương hiệu nằm trong client.config.ts
-apps/client-b/                  bản fork demo: chỉ khác config + theme
-importers/farcaster/
-scripts/seed/
-docs/                           ARCHITECTURE.md, FORK.md, PLUGIN.md, DEMO.md
+contracts/              Foundry: src/, test/, script/
+packages/protocol/      ABI (wagmi cli), địa chỉ theo chainId + version, typed client, helper session key
+packages/feed-sdk/      FeedSpec (zod + JSON Schema), LABELS, SIGNALS, rank(), compileFeed(), moderation
+packages/db/            Drizzle: schema "app" + migrations
+packages/ui/            component shadcn dùng chung
+apps/indexer/           Ponder + REST API
+apps/worker/            labeler, ingest-farcaster, notifier, onchain-builder
+apps/web/               Next.js PWA; configs/a.ts, configs/b.ts
+evals/labeler/          golden set + script đo
+scripts/                seed (chỉ local), snapshot export
+docs/                   ARCHITECTURE.md, COSTS.md, LIMITATIONS.md, MODERATION.md, FORK.md
 ```
-
-## Quyết định kiến trúc (muốn đổi thì hỏi trước)
-
-- Lõi onchain nhỏ và nhàm: **không admin, không phí giao thức, không proxy upgradeable**. Identity chính là `address`.
-- Mọi hàm ghi có 2 đường: gọi trực tiếp (user tự trả gas) và bản `...BySig` (chữ ký EIP-712 của owner hoặc delegate còn hạn, có nonce + deadline). Client luôn có chế độ tự trả gas, nên relayer không phải người gác cổng.
-- `Posts` chỉ emit event, không lưu text vào storage. `FeedRegistry` chỉ lưu `keccak256(manifest)`, còn manifest nằm trong event.
-- `SocialGraph` cho follow cả địa chỉ chưa đăng ký, để importer dựng graph trước.
-- **Nguyên tắc vàng của feed:** LLM chỉ chạy lúc *ghi* (labeler) và lúc *biên dịch* feed (`compileFeed`). Lúc *đọc* chỉ chạy `rank()` thuần TypeScript: không I/O, tất định, mỗi phần tử `reasons` trỏ về đúng 1 rule.
-- Bộ nhãn là tập đóng trong `packages/feed-sdk/labels.ts`. `compileFeed` không được bịa rule; yêu cầu nào không map được thì trả về trong `unsupported[]`.
-- Mọi thứ mang thương hiệu của client nằm trong `client.config.ts`. Client B chỉ được khác config + theme.
 
 ## Quy ước code
 
-- TypeScript strict. Dùng zod ở **mọi biên**: API, output LLM (validate, sai schema thì retry), manifest.
-- Khi dùng thư viện/API ngoài (Ponder, wagmi, RainbowKit, Neynar, Anthropic SDK, Fuji): đọc docs hiện tại, không đoán version hay API.
-- Mỗi tx trên UI (follow, post, publish, subscribe) phải kèm link explorer.
+- TypeScript strict. Dùng zod ở **mọi biên**: API, output LLM (sai schema thì retry), manifest, batch nhãn. Lint/format bằng Biome.
+- Mọi dịch vụ ngoài (Anthropic, Neynar, Avalanche Data API, RPC) đều có chế độ mock/fixture. Thiếu key không được chặn tiến độ.
+- Thư viện/API ngoài: đọc docs hiện tại, không đoán version hay API. Đặc biệt là Ponder (custom route, schema), Neynar và Avalanche Data API.
+- Mỗi tx trên UI đều có link explorer Fuji.
+- Seed data hư cấu chỉ dùng ở local. Không dùng tên/ảnh người thật, không nhắc chính trị Việt Nam có thật.
 - Báo cáo trung thực: tách rõ phần "đã verify thật" và phần "chưa verify".
+- Quyết định đảo ngược được thì tự quyết và ghi vào Decision log trong PROGRESS.md. Quyết định không đảo ngược được (schema, interface công khai, tiền, mainnet) thì hỏi trước.
 
-## Lệnh (dự kiến, sửa lại sau P0)
+## Lệnh (dự kiến, cập nhật sau P0)
 
 ```bash
-pnpm i && pnpm dev                     # chạy toàn bộ
-pnpm test                              # unit test (feed-sdk fixtures, ...)
-pnpm lint
+pnpm i && pnpm dev:local               # Postgres (Docker) + Anvil + deploy + indexer + worker + web, không cần key
+pnpm test                              # Vitest (feed-sdk fixtures, ...)
+pnpm lint && pnpm typecheck            # Biome + tsc
 cd contracts && forge test --gas-report
-pnpm indexer:replay                    # dựng lại state từ block deploy
+pnpm indexer:replay                    # dựng lại state từ block deploy (từ P2)
+pnpm eval:labeler                      # đo precision/recall của labeler (từ P6)
+pnpm snapshot:export                   # xuất graph + bài onchain ra JSON (từ P8)
 ```
 
 ## Secrets
 
-Secrets chỉ nằm trong `.env` (gitignored), mẫu ở `.env.example`: `DEPLOYER_PRIVATE_KEY`, `RELAYER_PRIVATE_KEY`, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `FUJI_RPC_URL`.
-**Không bao giờ** in key ra log/output hay commit key.
+- Chỉ nằm trong `.env` (đã gitignore), mẫu ở `.env.example`. Khi deploy thì để trong secret manager của Railway/Vercel.
+- Các biến: `DEPLOYER_PRIVATE_KEY`, `LABELER_PRIVATE_KEY`, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `FUJI_RPC_URL`, `JWT_SECRET`, `SENTRY_DSN`.
+- **Không bao giờ** in key ra log/output hay commit key, kể cả private key của session key.
+- Không đụng tới mainnet hay tiền thật khi chưa có xác nhận.
 
-## KHÔNG LÀM
+## Chưa làm
 
-Token, DAO/governance, proxy upgradeable, DM, notification phức tạp, đưa media lên chain, mobile app. Thấy cần đổi phạm vi thì hỏi trước.
+Token, DAO/governance, proxy upgradeable, DM, app native (dùng PWA), relayer/tài trợ gas, đưa media lên chain. Phạm vi Giai đoạn 2–3 xem ở INIT_PROMPT.md §3.
 
 ## Trạng thái hiện tại
 
