@@ -1,0 +1,43 @@
+# Secrets: chỉ commit .env.example
+.env
+.env.*
+!.env.example
+
+# Node / pnpm / Turborepo
+node_modules/
+.pnpm-store/
+.turbo/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+.vercel/
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/31337/
+contracts/broadcast/**/dry-run/
+
+# Ponder / PGlite
+.ponder/
+generated/
+*.pglite/
+pgdata/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Claude Code: setting cá nhân (settings.json dùng chung thì vẫn commit)
+.claude/settings.local.json
