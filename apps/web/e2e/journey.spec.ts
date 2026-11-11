@@ -1,0 +1,199 @@
+import { expect, type Page, test } from "@playwright/test";
+import { encodeFunctionData, parseAbi } from "viem";
+
+/**
+ * Hành trình cốt lõi, chạy trên chain + indexer thật ở local:
+ * kết nối → đăng ký (1 tx, kèm session key) → đăng bài không popup → why → follow
+ * → feed builder bằng lời + preview rank() trong trình duyệt → lưu tab → báo cáo → admin → faucet tUSD + mua Pro bằng permit.
+ * Chạy lại được nhiều lần: account đã đăng ký thì bỏ qua bước join.
+ */
+const ACCOUNT = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc";
+/** Session key + JWT nằm trong localStorage: lưu lại sau onboarding để các test sau dùng chung "thiết bị". */
+const STATE = "e2e/.auth/state.json";
+const RUN = Date.now().toString(36);
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:42069";
+const RPC = "http://127.0.0.1:8545";
+/** Ví B: Anvil account #3 (unlocked), gửi tx trực tiếp qua RPC, không qua UI. */
+const WALLET_B = "0x90f79bf6eb2c4f870365e785982e1f101e93b906";
+/** Deployer = Anvil account #0, owner của TestUSD ở local. */
+const DEPLOYER = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
+
+async function rpc(method: string, params: unknown[]) {
+  const r = await fetch(RPC, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  });
+  const j = (await r.json()) as { result?: unknown; error?: { message: string } };
+  if (j.error) throw new Error(j.error.message);
+  return j.result;
+}
+
+async function waitTxOk(page: Page) {
+  await expect(page.getByTestId("tx-ok").last()).toBeVisible({ timeout: 45_000 });
+}
+
+test.describe.configure({ mode: "serial" });
+
+test("onboarding: đăng ký 1 tx kèm session key (hoặc bật thiết bị mới)", async ({ page }) => {
+  test.setTimeout(180_000); // lần đầu next dev phải compile trang
+  await page.goto("/welcome");
+  const join = page.getByTestId("join-submit");
+  const enable = page.getByTestId("enable-device");
+  const done = page.getByTestId("welcome-done");
+  await expect(join.or(enable).or(done)).toBeVisible({ timeout: 120_000 });
+  if (await join.isVisible()) {
+    const fund = page.getByTestId("dev-fund");
+    if (await fund.isVisible()) await fund.click();
+    await page.getByTestId("handle-input").fill(`e2e_${RUN}`.slice(0, 20));
+    await page.getByTestId("name-input").fill("E2E Tester");
+    await expect(join).toBeEnabled({ timeout: 15_000 });
+    await join.click();
+    await waitTxOk(page);
+  } else if (await enable.isVisible()) {
+    // Account đã đăng ký từ lần chạy trước, đây là "thiết bị mới": 1 tx addDelegate.
+    await enable.click();
+    await waitTxOk(page);
+  }
+  await expect(done).toBeVisible({ timeout: 30_000 });
+  await page.context().storageState({ path: STATE });
+});
+
+test.describe("đã đăng nhập", () => {
+  test.use({ storageState: STATE });
+
+  test("đăng bài bằng session key, thấy trên profile", async ({ page }) => {
+    await page.goto("/");
+    const text = `e2e post ${RUN} #team1`;
+    await page.getByTestId("composer-input").first().fill(text);
+    await page.getByTestId("composer-submit").first().click();
+    await waitTxOk(page);
+    // Điều hướng trong SPA: TxProvider đợi indexer bắt kịp rồi làm mới query, nên bài hiện mà không cần reload.
+    await page.getByTestId("nav-profile").filter({ visible: true }).click();
+    await expect(page.getByText(text)).toBeVisible({ timeout: 30_000 });
+  });
+
+  test("ví B follow ví A thì thấy bài của A trong feed của B", async ({ request }) => {
+    const net = (await (await request.get(`${API}/network`)).json()) as {
+      contracts: { SocialGraph: string };
+    };
+    const data = encodeFunctionData({
+      abi: parseAbi(["function follow(address actor, address target)"]),
+      args: [WALLET_B, ACCOUNT],
+    });
+    await rpc("eth_sendTransaction", [{ from: WALLET_B, to: net.contracts.SocialGraph, data }]);
+    await expect
+      .poll(
+        async () => {
+          const f = (await (
+            await request.get(`${API}/feed?feedId=default:chronological&viewer=${WALLET_B}&limit=50`)
+          ).json()) as { items: { post: { author: { address: string | null } } }[] };
+          return f.items.some((i) => i.post.author.address === ACCOUNT);
+        },
+        { timeout: 20_000 },
+      )
+      .toBe(true);
+  });
+
+  test("trang profile + bài công khai được SSR, có OG tags", async ({ request }) => {
+    const profile = await (await request.get(`/u/${ACCOUNT}`)).text();
+    expect(profile).toContain('property="og:title"');
+    expect(profile).toContain("E2E Tester");
+    const posts = (await (await request.get(`${API}/users/${ACCOUNT}/posts`)).json()) as {
+      items: { id: string; text: string }[];
+    };
+    const p = posts.items[0];
+    expect(p).toBeTruthy();
+    const html = await (await request.get(`/p/${p?.id}`)).text();
+    expect(html).toContain('property="og:description"');
+    expect(html).toContain(p?.text.slice(0, 20) ?? "");
+  });
+
+  test("feed có bài + Why? giải thích theo rule", async ({ page }) => {
+    await page.goto("/");
+    const first = page.getByTestId("post").first();
+    await expect(first).toBeVisible();
+    await first.getByTestId("why").click();
+    await expect(page.getByTestId("why-sheet")).toBeVisible();
+  });
+
+  test("follow một builder trong seed", async ({ page }) => {
+    await page.goto("/search?q=a");
+    await expect(page.getByTestId("search-input")).toBeVisible();
+    await page.goto("/");
+    // Mở profile tác giả onchain đầu tiên (không phải chính mình).
+    const author = page
+      .locator(`[data-testid="post"] header a[href^="/u/"]:not([href*="e2e_"]):not([href*="${ACCOUNT}"])`)
+      .first();
+    await expect(author).toBeVisible();
+    await author.click();
+    const follow = page.getByTestId("follow");
+    await expect(follow).toBeVisible();
+    const before = (await follow.textContent())?.trim();
+    await follow.click();
+    await waitTxOk(page);
+    await expect(follow).not.toHaveText(before ?? "");
+  });
+
+  test("feed builder: lời nói → rule → preview rank() → lưu tab", async ({ page }) => {
+    await page.goto("/feeds/new");
+    await page
+      .getByTestId("builder-input")
+      .fill("ít bàn giá, ẩn shill, ưu tiên founder có nội dung, thêm thơ haiku");
+    await page.getByTestId("builder-compile").click();
+    await expect(page.getByTestId("builder-result")).toBeVisible();
+    expect(await page.getByTestId("rule").count()).toBeGreaterThanOrEqual(2);
+    await expect(page.getByTestId("unsupported")).toBeVisible();
+    await expect(page.getByTestId("preview-meta")).toBeVisible();
+    // Tắt 1 rule: preview chạy lại ngay trong trình duyệt.
+    await page.getByTestId("rule").first().click();
+    await expect(page.getByTestId("rule").first()).toHaveAttribute("aria-pressed", "false");
+    await page.getByTestId("builder-name").fill(`E2E ${RUN}`);
+    await page.getByTestId("builder-save").click();
+    await page.waitForURL("/");
+    await expect(page.getByRole("button", { name: `E2E ${RUN}` })).toBeVisible();
+  });
+
+  test("báo cáo bài → admin thấy report", async ({ page }) => {
+    await page.goto("/");
+    const post = page.getByTestId("post").first();
+    await expect(post).toBeVisible();
+    await post.getByTestId("post-menu").click();
+    await page.getByTestId("report").click();
+    await page.getByTestId("report-spam").click();
+    await page.getByTestId("report-submit").click();
+    await expect(page.getByText(/Reported|Đã báo cáo/)).toBeVisible();
+    await page.goto("/admin");
+    await expect(page.getByText("spam").first()).toBeVisible();
+  });
+
+  test("tUSD: faucet + mua Pro bằng permit (1 chữ ký + 1 tx)", async ({ page, request }) => {
+    // Chạy lại nhiều lần thì faucet đang cooldown và số dư đã tiêu hết: owner mint thêm 10 tUSD (chỉ ở local).
+    const net = (await (await request.get(`${API}/network`)).json()) as { contracts: { TestUSD: string } };
+    await rpc("eth_sendTransaction", [
+      {
+        from: DEPLOYER,
+        to: net.contracts.TestUSD,
+        data: encodeFunctionData({
+          abi: parseAbi(["function mint(address to, uint256 amount)"]),
+          args: [ACCOUNT, 10_000_000n],
+        }),
+      },
+    ]);
+    await page.goto("/billing");
+    const faucet = page.getByTestId("faucet");
+    await expect(faucet).toBeVisible();
+    if (await faucet.isEnabled()) {
+      await faucet.click();
+      await waitTxOk(page);
+    }
+    await expect(page.getByTestId("tusd-balance")).not.toHaveText("…");
+    // Đợi toast cũ biến mất để không nhầm với tx mua Pro.
+    await expect(page.getByTestId("tx-ok")).toHaveCount(0, { timeout: 15_000 });
+    const buy = page.getByTestId("buy-pro");
+    await expect(buy).toBeEnabled({ timeout: 20_000 });
+    await buy.click();
+    await waitTxOk(page);
+    await expect(page.getByTestId("plan-card")).toContainText("Pro", { timeout: 30_000 });
+  });
+});

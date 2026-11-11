@@ -12,14 +12,17 @@
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.11",
+    "@sentry/browser": "11.11.0",
     "@socialonchain/feed-sdk": "workspace:*",
     "@socialonchain/protocol": "workspace:*",
     "@socialonchain/ui": "workspace:*",
     "@tanstack/react-query": "^5.107.1",
+    "@tanstack/react-virtual": "^3.14.26",
     "next": "^16.4.6",
     "next-intl": "^4.10.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
     "viem": "^2.50.0",
     "wagmi": "2.19.5",
     "zod": "^4.6.7"

@@ -41,3 +41,14 @@ pgdata/
 
 # Claude Code: setting cá nhân (settings.json dùng chung thì vẫn commit)
 .claude/settings.local.json
+
+# Snapshot xuất ra (publish riêng, không commit)
+snapshots/
+
+# Playwright
+apps/web/.next-e2e/
+apps/web/.next-b/
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/e2e/.auth/
+backups/

@@ -1,0 +1,38 @@
+import { defineConfig, devices } from "@playwright/test";
+
+/**
+ * E2E hành trình chính trên stack local thật (Anvil + Postgres + indexer + worker).
+ * Chạy trước: `pnpm dev:local --seed --no-web`. Web là bản production build (tất định hơn `next dev`)
+ * ở cổng 3100, với connector giả (Anvil account #2).
+ */
+const PORT = 3100;
+export const E2E_ACCOUNT = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc";
+
+export default defineConfig({
+  testDir: "./e2e",
+  timeout: 90_000,
+  expect: { timeout: 20_000 },
+  fullyParallel: false,
+  workers: 1,
+  retries: 0,
+  reporter: [["list"]],
+  use: {
+    baseURL: `http://localhost:${PORT}`,
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    ...devices["iPhone 15"],
+    browserName: "chromium",
+  },
+  webServer: {
+    command: `pnpm exec next build && pnpm exec next start -p ${PORT}`,
+    url: `http://localhost:${PORT}/brand/icon`,
+    reuseExistingServer: !process.env.CI,
+    timeout: 300_000,
+    env: {
+      NEXT_PUBLIC_E2E_ACCOUNT: E2E_ACCOUNT,
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:42069",
+      NEXT_PUBLIC_NETWORK: "local",
+      NEXT_DIST_DIR: ".next-e2e",
+    },
+  },
+});

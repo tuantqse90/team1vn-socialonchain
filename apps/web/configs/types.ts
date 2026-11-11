@@ -1,0 +1,23 @@
+export type ClientConfig = {
+  id: "a" | "b";
+  appName: string;
+  tagline: { en: string; vi: string };
+  /** Chữ cái/ký hiệu logo (SVG inline trong components/Logo). */
+  logo: { mark: string };
+  theme: { accent: string; accentInk: string; radius: string };
+  defaultFeeds: string[];
+  defaultModeration: string[];
+  enabledSources: string[];
+  /** Ghi đè qua NEXT_PUBLIC_API_URL. */
+  indexerUrl: string;
+  chain: "local" | "fuji";
+  plans: {
+    id: number;
+    name: string;
+    priceUsd: number;
+    months: number;
+    compilesPerDay: number;
+    maxFeeds: number;
+  }[];
+  freeLimits: { compilesPerDay: number; maxFeeds: number };
+};
