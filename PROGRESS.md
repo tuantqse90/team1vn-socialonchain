@@ -23,7 +23,7 @@
 
 | Phase | Việc | Trạng thái |
 |---|---|---|
-| P0 | Khung dự án | ✅ local; CI trên GitHub xem Session log |
+| P0 | Khung dự án | ✅ (CI GitHub xanh: contracts + ts, có integration test) |
 | P1 | Contract lõi **[REVIEW]** | 🟡 forge 58 test ✅, Slither 0 high ✅; **chờ người dùng duyệt** |
 | P2 | Indexer + API cơ bản | ✅ (indexer viem, không Ponder) |
 | P3 | Walking skeleton online | 🟡 e2e local 9/9 ✅; deploy Fuji/Railway/Vercel ⛔ |
@@ -77,7 +77,8 @@
 ### 2026-11-11 (session 3: chạy hết P0–P14 không hỏi lại)
 - Làm P0–P14 ở local. Commit theo nhánh `phase-N-*`, merge ff vào `main`.
 - **Đã verify thật:** `forge test` 58/58; Slither 0 high/medium trong `src/`; `pnpm lint` + `pnpm typecheck` sạch; Vitest: feed-sdk 29, protocol 6, farcaster 2, indexer integration 8, worker 7 (integration cần `TEST_DATABASE_URL`); `pnpm eval:labeler` macro F1 0.776; Playwright e2e 9/9 trên production build + chain/indexer/worker thật ở local; `next build` client A và B; `pnpm dev:local --seed` (40 persona, ~550 bài, ~410 follow, 120 cast Farcaster fixture); `snapshot:export`; `db:backup`; tìm kiếm có dấu/không dấu.
-- **Chưa verify:** mọi thứ trên Fuji/Railway/Vercel; labeler + compiler bản LLM; Neynar và Avalanche Data API thật; Sentry thật; CI trên GitHub (xem kết quả sau khi push).
+- CI GitHub run `43051151040` xanh (sau khi sửa: job `ts` từng gọi `forge` mà không cài Foundry).
+- **Chưa verify:** mọi thứ trên Fuji/Railway/Vercel; labeler + compiler bản LLM; Neynar và Avalanche Data API thật; Sentry thật.
 
 ### 2026-11-11 (session 2)
 - Viết lại `CLAUDE.md`, `PROGRESS.md` theo INIT_PROMPT v6; thêm `PLAN.md`, `docs/ARCHITECTURE.md`. Kiểm tra công cụ trên máy.
