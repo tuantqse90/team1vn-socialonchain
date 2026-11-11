@@ -1,0 +1,2321 @@
+{
+  "posts": [
+    {
+      "persona": "p01",
+      "text": "Lesson from 18 months building Lanterna: payroll customers don't care about TPS, they care that salary lands at 9am on the 25th. We moved our L1 to fixed gas fees paid in a stablecoin and support tickets dropped 40%. Boring wins.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p01",
+      "text": "Raise update: tụi mình vừa đóng vòng pre-seed. Bài học lớn nhất: đừng pitch tech stack, hãy pitch pain. Investor hỏi 'ai trả tiền?' trong 2 phút đầu, không ai hỏi về consensus.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p01",
+      "text": "Hiring tip cho founder: test tuyển dev bằng 1 bug thật trong codebase (đã xoá secrets). 2 tiếng, có trả tiền cho buổi test. Chất lượng ứng viên tăng hẳn so với giải thuật kiểu thi đấu.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p01",
+      "text": "We almost built our own bridge. Then we did the math: 3 engineers x 6 months + an audit. Used native cross-L1 messaging instead and shipped in 3 weeks. Build what's core, rent the rest.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p01",
+      "text": "Một ngày bình thường của founder: 3 cuộc gọi với VC, 1 podcast, ký 2 hợp đồng. Mệt nhưng biết ơn."
+    },
+    {
+      "persona": "p01",
+      "text": "Pricing lesson: we charged per transaction at first. Customers hated unpredictable invoices. Switched to per-employee per-month, revenue went up and churn went down. Onchain product, offchain pricing logic.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p01",
+      "text": "Ae founder nào đang chạy L1 riêng: tính kỹ chi phí validator trước khi launch nha. Tụi mình underestimate monitoring + on-call gấp 3 lần. Infra ko free đâu.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p01",
+      "text": "Humbled to be named one of the top 10 founders to watch this year. Long way to go. Grateful for the team."
+    },
+    {
+      "persona": "p01",
+      "text": "Shipping log tuần này: (1) batch payroll 500 ví trong 1 tx, (2) export CSV cho kế toán, (3) fix bug timezone làm lương về trễ 7 tiếng. Cái số 3 là cái khách cảm ơn nhiều nhất.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p01",
+      "text": "Unpopular opinion: your first 10 customers should be onboarded by the founder personally, on a call, watching them click. I learned more in those calls than from any analytics dashboard.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p01",
+      "text": "Q4 plan của Lanterna: ko thêm feature mới, chỉ làm reliability. 99.9% payout on time quan trọng hơn 20 tính năng mà khách ko dùng.",
+      "channel": "avalanche"
+    },
+
+    {
+      "persona": "p02",
+      "text": "Mekora sau 1 năm: 120 quán cà phê dùng điểm thưởng onchain. Bài học: chủ quán ko quan tâm blockchain, họ quan tâm khách quay lại. Tụi mình giấu hết phần crypto, chỉ còn mã QR.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p02",
+      "text": "Gọi vốn seed mất 7 tháng, 63 cuộc gặp. Điều mình ước biết sớm hơn: chuẩn bị data room trước khi gửi deck. Nhà đầu tư nghiêm túc sẽ hỏi số liệu cohort ngay vòng 2.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p02",
+      "text": "Lại được mời lên sân khấu nói chuyện. Ko biết sao mọi người cứ thích nghe mình kể chuyện khởi nghiệp. Biết ơn lắm luôn."
+    },
+    {
+      "persona": "p02",
+      "text": "Người đầu tiên mình tuyển ko phải dev mà là bạn sales đi từng quán. Đúng quyết định nhất năm. Product tốt mà ko ai bán thì cũng như ko.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p02",
+      "text": "Gas trên C-Chain rẻ nhưng 120 quán x 300 giao dịch/ngày vẫn ra số đáng kể. Tụi mình gom điểm theo batch mỗi 10 phút, chi phí giảm 85%, khách ko thấy khác biệt.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p02",
+      "text": "Founder nữ trong web3: đừng để ai bảo bạn phải 'technical hơn' mới được làm CEO. Hiểu khách hàng sâu hơn đối thủ là lợi thế lớn nhất.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p02",
+      "text": "Sai lầm: tụi mình build dashboard analytics 2 tháng cho chủ quán. Kết quả: 4% mở dashboard. Thay bằng 1 tin nhắn SMS tổng kết mỗi tuần, 70% đọc.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p02",
+      "text": "Cách mình viết update cho nhà đầu tư hàng tháng: 3 con số, 1 thắng, 1 thua, 1 việc cần giúp. Dưới 200 chữ. Tỉ lệ được intro tăng rõ rệt.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p02",
+      "text": "Tháng này team đi team building ở Đà Lạt. Ko kể số liệu gì, chỉ muốn nói là mình có team tuyệt nhất thế giới."
+    },
+    {
+      "persona": "p02",
+      "text": "Pivot nhỏ: bỏ NFT membership, giữ điểm thưởng dạng token ko chuyển nhượng. Khách ko cần 'sở hữu', họ cần ly cà phê thứ 10 miễn phí.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p02",
+      "text": "Tuần sau Mekora mở API cho chuỗi cửa hàng. Ai từng làm tích hợp POS cho F&B thì cho mình xin kinh nghiệm với, đặc biệt mấy máy POS đời cũ.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p03",
+      "text": "Pholio lesson #1: fans don't want NFT tickets, they want tickets that can't be scalped. We stopped saying NFT on the landing page and conversions went up 2.3x. Same contracts, different words.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p03",
+      "text": "Fundraising note: we got 40 nos before our lead said yes. The difference wasn't the deck. It was showing 3 sold-out shows with zero resale fraud. Traction beats narrative.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p03",
+      "text": "Shipping on Avalanche: resale caps are enforced in the transfer hook, the venue gets a cut on every resale, artists see it live. The hard part wasn't Solidity, it was getting venues to agree on a cap.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p03",
+      "text": "Crazy week. Can't share details yet but big things coming. So proud of where we are."
+    },
+    {
+      "persona": "p03",
+      "text": "Hiring our first protocol engineer. What I'm looking for: someone who has shipped to mainnet and has a postmortem they're proud of. Pedigree matters less than scars.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p03",
+      "text": "Door scanning at a 2,000-person venue taught us more than a year of testing. Offline mode is not optional. We now cache signed tickets on the scanner and reconcile to chain after doors close.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p03",
+      "text": "Advice to first-time founders: write your pricing page before you write your contracts. If you can't explain who pays and why, the architecture doesn't matter.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p03",
+      "text": "Just another day of being told our product is changing the live music industry. Never gets old."
+    },
+    {
+      "persona": "p03",
+      "text": "We cut onboarding from 6 screens to 2 by creating wallets server-side and letting fans claim to self-custody later. Purists hate it. Fans don't notice. Retention says we were right.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p03",
+      "text": "Burn rate check: we moved from 3 paid RPC providers to 1 plus our own fallback node. Saved $2.1k/month. Small team math: that's a month of a contractor.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p03",
+      "text": "Metric we watch most: % of resales under the face-value cap. If it ever drops below 98%, something's broken, either in the code or in a venue's config.",
+      "channel": "avalanche"
+    },
+
+    {
+      "persona": "p04",
+      "text": "Vinaroute vừa xong pilot với 3 hợp tác xã trồng xoài. Ghi nhận lô hàng lên L1 riêng, người mua quét QR xem được hành trình. Khó nhất ko phải code, mà là hướng dẫn bà con chụp ảnh lô hàng đúng cách.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p04",
+      "text": "Tại sao tụi mình chạy L1 riêng thay vì deploy lên C-Chain: cần validator là các bên trong chuỗi cung ứng, và phí gas cố định trả bằng token nội bộ. Trade-off: tự lo infra.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p04",
+      "text": "Bài học gọi vốn: nhà đầu tư nông nghiệp ko hiểu crypto, nhà đầu tư crypto ko hiểu nông nghiệp. Mình phải viết 2 bản deck khác nhau hoàn toàn.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p04",
+      "text": "Hôm nay lại có người nhắn bảo Vinaroute truyền cảm hứng cho họ. Mình chỉ làm việc mình thích thôi mà."
+    },
+    {
+      "persona": "p04",
+      "text": "Mẹo cho ai làm traceability: đừng đưa mọi thứ lên chain. Tụi mình chỉ hash ảnh + metadata, file gốc để storage riêng. Chi phí giảm 90%, vẫn chứng minh được dữ liệu ko bị sửa.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p04",
+      "text": "Tuyển dụng ở tỉnh khó hơn mình nghĩ. Giải pháp: dev làm remote, nhưng có 2 bạn field ops ở vùng trồng. Ko có field ops thì data rác vào, data rác ra.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p04",
+      "text": "Ship tuần này: app offline-first cho nông dân, sync khi có sóng. Đường lên vườn ko có 4G, đừng bao giờ giả định người dùng luôn online.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p04",
+      "text": "Ngồi máy bay đi gặp đối tác lần thứ 5 trong tháng. Cuộc sống founder là vậy đó."
+    },
+    {
+      "persona": "p04",
+      "text": "Khách hàng trả tiền ko phải nông dân mà là nhà xuất khẩu. Họ cần chứng từ nhanh để qua kiểm định. Hiểu ai trả tiền thì roadmap tự rõ.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p04",
+      "text": "Sai lầm năm đầu: phát token cho nông dân trước khi có người mua thật. Token ko có use case thì chỉ là con số. Giờ tụi mình bỏ hẳn token đó.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p04",
+      "text": "Ai đang build supply chain trên Avalanche thì ping mình, muốn lập nhóm chia sẻ schema dữ liệu chung. Ko ai nên làm lại từ đầu.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p05",
+      "text": "Tessellate Labs update: our cross-L1 message explorer now tracks delivery latency per route. Median is under 2s on mainnet, p99 is where the fun is. Publishing the dashboard next week.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p05",
+      "text": "Founder lesson: we spent 3 months building SDKs for 4 languages. 92% of usage is TypeScript. Should have shipped one SDK and talked to users instead.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p05",
+      "text": "Seed round closed. What mattered: an open-source repo with real external contributors, two L1 teams using us in prod, and a clear answer to 'why won't the core devs just build this?'",
+      "channel": "builders"
+    },
+    {
+      "persona": "p05",
+      "text": "Woke up to 14 inbound partnership requests. Not sure how to handle all this momentum honestly."
+    },
+    {
+      "persona": "p05",
+      "text": "Hiring philosophy at a 6-person company: everyone does support rotation, including me. Nothing kills bad DX faster than the CEO reading the same confused question three times in a week.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p05",
+      "text": "Hard truth about devtools: if your quickstart takes more than 10 minutes, most people never see your best feature. We now time our quickstart on a fresh laptop every release.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p05",
+      "text": "We open-sourced the retry/backoff logic from our cross-chain relayer: reorg-safe confirmations, idempotency keys, dead-letter queues. Took us 4 incidents to get right, hopefully saves you a few.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p05",
+      "text": "Pricing devtools is brutal. Free tier for hackers, usage-based for teams, enterprise for L1 operators. The trick was making the free tier generous enough that hackathon projects grow into paying teams.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p05",
+      "text": "Another conference, another standing ovation. The ecosystem is clearly ready for what we're building."
+    },
+    {
+      "persona": "p05",
+      "text": "Postmortem summary: a relayer ran out of gas on a destination L1 at 2am. Messages queued fine, but alerts went to a chat channel nobody watched. Fix: balance alerts now page a human, not a channel.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p05",
+      "text": "If you run an Avalanche L1 and want message monitoring, we're onboarding 5 more teams this month for free in exchange for blunt feedback. Reply or DM.",
+      "channel": "avalanche"
+    },
+
+    {
+      "persona": "p06",
+      "text": "Koi Vault đạt 10k người dùng. Insight lớn nhất: Gen Z ko cần APY cao, họ muốn thấy tiền tăng mỗi ngày dù chỉ vài đồng. Daily streak > yield cao.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p06",
+      "text": "Fundraising in VN vs abroad: local angels decide fast but check nhỏ; foreign funds check to nhưng due diligence 4 tháng. Tụi mình mix cả hai, close sau 5 tháng.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p06",
+      "text": "Đang ngồi viết post này từ lounge sân bay. Cuộc sống founder quá bận, nhưng mà vui."
+    },
+    {
+      "persona": "p06",
+      "text": "Security first: mọi contract của Koi Vault có timelock 48h cho upgrade, multisig 3/5, và bug bounty công khai. Users ko đọc docs nhưng họ hỏi 'tiền mình có an toàn ko' rất nhiều.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p06",
+      "text": "Lesson: we launched referral rewards and got 3k signups in a week, 80% were farmers. Now rewards unlock only after 30 days of real saving. Growth slower, users real.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p06",
+      "text": "Tuyển dev: mình ưu tiên người viết test kỹ hơn người viết code nhanh. Với app giữ tiền của người khác, 1 bug = mất niềm tin vĩnh viễn.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p06",
+      "text": "Mọi người cứ hỏi bí quyết thành công của mình. Thật ra chỉ là làm việc 16 tiếng mỗi ngày thôi."
+    },
+    {
+      "persona": "p06",
+      "text": "Onboarding update: login bằng email, ví được tạo tự động, gas được sponsor. Tỉ lệ hoàn thành onboarding từ 31% lên 74%. Đừng bắt user mới đi mua AVAX để trả gas.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p06",
+      "text": "Monthly burn của tụi mình giảm 30% sau khi bỏ 2 tool SaaS ít dùng và tự host monitoring. Founder nên review subscription mỗi quý.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p06",
+      "text": "We say no to launching a token. Every week someone DMs 'when token?'. Answer: when there's a reason other than price. Not today.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p06",
+      "text": "Retention cohort tháng 6: 42% vẫn gửi tiết kiệm sau 90 ngày. Ko phải con số đẹp nhất nhưng tốt hơn mọi app fintech mình từng làm.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p07",
+      "text": "Durian Data now indexes 14 Avalanche L1s. Biggest surprise: most teams don't need real-time, they need correct. We added a finality-aware mode that waits for acceptance before serving data, and support tickets halved.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p07",
+      "text": "Founder advice nobody asked for: charge from day one. Our first 3 customers paid $200/month. Small, but it forced us to build what paying people wanted.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p07",
+      "text": "Hiring: backend engineer who has debugged a production database at 3am. If you know why your query planner ignored your index, we should talk.",
+      "channel": "jobs"
+    },
+    { "persona": "p07", "text": "Grateful. That's it. That's the post." },
+    {
+      "persona": "p07",
+      "text": "Architecture note: we moved from one big indexer per chain to a shared ingestion layer + per-customer transform workers. Onboarding a new L1 went from 2 days to 40 minutes.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p07",
+      "text": "Lost a big customer last month. Their reason: our schema changes broke their dashboards twice. Now every schema change ships with a 30-day versioned endpoint. Painful lesson, cheap fix.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p07",
+      "text": "On fundraising: we're default alive on revenue, so we raised a small round from operators instead of a big fund. Fewer board meetings, more useful intros.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p07",
+      "text": "Someone called me the queen of indexing today. I'll take it. Back to work."
+    },
+    {
+      "persona": "p07",
+      "text": "Shipping: backfill speed is now ~45k blocks/min on a typical L1 with our parallel range fetcher. The trick was splitting by block range and merging logs by (block, txIndex, logIndex).",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p07",
+      "text": "Open question for L1 teams: would you pay for a hosted indexer that also exposes a SQL interface for your community? Thinking about it, want to hear real objections.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p07",
+      "text": "Remote team rule that saved us: every decision gets a written 5-line memo. No memo, no decision. Sounds bureaucratic, it's the opposite.",
+      "channel": "builders"
+    },
+
+    { "persona": "p08", "text": "gm ae", "channel": "random" },
+    {
+      "persona": "p08",
+      "text": "Mẹo Solidity: dùng custom error thay cho require string, tiết kiệm cả gas deploy lẫn gas revert. Ví dụ: error NotOwner(); thay vì require(msg.sender == owner, 'not owner').",
+      "channel": "builders"
+    },
+    {
+      "persona": "p08",
+      "text": "Packing storage: để uint128 a; uint128 b; cạnh nhau thì chung 1 slot. Mình vừa refactor contract cũ, giảm từ 7 SSTORE xuống 4 cho mỗi lần update. Gas giảm ~30%.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p08",
+      "text": "Ai gặp lỗi 'nonce too low' khi deploy lên Fuji bằng script chạy song song thì nhớ quản lý nonce thủ công nha. Đừng để 2 process cùng lấy pending nonce.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p08",
+      "text": "unchecked { ++i; } trong loop vẫn có ích từ 0.8.x nếu chắc chắn ko overflow. Nhưng đừng copy paste mù quáng, review kỹ điều kiện biên.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p08",
+      "text": "gm, sáng nay debug reentrancy cả buổi. Hoá ra thiếu nonReentrant ở hàm withdrawAll. Checks-effects-interactions nha ae, đừng bao giờ quên.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p08",
+      "text": "So sánh nhanh: mapping vs array cho danh sách holder. Cần iterate thì dùng enumerable set, nhưng tốn gas hơn. Nếu chỉ cần check tồn tại thì mapping là đủ.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p08",
+      "text": "Viết fuzz test cho hàm tính phí, phát hiện làm tròn sai khi amount < 100 wei. Bug nhỏ nhưng nhân với cả triệu giao dịch là mất tiền thật.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p08",
+      "text": "Event chỉ có tối đa 3 topic indexed. Chọn field nào indexed là quyết định thiết kế, vì indexer phía sau phụ thuộc vào đó. Mình hay index address + id.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p08",
+      "text": "Proxy upgrade lưu ý: ko được đổi thứ tự biến storage. Thêm biến mới ở cuối, và dùng storage gap cho contract base. Mất 1 tuần debug vì quên điều này.",
+      "channel": "builders"
+    },
+    { "persona": "p08", "text": "gm gm. cafe xong rồi, deploy thôi", "channel": "random" },
+
+    {
+      "persona": "p09",
+      "text": "Spent the day tuning an L1 genesis: target block rate 2s, gas limit 15M, min base fee bumped so spam costs something. Our testnet stopped getting clogged by one bot doing 400 tx/s.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p09",
+      "text": "Precompile tip: if you enable a contract-deployer allowlist on your L1, add at least two admin addresses and test the revoke path on Fuji. Locking yourself out is a rite of passage you can skip.",
+      "channel": "builders"
+    },
+    { "persona": "p09", "text": "gm builders", "channel": "random" },
+    {
+      "persona": "p09",
+      "text": "Fee config sanity check I run before every L1 launch: simulate 10x expected load, watch the base fee climb, make sure your dApp's gas estimation doesn't fail at the peak. Most launch-day bugs live here.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p09",
+      "text": "Released cfgdiff, a small CLI that diffs two L1 chain configs and highlights risky changes: gas limit drops, fee recipient changes, allowlist edits. Feedback welcome.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p09",
+      "text": "Hot take: most L1s don't need custom VMs. EVM + good precompiles + sane fee config covers 95% of use cases. Custom VMs are a hiring problem disguised as a tech decision.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p09",
+      "text": "Debugging story: validator kept falling behind. Not CPU, not network. Disk IOPS on a cheap cloud volume. Moved to NVMe, problem gone. Always check iostat first.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p09",
+      "text": "Reminder: the fastest way to test cross-L1 flows is two local L1s plus a mock relayer. Fast feedback beats fancy infra.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p09",
+      "text": "Writing docs for our L1 tooling. Rule: every page starts with the command you'd actually run. Concepts come after the reader has something working.",
+      "channel": "builders"
+    },
+    { "persona": "p09", "text": "gm. Coffee, then precompiles." },
+    {
+      "persona": "p09",
+      "text": "The native minter precompile is powerful and dangerous. If you enable it, log every mint to an event and alert on anything outside expected ranges. Treat it like a production root password.",
+      "channel": "avalanche"
+    },
+
+    {
+      "persona": "p10",
+      "text": "Validator setup checklist mình dùng: NVMe, 16 vCPU, monitoring uptime + disk, alert khi peer count giảm. Đừng chạy validator trên VPS share CPU, uptime tụt là mất reward.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p10",
+      "text": "gm ae, hôm nay node sync lại từ đầu, ngồi nhìn progress bar thôi",
+      "channel": "random"
+    },
+    {
+      "persona": "p10",
+      "text": "Tip: bật metrics endpoint của node rồi đẩy vào hệ thống monitoring. 3 chart quan trọng nhất: block height lag, peer count, disk usage. Còn lại là trang trí.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p10",
+      "text": "Bài học đắt giá: đừng để key của validator trên cùng máy với monitoring agent có quyền root từ xa. Tách quyền, tách máy. Security ko phải chuyện để sau.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p10",
+      "text": "Our L1 has 5 validators now. Mình test kịch bản 2 node chết cùng lúc: chain vẫn chạy nhưng latency tăng gấp đôi. Biết trước vẫn hơn biết lúc 3h sáng.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p10",
+      "text": "Ai chạy node trên cloud thì để ý bandwidth egress. Bill tháng trước tăng 3x vì một bạn trong team mở RPC public mà ko rate limit.",
+      "channel": "builders"
+    },
+    { "persona": "p10", "text": "gm. Debug lúc 3h sáng lần thứ n trong tháng" },
+    {
+      "persona": "p10",
+      "text": "Upgrade node version: luôn đọc release notes, chạy trên Fuji trước 48h, rồi rolling upgrade từng validator một. Ko upgrade tất cả cùng lúc, never.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p10",
+      "text": "Script nhỏ mình hay dùng: check health endpoint của tất cả validators mỗi phút, nếu fail 2 lần liền thì gọi điện cho người on-call. SMS dễ bị bỏ lỡ lắm.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p10",
+      "text": "Staking math cho L1 nhỏ: nếu reward ko đủ trả tiền server thì validator sẽ bỏ đi. Tính tokenomics từ chi phí infra ngược lên, đừng tính từ giá token mơ ước.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p10",
+      "text": "Container hay bare metal cho validator? Mình chọn bare metal + systemd. Ít layer hơn, ít thứ hỏng hơn. Ae nào chạy container thì share kinh nghiệm với.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p11",
+      "text": "Indexer pattern that saved me: store raw logs first, decode later. When the ABI changes or you find a decoding bug, you replay from raw instead of re-fetching 10M blocks.",
+      "channel": "builders"
+    },
+    { "persona": "p11", "text": "gm", "channel": "random" },
+    {
+      "persona": "p11",
+      "text": "Reorg handling 101: keep the last N block hashes, and on each new block check the parent hash matches. Mismatch? Roll back to the common ancestor and re-index. Finality on Avalanche is fast, but your code should still be honest.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p11",
+      "text": "Released v0.4 of my tiny event indexer: batched eth_getLogs with adaptive range splitting. If the RPC says 'too many results', it halves the range automatically. Boring feature, huge win.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p11",
+      "text": "Indexing tip: composite primary key (chain_id, block_number, tx_index, log_index). Makes idempotent upserts trivial and dedupes across retries for free.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p11",
+      "text": "Spent 4 hours on a 'missing events' bug. I was filtering logs by the implementation address. Logs are emitted from the proxy address. Every. Single. Time. Writing it here so future me remembers.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p11",
+      "text": "Hot take: you don't need a fancy graph query layer for most dApps. A SQL view + a REST endpoint ships faster and your frontend dev will thank you.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p11",
+      "text": "Backfill strategy: walk backwards from head in chunks, write to a staging table, swap atomically. Users get recent data first, history fills in behind.",
+      "channel": "builders"
+    },
+    { "persona": "p11", "text": "gm, today's goal: delete more code than I write" },
+    {
+      "persona": "p11",
+      "text": "Measuring indexer lag as 'head block minus indexed block' lies when your chain has variable block times. Measure it in seconds instead. Our alerts got way less noisy.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p11",
+      "text": "If your dApp shows balances from an indexer, also show the block number it's from. Users stop filing 'balance wrong' tickets when they can see it's 3 blocks behind.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p12",
+      "text": "Frontend dApp tip: luôn hiển thị trạng thái tx rõ ràng: đang ký, đã gửi, đã xác nhận, lỗi. User hoảng nhất là lúc bấm nút mà ko thấy gì xảy ra.",
+      "channel": "builders"
+    },
+    { "persona": "p12", "text": "gm mọi người, trà sữa ly thứ 2 trong ngày rồi", "channel": "random" },
+    {
+      "persona": "p12",
+      "text": "Vừa fix bug: user đổi network sang Fuji giữa chừng, app vẫn gửi tx theo config mainnet. Giờ mỗi lần chainId thay đổi là reset toàn bộ state ví.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p12",
+      "text": "Gas estimate fail thường là do tx sẽ revert, ko phải do thiếu gas. Cách hiển thị tốt: decode revert reason và cho user đọc được bằng tiếng người.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p12",
+      "text": "Kết nối Core wallet trên mobile qua deep link thì test kỹ trên nhiều dòng máy nha ae. Mỗi hệ điều hành redirect một kiểu, mất của mình 2 ngày.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p12",
+      "text": "Đừng format số token bằng parseFloat. Dùng bigint và chia theo decimals. Mình từng hiển thị số dư 0.1 thành 0.09999999 trước mặt khách hàng, xấu hổ ko để đâu cho hết.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p12",
+      "text": "Optimistic UI cho like/comment onchain: cập nhật UI ngay, rollback nếu tx fail. Người dùng cảm thấy app nhanh như web2.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p12",
+      "text": "Mẹo: cache kết quả name lookup ở client 5 phút, tránh gọi RPC liên tục mỗi lần render. Trang profile của mình nhanh gấp đôi.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p12",
+      "text": "gm, hôm nay làm dark mode cho dApp. Ko liên quan blockchain nhưng là thứ user khen nhiều nhất."
+    },
+    {
+      "persona": "p12",
+      "text": "Accessibility trong web3 bị bỏ quên quá. Nút 'Connect wallet' mà ko có label cho screen reader thì người khiếm thị chịu chết. Thêm aria-label mất 1 phút thôi.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p12",
+      "text": "Ai làm dApp đa ngôn ngữ thì lưu ý: revert error từ contract là tiếng Anh, nên map sang i18n key ở frontend. Đừng show nguyên văn cho user Việt.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p13",
+      "text": "Audit checklist item people skip: what happens when a token has fee-on-transfer? Your vault credits the amount, but receives less. Always measure balance before and after.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p13",
+      "text": "gm, reading other people's Solidity with fresh coffee",
+      "channel": "random"
+    },
+    {
+      "persona": "p13",
+      "text": "Gas golf of the day: caching array length in a local variable saves an SLOAD per iteration for storage arrays. For memory arrays the win is tiny. Know which one you have.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p13",
+      "text": "Found a classic in a review today: no access control on initialize(), so anyone could front-run the proxy init. Fix: deploy and initialize in the same transaction.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p13",
+      "text": "Please stop using tx.origin for auth. Every time I see it in a code review a small part of me dies.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p13",
+      "text": "Signature replay checklist: include chainId, contract address, nonce, and deadline in the signed payload. Miss one and someone will replay your permit on another L1.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p13",
+      "text": "Hot take: 100% test coverage means nothing if your tests never assert on balances. Coverage measures lines executed, not bugs caught.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p13",
+      "text": "Rounding direction matters: when minting shares, round down for the user; when calculating assets owed on withdraw, round up for the protocol. Flip it and you invite an inflation attack.",
+      "channel": "builders"
+    },
+    { "persona": "p13", "text": "gm" },
+    {
+      "persona": "p13",
+      "text": "Wrote a small invariant test for an AMM: k should never decrease after a swap. The fuzzer found an edge case in 30 seconds that 200 unit tests missed.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p13",
+      "text": "Learning path that worked for me: read 10 public audit reports, write down every bug class, then try to find each class in a random repo. Pattern recognition is the skill.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p14",
+      "text": "Hôm nay deploy lên Fuji 14 lần, mainnet 0 lần. Đúng tinh thần test kỹ trước khi đốt tiền thật. gm ae",
+      "channel": "random"
+    },
+    {
+      "persona": "p14",
+      "text": "Faucet Fuji hết lượt thì đừng spam nha ae, hỏi trong kênh builders, nhiều người dư test AVAX lắm.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p14",
+      "text": "Fullstack tip: tách RPC cho read và write. Read dùng load balancer nhiều node, write gửi qua 1 node ổn định. Ít lỗi nonce, ít lỗi timeout.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p14",
+      "text": "Just shipped a tiny tool: paste a tx hash, nó decode input + events + revert reason, hỗ trợ cả C-Chain và custom L1 nếu bạn đưa RPC. Tên là txpeek, open-source.",
+      "channel": "builders"
+    },
+    { "persona": "p14", "text": "gm" },
+    {
+      "persona": "p14",
+      "text": "Học được hôm nay: block timestamp trên L1 của mình ko tăng đều như mình tưởng, nên logic 'mỗi 10 giây' bị lệch. Dùng block number cho logic, timestamp chỉ để hiển thị.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p14",
+      "text": "Ae nào làm backend nghe event realtime qua websocket thì nhớ có cơ chế reconnect + backfill khoảng bị miss. Websocket rớt lúc nửa đêm là chuyện bình thường.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p14",
+      "text": "Env config cho 3 môi trường: local, Fuji, mainnet. Mình check chainId ở runtime, ko khớp thì app crash ngay. Thà crash còn hơn ký nhầm lên mainnet.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p14",
+      "text": "Mainnet deploy checklist của mình: verify source, transfer ownership sang multisig, test 1 tx nhỏ, rồi mới announce. Lần đầu quên verify source, bị hỏi cả tuần.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p14",
+      "text": "Weekend project: bot báo gas price trên C-Chain mỗi giờ. Ko ai cần nhưng mình vui.",
+      "channel": "random"
+    },
+    {
+      "persona": "p14",
+      "text": "Tip: viết script seed dữ liệu cho Fuji trước khi demo. Demo trước giám khảo hackathon mà ví trống trơn thì mất điểm lắm.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p15",
+      "text": "Verifying a ZK proof on an EVM L1 is mostly a gas problem. Pairing precompiles make it feasible, and on a custom L1 you can tune gas costs so verification doesn't eat your whole block.",
+      "channel": "builders"
+    },
+    { "persona": "p15", "text": "gm devtools enjoyers", "channel": "random" },
+    {
+      "persona": "p15",
+      "text": "Experiment results: Groth16 verifier on our test L1 costs ~210k gas per proof. Batching 8 proofs with aggregation got us under 60k each. Not production ready, but promising.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p15",
+      "text": "Devtools wish: a local L1 that boots in under 3 seconds with preloaded accounts and a sane default config. If your local dev loop takes a minute, people stop testing.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p15",
+      "text": "Hot take: error messages are the UI of developer tools. 'execution reverted' with no data is a design failure, not a user failure.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p15",
+      "text": "Building in public: my proof-of-membership demo lets you prove you're on a Team1 meetup attendee list without revealing which address. Code is messy, idea is fun.",
+      "channel": "avalanche"
+    },
+    { "persona": "p15", "text": "gm" },
+    {
+      "persona": "p15",
+      "text": "Calldata size matters more than you think on custom L1s with low gas limits. We cut proof calldata by 35% just by packing field elements tighter.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p15",
+      "text": "Reminder: a trusted setup for a hackathon demo is fine. For production, document who participated and how the toxic waste was destroyed. Users deserve to know.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p15",
+      "text": "Tooling idea I'd fund if I had money: a gas profiler that shows a per-opcode flame graph for any tx on any EVM L1. Half my optimization time is guessing.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p15",
+      "text": "Shipped a small library for Poseidon hashing in Solidity with test vectors. Benchmarks in the readme. PRs welcome, especially if you can beat my assembly.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p16",
+      "text": "Vừa ra mắt l1cfg: CLI viết bằng Rust để validate chain config trước khi deploy L1. Check gas limit, fee config, allowlist admin. Báo lỗi rõ ràng bằng cả tiếng Anh và tiếng Việt.",
+      "channel": "builders"
+    },
+    { "persona": "p16", "text": "gm ae builders", "channel": "random" },
+    {
+      "persona": "p16",
+      "text": "Go hay Rust cho relayer? Team mình chọn Go vì concurrency đơn giản và dễ tuyển. Rust nhanh hơn nhưng onboarding dev mới mất gấp đôi thời gian.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p16",
+      "text": "Lỗi thường gặp khi tạo L1 config: quên set chainId unique, kết quả ví user báo lỗi replay protection. Check chainId trước mọi thứ.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p16",
+      "text": "Released l1cfg v0.2: thêm lệnh diff giữa 2 config, output JSON để chạy trong CI. Ae dùng thử rồi cho mình feedback nhé.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p16",
+      "text": "CI pipeline cho smart contract của team: lint, compile, unit test, fuzz 10k runs, static analysis, deploy Fuji. Chạy 8 phút. Ko pass thì ko merge.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p16",
+      "text": "Rust tip: lib thì trả về error type cụ thể, binary thì gom lỗi lại cho gọn. Đừng trộn lẫn, đọc stack lỗi sẽ rất khổ.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p16",
+      "text": "Small win: CLI của mình giờ đọc được cả YAML và JSON config. 3 dòng code, 10 người cảm ơn. Devtools là vậy.",
+      "channel": "builders"
+    },
+    { "persona": "p16", "text": "gm, today is a refactor day" },
+    {
+      "persona": "p16",
+      "text": "Một lỗi Go hay gặp: capture biến loop trong goroutine. Bản Go mới đã đỡ, nhưng codebase cũ vẫn còn đầy. Review kỹ nhé.",
+      "channel": "builders"
+    },
+    {
+      "persona": "p16",
+      "text": "Ai cần template monorepo cho dApp trên Avalanche (contracts + indexer + frontend) thì mình đang dọn dẹp để open-source. Reply tính năng ae muốn có nhé.",
+      "channel": "builders"
+    },
+
+    {
+      "persona": "p17",
+      "text": "Northland's proposed flat 2% tax on all digital transactions would hit small sellers hardest. A progressive threshold makes more sense. Who writes these bills?",
+      "channel": "random"
+    },
+    {
+      "persona": "p17",
+      "text": "The new downtown congestion charge: good idea, terrible rollout. You can't charge drivers before the bus lanes exist. Sequence matters in policy."
+    },
+    {
+      "persona": "p17",
+      "text": "Every election cycle: 'we'll fix housing'. Every term: zoning stays the same. Build more homes near transit. It's not complicated, it's just unpopular with people who already own.",
+      "channel": "random"
+    },
+    {
+      "persona": "p17",
+      "text": "Healthcare budget up 4%, but inflation was 6%. That's a cut wearing a nice suit."
+    },
+    {
+      "persona": "p17",
+      "text": "The ranked-choice voting pilot in two Northland districts produced fewer spoiled ballots than expected. Worth expanding, with better voter education.",
+      "channel": "random"
+    },
+    {
+      "persona": "p17",
+      "text": "Public transit should be judged on frequency, not ribbon cuttings. A bus every 8 minutes beats a shiny new line that runs every 40."
+    },
+    {
+      "persona": "p17",
+      "text": "Property tax reassessment every 10 years means some neighborhoods pay based on 2016 prices. Annual reassessment with capped increases. Fair and predictable.",
+      "channel": "random"
+    },
+    {
+      "persona": "p17",
+      "text": "Oh great, another committee to study the committee that studies traffic. Truly the bravest move in Northland governance."
+    },
+
+    {
+      "persona": "p18",
+      "text": "Đề xuất tăng thuế xăng ở Northland để giảm kẹt xe: nghe hợp lý trên giấy, nhưng người đi làm xa trung tâm chịu thiệt nhất. Phải có xe buýt tốt trước đã.",
+      "channel": "random"
+    },
+    {
+      "persona": "p18",
+      "text": "Chính sách nhà ở xã hội mà xây xa trung tâm 40km, ko có trường học, ko có xe buýt. Vậy ai ở? Quy hoạch phải đi cùng hạ tầng."
+    },
+    {
+      "persona": "p18",
+      "text": "Ngân sách y tế công năm nay tăng, nhưng tiền đi vào mua thiết bị chứ ko phải tăng lương bác sĩ. Máy móc hiện đại mà thiếu người vận hành thì cũng vậy thôi.",
+      "channel": "random"
+    },
+    {
+      "persona": "p18",
+      "text": "Thue thu nhap ca nhan nen nang nguong giam tru theo lam phat moi nam. Nguong dung yen 5 nam la mot cach tang thue am tham."
+    },
+    {
+      "persona": "p18",
+      "text": "Bầu cử ở Northland mà tỉ lệ đi bầu chỉ 40% thì kết quả đại diện cho ai? Nên mở rộng bỏ phiếu sớm và bỏ phiếu qua thư.",
+      "channel": "random"
+    },
+    {
+      "persona": "p18",
+      "text": "Phí vào trung tâm giờ cao điểm: đồng ý về nguyên tắc. Nhưng tiền thu được phải công khai dùng cho giao thông công cộng, ko thì dân ko tin."
+    },
+    {
+      "persona": "p18",
+      "text": "Lại một kế hoạch 'giải quyết dứt điểm kẹt xe trong 5 năm'. Mình nghe câu này từ hồi còn đi học. Chắc 5 năm của họ dài hơn 5 năm của mình.",
+      "channel": "random"
+    },
+    {
+      "persona": "p18",
+      "text": "Giá nhà ở Northland tăng nhanh hơn lương 3 lần trong 10 năm. Chính sách đúng là tăng nguồn cung, rút gọn thủ tục cấp phép, chứ ko chỉ hỗ trợ vay mua nhà."
+    },
+
+    {
+      "persona": "p19",
+      "text": "Northland's healthcare budget debate keeps missing the point: preventive care is cheaper than emergency care. Fund clinics, save hospitals.",
+      "channel": "random"
+    },
+    {
+      "persona": "p19",
+      "text": "Ballot design is policy. The confusing two-column layout in last year's Northland election caused thousands of spoiled votes. Fix the form, fix the outcome."
+    },
+    {
+      "persona": "p19",
+      "text": "A tax holiday for first-time homebuyers sounds nice. In a supply-constrained market it just raises prices by roughly the size of the subsidy.",
+      "channel": "random"
+    },
+    {
+      "persona": "p19",
+      "text": "Proposal: public budget dashboards updated monthly, every dollar tagged by department. Transparency isn't a slogan if the data is downloadable."
+    },
+    {
+      "persona": "p19",
+      "text": "Traffic fines scaled to income: controversial, but a flat $100 fine means nothing to some people and a week's groceries to others. Worth a pilot.",
+      "channel": "random"
+    },
+    {
+      "persona": "p19",
+      "text": "Watching the Northland council vote 7-2 to delay the bike lane plan for the third time. At this point the bike lane is a historical artifact."
+    },
+    {
+      "persona": "p19",
+      "text": "Healthcare wait times went down 12% in districts that added evening clinic hours. Simple, cheap, measurable. More of this, fewer press conferences.",
+      "channel": "random"
+    },
+    {
+      "persona": "p19",
+      "text": "Minimum wage indexed to inflation would end the yearly fight about it. Boring policy is good policy."
+    },
+
+    {
+      "persona": "p20",
+      "text": "Quy hoạch đô thị kiểu 'xây cao ốc trước, làm đường sau' thì kẹt xe là chắc chắn. Hạ tầng phải đi trước.",
+      "channel": "random"
+    },
+    {
+      "persona": "p20",
+      "text": "Northland đề xuất tăng phí đỗ xe trung tâm gấp 3: mục tiêu giảm xe, nhưng nếu ko có bãi gửi xe ở ngoại ô nối với xe buýt thì chỉ là thu thêm tiền."
+    },
+    {
+      "persona": "p20",
+      "text": "Thuế nhà thứ hai: ủng hộ nếu mục đích là giảm đầu cơ. Nhưng phải miễn trừ cho người thừa kế nhà ở quê, ko thì bất công.",
+      "channel": "random"
+    },
+    {
+      "persona": "p20",
+      "text": "Ở thủ đô Northland, mỗi lần mưa to là ngập. Ngân sách chống ngập năm nào cũng tăng, nước vẫn ngập như cũ. Cần công bố dữ liệu và hiệu quả từng dự án."
+    },
+    {
+      "persona": "p20",
+      "text": "Ae nghĩ sao về việc thử nghiệm tuần làm 4 ngày cho khối công chức Northland? Thử 6 tháng rồi đo năng suất, đừng tranh cãi suông.",
+      "channel": "random"
+    },
+    {
+      "persona": "p20",
+      "text": "Chính sách giao thông tốt nhất là làm cho đi xe buýt nhanh hơn đi xe riêng. Làn riêng cho xe buýt, ưu tiên đèn tín hiệu. Đơn giản vậy thôi."
+    },
+    {
+      "persona": "p20",
+      "text": "Ngân sách công viên bị cắt để làm thêm bãi đỗ xe. Đúng là tư duy 'xe là trung tâm', người đi bộ ở đâu trong kế hoạch này?",
+      "channel": "random"
+    },
+    {
+      "persona": "p20",
+      "text": "Bầu cử hội đồng thành phố mà mỗi ứng viên chỉ có 1 trang giới thiệu chung chung. Muốn cử tri chọn đúng thì phải có tranh luận công khai về ngân sách."
+    },
+
+    {
+      "persona": "p21",
+      "text": "Comment YES if you've ever lost money because of a typo in a wallet address.",
+      "channel": "random"
+    },
+    {
+      "persona": "p21",
+      "text": "Like this post if you think Avalanche will flip everything this cycle. Ignore if you're not a real builder."
+    },
+    {
+      "persona": "p21",
+      "text": "Only 1% of people can answer this: what's 3 + 3 x 3? Drop your answer below",
+      "channel": "random"
+    },
+    { "persona": "p21", "text": "Type 'AVAX' in the comments and see what happens..." },
+    {
+      "persona": "p21",
+      "text": "Be honest: coffee or tea for late night coding? Wrong answers only. Tag a friend who'd say tea.",
+      "channel": "random"
+    },
+    {
+      "persona": "p21",
+      "text": "If you're reading this, you're early. Follow for more. Repost if you agree."
+    },
+    {
+      "persona": "p21",
+      "text": "Most people scroll past this. The smart ones comment 'gm' and get noticed by the algorithm.",
+      "channel": "random"
+    },
+    {
+      "persona": "p21",
+      "text": "Reply with the last app you opened and I'll guess your job. Bet I'm right."
+    },
+
+    {
+      "persona": "p22",
+      "text": "Like nếu bạn đồng ý: cà phê sáng là thứ không thể thiếu!",
+      "channel": "random"
+    },
+    {
+      "persona": "p22",
+      "text": "Tag 3 người bạn mà bạn muốn đi Đà Lạt cùng nhất. Ai bị tag nhớ like lại nha!"
+    },
+    {
+      "persona": "p22",
+      "text": "Share bài này nếu bạn yêu bố mẹ. 99% người lướt qua mà ko share...",
+      "channel": "random"
+    },
+    {
+      "persona": "p22",
+      "text": "Bình luận 'có' nếu bạn từng mất ngủ vì nghĩ về tiền. Mình đọc hết từng cmt!"
+    },
+    { "persona": "p22", "text": "ai dong y thi like nhe, ai ko dong y thi cmt ly do", "channel": "random" },
+    {
+      "persona": "p22",
+      "text": "Thả tim nếu hôm nay bạn đã cố gắng hết sức. Ko cần lý do, chỉ cần thả tim thôi!"
+    },
+    {
+      "persona": "p22",
+      "text": "Chọn 1: đi biển hay đi núi? Cmt số 1 hoặc 2, mình sẽ trả lời từng người!",
+      "channel": "random"
+    },
+    {
+      "persona": "p22",
+      "text": "Ai đọc được bài này trong 3 giây là người may mắn tháng này. Like để giữ may mắn nhé!"
+    },
+
+    {
+      "persona": "p23",
+      "text": "RT to win 50 AVAX! Follow + like + tag 2 friends. Winner picked Friday.",
+      "channel": "random"
+    },
+    {
+      "persona": "p23",
+      "text": "GIVEAWAY: 3 hoodies for builders. Comment your favorite L1 and repost to enter."
+    },
+    {
+      "persona": "p23",
+      "text": "RT + follow and I'll send 1 AVAX to 10 random people who turned on notifications.",
+      "channel": "random"
+    },
+    {
+      "persona": "p23",
+      "text": "Repost if you want an airdrop from our upcoming collection. Must follow to qualify."
+    },
+    {
+      "persona": "p23",
+      "text": "Last chance! Like, repost, and tag 3 friends. Winners announced in 24h. Don't miss out!",
+      "channel": "random"
+    },
+    {
+      "persona": "p23",
+      "text": "Want free whitelist spots? Comment 'IN' and follow everyone who liked this post."
+    },
+    {
+      "persona": "p23",
+      "text": "Giveaway extended because you all asked. Repost this, follow me, and drop your best meme in the replies.",
+      "channel": "random"
+    },
+    { "persona": "p23", "text": "Every 100 likes = 1 more winner. You know what to do." },
+
+    {
+      "persona": "p24",
+      "text": "ae tuong tac cheo nha, ai follow minh minh follow lai 100%",
+      "channel": "random"
+    },
+    { "persona": "p24", "text": "like het bai cua minh di roi cmt 'done' minh like lai ngay" },
+    {
+      "persona": "p24",
+      "text": "Tag 5 nguoi ban vao day, ai tag du thi minh tang 1 phan qua nho nhe",
+      "channel": "random"
+    },
+    { "persona": "p24", "text": "cmt 'gm' de dc len top, ae oi ung ho nha" },
+    { "persona": "p24", "text": "follow cheo ko ae? cmt 'ok' la minh follow lien", "channel": "random" },
+    { "persona": "p24", "text": "ai thay bai nay thi like 1 cai cho minh dc tuong tac, cam on ae nhiu" },
+    {
+      "persona": "p24",
+      "text": "Share bai nay ve tuong de nhan qua, ko share thi thoi ko sao het nhe =))",
+      "channel": "random"
+    },
+    {
+      "persona": "p24",
+      "text": "ae cmt j cung dc, cmt so tu 1 den 10, so nao nhieu nhat minh tang qua bat ngo"
+    },
+
+    {
+      "persona": "p25",
+      "text": "$MOONX 100x soon. Chart is coiling, devs are cooking. Don't say I didn't tell you.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p25",
+      "text": "This gem on Avalanche is still under $2M mcap. When it hits $100M you'll wish you listened. $MOONX"
+    },
+    {
+      "persona": "p25",
+      "text": "Price prediction: $MOONX at $0.50 by end of month. NFA, but you know.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p25",
+      "text": "Whales are accumulating $MOONX quietly. On-chain doesn't lie. Get in before the exchange listing rumors go public."
+    },
+    {
+      "persona": "p25",
+      "text": "Sold my car to buy more $MOONX. Not financial advice, just conviction.",
+      "channel": "avalanche"
+    },
+    { "persona": "p25", "text": "If you're not in $MOONX you're ngmi. Simple as that." },
+    {
+      "persona": "p25",
+      "text": "Don't miss this gem. Low cap, strong community, devs doxxed (to me). $MOONX",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p25",
+      "text": "Bears said $MOONX would go to zero. We're up 40% this week. Keep doubting, we keep pumping."
+    },
+
+    {
+      "persona": "p26",
+      "text": "Gem x100 trên Avalanche nè ae, $PHOX vốn hoá mới 500k. Vào sớm ăn đậm, vào muộn ôm đỉnh.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p26",
+      "text": "Kèo thơm: token mới của hệ AVAX, team ẩn danh nhưng chart quá đẹp. Ae nào cần tên thì cmt mình gửi."
+    },
+    {
+      "persona": "p26",
+      "text": "Dự đoán $BANHMI x20 trong tuần này. Ko tin thì thôi, đừng tiếc nhé.",
+      "channel": "avalanche"
+    },
+    { "persona": "p26", "text": "ae oi $PHOX sap len san lon roi, mua ngay ko thi lo chuyen tau" },
+    {
+      "persona": "p26",
+      "text": "Mình đã x5 tài khoản nhờ con gem này. Inbox để vào group VIP nhận kèo sớm.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p26",
+      "text": "Ko phải lời khuyên tài chính nhưng ai chưa có $BANHMI thì đang bỏ lỡ cơ hội đổi đời."
+    },
+    {
+      "persona": "p26",
+      "text": "Con này volume tăng 800% trong 24h, cá voi gom mạnh. Ae tự DYOR nhưng mình all in rồi.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p26",
+      "text": "Update dự án mình đang hold: team $PHOX vừa audit xong contract staking, báo cáo công khai, 2 lỗi medium đã fix. Đây mới là lý do mình tin, ko phải chart.",
+      "channel": "avalanche"
+    },
+
+    {
+      "persona": "p27",
+      "text": "$RKTF is going parabolic. Get in before the next leg. RocketFi vaults are the future.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p27",
+      "text": "RocketFi v2 vault update: we replaced our spot price oracle with a TWAP + deviation check after last month's price spike. Full writeup and test results are in our docs.",
+      "channel": "avalanche"
+    },
+    { "persona": "p27", "text": "Price target for $RKTF: 10x from here by Q1. The team (me) is relentless." },
+    {
+      "persona": "p27",
+      "text": "Weekly RocketFi metrics: TVL $1.8M (flat), 412 depositors (+6%), 0 incidents. Median withdrawal time 4 min. Shipping a fee calculator next.",
+      "channel": "avalanche"
+    },
+    { "persona": "p27", "text": "Missed AVAX at $3? Don't miss $RKTF at $0.04." },
+    {
+      "persona": "p27",
+      "text": "Audit for RocketFi v2 is done: 1 high (share-mint rounding, fixed), 3 lows. Report is public. Deposits reopen Monday after the fix is deployed.",
+      "channel": "avalanche"
+    },
+    { "persona": "p27", "text": "Staking $RKTF gives you 180% APY. Name a better deal. I'll wait." },
+    {
+      "persona": "p27",
+      "text": "Everyone is sleeping on RocketFi. In 6 months you'll see this post again and cry.",
+      "channel": "avalanche"
+    },
+
+    {
+      "persona": "p28",
+      "text": "$PHOX phá đỉnh rồi ae ơi, mục tiêu tiếp theo x3. Ai chưa lên tàu thì nhanh tay.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p28",
+      "text": "Chart $SNOWY đẹp như tranh, mô hình cốc tay cầm chuẩn sách giáo khoa. Mình dự đoán tuần sau x2."
+    },
+    {
+      "persona": "p28",
+      "text": "Ko phải shill đâu nhưng token này sẽ là top 1 hệ Avalanche cuối năm nay. Ghi lại để sau này ko ai bảo mình ko nói.",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p28",
+      "text": "$SNOWY airdrop cho holder giữ trên 1000 token. Mua ngay hôm nay để kịp snapshot!"
+    },
+    {
+      "persona": "p28",
+      "text": "Cập nhật thật: team $SNOWY vừa ra bản ví mobile beta, mình test thử thấy swap mượt, nhưng còn lỗi hiển thị số dư. Ae test thì báo bug cho team nhé.",
+      "channel": "avalanche"
+    },
+    { "persona": "p28", "text": "Ai sợ thì đứng ngoài, mình thì gom thêm $PHOX ở vùng này. Giá này là quà." },
+    {
+      "persona": "p28",
+      "text": "hold $SNOWY la giau, ko hold la tiec, don gian vay thoi ae",
+      "channel": "avalanche"
+    },
+    {
+      "persona": "p28",
+      "text": "Đội dev của $PHOX làm việc 24/7, roadmap dày đặc, cộng đồng 50k người. Bạn còn chờ gì nữa?"
+    },
+
+    {
+      "persona": "p29",
+      "text": "Sáng nay cà phê sữa đá ở quán đầu hẻm, ông chủ nhớ mình uống ít đá. Mấy điều nhỏ vậy làm mình vui cả ngày.",
+      "channel": "random"
+    },
+    {
+      "persona": "p29",
+      "text": "Mèo nhà mình vừa đạp đổ ly cà phê lên bàn phím. Giờ phím E kêu lạch cạch. Code cũng lạch cạch theo."
+    },
+    {
+      "persona": "p29",
+      "text": "Chiều nay Sài Gòn mưa to, ngồi quán nghe mưa, ko muốn về.",
+      "channel": "random"
+    },
+    {
+      "persona": "p29",
+      "text": "Thử pha phin ở nhà lần thứ 10, vẫn ko ngon bằng quán. Chắc do thiếu cái ghế nhựa đỏ."
+    },
+    {
+      "persona": "p29",
+      "text": "Cuối tuần ko mở laptop, chỉ đọc sách và ngủ. Healthy quá đi.",
+      "channel": "random"
+    },
+    {
+      "persona": "p29",
+      "text": "Ai biết quán cà phê yên tĩnh ở quận 3 để làm việc thì chỉ mình với. Ko cần wifi mạnh, cần ổ cắm."
+    },
+    {
+      "persona": "p29",
+      "text": "Hôm nay đi meetup Team1, gặp lại mấy bạn quen. Ăn bánh mì xong ai về nhà nấy, vui.",
+      "channel": "random"
+    },
+    { "persona": "p29", "text": "mèo ngủ trên laptop, ko làm việc dc, đành nghỉ thôi" },
+
+    {
+      "persona": "p30",
+      "text": "My kid asked what I do for work. Said 'computers and blockchains'. She said 'so you play games'. Can't argue.",
+      "channel": "random"
+    },
+    {
+      "persona": "p30",
+      "text": "Sunday football ritual: wings, the couch, and yelling at a referee who cannot hear me."
+    },
+    {
+      "persona": "p30",
+      "text": "Why don't programmers like nature? Too many bugs. I'll see myself out.",
+      "channel": "random"
+    },
+    {
+      "persona": "p30",
+      "text": "Tried making pho at home. It took 7 hours and tasted like soup. Respect to every pho shop forever."
+    },
+    {
+      "persona": "p30",
+      "text": "My team lost 3-0 and I'm choosing to believe it was a strategic decision.",
+      "channel": "random"
+    },
+    { "persona": "p30", "text": "Lurked the crypto timeline for an hour. Learned nothing, felt everything." },
+    {
+      "persona": "p30",
+      "text": "Dad joke: I told my wife she should embrace her mistakes. She hugged me.",
+      "channel": "random"
+    },
+    { "persona": "p30", "text": "Rainy Saturday, pancakes, and a long walk with the dog. No notes." },
+
+    { "persona": "p31", "text": "Sáng nào cũng phở, hôm nay đổi sang bún bò. Big day.", "channel": "random" },
+    { "persona": "p31", "text": "Đêm qua thức xem bóng đá đến 3h, sáng nay họp team như zombie. Worth it." },
+    {
+      "persona": "p31",
+      "text": "Hold AVAX cho vui thôi, chứ mình check giá còn ít hơn check tỉ số bóng đá.",
+      "channel": "random"
+    },
+    {
+      "persona": "p31",
+      "text": "Weekend plan: đá bóng 5 người với team dev, thua thì bao trà đá. Lần nào cũng thua."
+    },
+    {
+      "persona": "p31",
+      "text": "Ai ở Hà Nội cuối tuần này đi ăn chả cá ko? Mình bao trà đá.",
+      "channel": "random"
+    },
+    {
+      "persona": "p31",
+      "text": "Meme của ngày: 'it works on my machine', rồi ship luôn cái machine cho khách."
+    },
+    {
+      "persona": "p31",
+      "text": "Đội bóng yêu thích vừa thắng ngược 2-1. Hôm nay mood tốt, ai nhờ gì mình cũng đồng ý.",
+      "channel": "random"
+    },
+    {
+      "persona": "p31",
+      "text": "ko hiểu sao cứ cuối tháng là ví AVAX với ví tiền mặt đều rỗng như nhau =))"
+    },
+
+    {
+      "persona": "p32",
+      "text": "Matcha latte number three. My hands are vibrating at a frequency only dogs can hear.",
+      "channel": "random"
+    },
+    {
+      "persona": "p32",
+      "text": "Me explaining gas fees to my mom: 'it's like a tip but mandatory and it changes every minute'. She hung up."
+    },
+    {
+      "persona": "p32",
+      "text": "Meme idea: a validator meditating with the caption 'achieving consensus with myself'.",
+      "channel": "random"
+    },
+    {
+      "persona": "p32",
+      "text": "Went to a Team1 meetup for the free pizza, stayed for the people. Still mostly the pizza."
+    },
+    {
+      "persona": "p32",
+      "text": "My plant died. I watered it every day. Turns out it was fake. I've been overcommitting since forever.",
+      "channel": "random"
+    },
+    { "persona": "p32", "text": "New rule: no checking charts before coffee. Day one: failed by 7:04am." },
+    {
+      "persona": "p32",
+      "text": "Hot take: the best part of any conference is the hallway snacks.",
+      "channel": "random"
+    },
+    {
+      "persona": "p32",
+      "text": "Spent my Saturday reorganizing my bookshelf by color. Productive? No. Pretty? Very."
+    },
+
+    {
+      "persona": "p33",
+      "text": "Review bánh tráng trộn cô Sáu đầu ngõ: chua cay vừa, xoài nhiều, 15k một bịch. Điểm 9/10, trừ 1 điểm vì xếp hàng lâu.",
+      "channel": "random"
+    },
+    { "persona": "p33", "text": "Hà Nội vào thu, đi ăn ốc nóng với bạn thân. Ko gì bằng." },
+    {
+      "persona": "p33",
+      "text": "Tuần này thử 5 quán chè, quán ngon nhất lại là quán ko có tên. Đời là vậy.",
+      "channel": "random"
+    },
+    { "persona": "p33", "text": "Ăn vặt healthy là gì vậy mọi người? Mình chỉ biết ăn vặt thôi." },
+    {
+      "persona": "p33",
+      "text": "Bánh mì nướng muối ớt ở chợ đêm, 20k, ăn 2 cái no tới tối. Highly recommend.",
+      "channel": "random"
+    },
+    { "persona": "p33", "text": "ai biet cho nao ban xoi ngon o quan 1 ko chi minh voi, doi qua" },
+    { "persona": "p33", "text": "Hôm nay nhịn ăn vặt được 4 tiếng. Kỷ lục mới.", "channel": "random" },
+    { "persona": "p33", "text": "Mưa lạnh mà có bát bún riêu nóng thì hết buồn. Đơn giản vậy thôi." },
+
+    {
+      "persona": "p34",
+      "text": "Morning run: 8k along the river, then a banh mi. Best recovery meal, fight me.",
+      "channel": "random"
+    },
+    {
+      "persona": "p34",
+      "text": "Hosting a Team1 run club next Saturday: 5k easy pace, all speeds welcome. Coffee after.",
+      "channel": "random"
+    },
+    {
+      "persona": "p34",
+      "text": "Cooked a full Sunday roast for 6 people. Kitchen looks like a crime scene. Worth it."
+    },
+    {
+      "persona": "p34",
+      "text": "Rest day. Doing absolutely nothing and refusing to feel guilty about it.",
+      "channel": "random"
+    },
+    {
+      "persona": "p34",
+      "text": "Signed up for a half marathon in March. Somebody please hold me accountable."
+    },
+    {
+      "persona": "p34",
+      "text": "Trying a new sourdough recipe. The starter is named Gary. Gary is thriving.",
+      "channel": "random"
+    },
+    {
+      "persona": "p34",
+      "text": "Ran in the rain today. Felt like a movie montage for about 4 minutes, then just felt wet."
+    },
+    {
+      "persona": "p34",
+      "text": "Shoutout to the street vendor who remembers my order. Small joys.",
+      "channel": "random"
+    },
+
+    {
+      "persona": "p35",
+      "text": "Snowline Builder Fund mở đợt 3: grant 5k–25k USD cho team build trên Avalanche L1. Hạn nộp 15/12. Ưu tiên sản phẩm đã có user thật.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p35",
+      "text": "Mẹo viết grant: milestone phải đo được. 'Hoàn thiện sản phẩm' là milestone tệ. 'Deploy mainnet + 200 ví active mỗi tuần' là milestone tốt.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p35",
+      "text": "Summit Hack 2026 (online + offline tại HCM): 3 track DeFi, consumer, infra. Tổng giải thưởng 60k USD. Đăng ký team tối đa 4 người.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p35",
+      "text": "Lỗi phổ biến khi nộp grant: budget ko giải thích. Ghi rõ bao nhiêu cho dev, audit, infra. Reviewer đọc budget kỹ hơn bạn nghĩ.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p35",
+      "text": "Delta Microgrants: 1k–3k USD cho public goods nhỏ như tooling, docs tiếng Việt, tutorial. Duyệt hàng tuần, ko cần pitch deck.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p35",
+      "text": "Ai cần review hồ sơ grant trước khi nộp thì thứ 5 này có office hours online, mỗi team 15 phút, đăng ký trong kênh grants.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p35",
+      "text": "Nhắc lại: grant ko phải đầu tư, ko lấy cổ phần. Nhưng bạn phải báo cáo tiến độ. Ko báo cáo = ko nhận đợt giải ngân tiếp theo.",
+      "channel": "grants"
+    },
+
+    {
+      "persona": "p36",
+      "text": "Snowline Builder Fund round 3 is open. We fund teams building on Avalanche L1s with milestones, not vibes. Applications close Dec 15.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p36",
+      "text": "Grant tip: show us one user who isn't your friend. A single real user story beats a 40-page whitepaper.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p36",
+      "text": "What we reject most often: projects that need a token to work but can't explain why. If a database would do, use a database.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p36",
+      "text": "Office hours this Thursday: bring your draft application and I'll give blunt feedback in 15 minutes. Sign-up link in the grants channel.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p36",
+      "text": "Milestone design: make each milestone independently useful. If milestone 3 fails, milestones 1 and 2 should still have shipped something people use.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p36",
+      "text": "Reminder: open-source tooling is fundable even without revenue. Show adoption: downloads, dependents, issues filed by strangers.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p36",
+      "text": "We just funded 11 teams in round 2. Common thread: every one had a working demo on Fuji before applying.",
+      "channel": "grants"
+    },
+
+    {
+      "persona": "p37",
+      "text": "Summit Hack 2026 registrations are open: 48 hours, 3 tracks, mentors from L1 teams. Solo hackers can join team matching on day one.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p37",
+      "text": "Hackathon tip: build the demo backwards. Start from the 3-minute pitch, then build only what the demo needs.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p37",
+      "text": "Mẹo hackathon: chuẩn bị sẵn template repo, ví test có AVAX Fuji, và slide 5 trang trước khi đến. Tiết kiệm được 6 tiếng đầu.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p37",
+      "text": "Judges care about: does it work, is the problem real, is the team likely to keep going. Fancy architecture diagrams don't win on their own.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p37",
+      "text": "Bounty: 2k USD cho tool giúp dev kiểm tra L1 config trước khi deploy. Nộp trong 4 tuần, open-source MIT.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p37",
+      "text": "Sau hackathon đừng bỏ project. 3 trong 5 team nhận grant năm ngoái là team build tiếp 2 tháng sau hackathon.",
+      "channel": "grants"
+    },
+    {
+      "persona": "p37",
+      "text": "Reminder: team formation call tonight 8pm. Designers, we need you. Every team has 4 backend devs and nobody to make the slides.",
+      "channel": "grants"
+    },
+
+    {
+      "persona": "p38",
+      "text": "[Tuyển] Solidity Engineer cho Lanterna (payroll stablecoin trên Avalanche L1). 2+ năm kinh nghiệm, từng deploy mainnet. Remote, lương 2.5k–4k USD. Gửi CV qua DM.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p38",
+      "text": "[Tuyển] Backend dev (Go/TypeScript) cho Durian Data, làm indexer cho nhiều L1. Tối ưu SQL giỏi là điểm cộng lớn. Full remote, giờ làm linh hoạt.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p38",
+      "text": "[Tuyển] Frontend dev cho Koi Vault, app tiết kiệm onchain. Yêu cầu TypeScript, đã làm app fintech hoặc dApp. Văn phòng HCM, hybrid 3 ngày/tuần.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p38",
+      "text": "[Tuyển] Field ops cho Vinaroute tại Đồng Tháp. Ko cần biết code, cần yêu nông nghiệp và chịu đi vườn.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p38",
+      "text": "[Tuyển] BD manager cho Mekora, mảng F&B. Có kinh nghiệm bán phần mềm cho chuỗi cửa hàng. Lương cứng + hoa hồng.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p38",
+      "text": "[Tuyển] Intern Solidity 6 tháng, có mentor 1-1, có lương. Ưu tiên bạn đã làm project hackathon trên Fuji.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p38",
+      "text": "[Tuyển] DevOps/SRE vận hành validator cho L1, on-call luân phiên. Hiểu Linux, monitoring, và ko sợ 3h sáng.",
+      "channel": "jobs"
+    },
+
+    {
+      "persona": "p39",
+      "text": "Hiring: Senior Protocol Engineer at Tessellate Labs. Cross-L1 messaging, Go or Rust, distributed systems experience. Remote, $140k–$180k + equity.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p39",
+      "text": "Hiring: mid-level smart contract auditor for an Avalanche-focused security boutique. Must have public audit findings or contest results. Fully remote.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p39",
+      "text": "Pholio is hiring a protocol engineer: ticketing contracts, offline scanner sync, venue integrations. Mainnet experience required. Hybrid or remote.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p39",
+      "text": "Devs: if you're job hunting, put one deployed contract address and one postmortem on your resume. Recruiters remember stories, not buzzwords.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p39",
+      "text": "Hiring: Developer Relations Engineer for an L1 tooling startup. Write docs, run workshops, ship sample apps. Vietnamese + English is a big plus.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p39",
+      "text": "Hiring: Product Designer for a consumer savings app on Avalanche. You'll own onboarding. Bonus if you've designed for people who've never used a wallet.",
+      "channel": "jobs"
+    },
+
+    {
+      "persona": "p40",
+      "text": "[Remote] Rust engineer cho team làm CLI + tooling cho L1. Lương 3k–5k USD. Yêu cầu: đã viết CLI production, hiểu EVM là điểm cộng.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p40",
+      "text": "Hiring Data Engineer: build pipelines cho analytics onchain, SQL + Python. Team 8 người, remote-first, họp 2 lần/tuần.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p40",
+      "text": "[Tuyển] QA engineer test dApp và contract, viết test E2E cho flow ký ví. Junior ok nếu chịu học.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p40",
+      "text": "Job: Community Manager song ngữ Anh–Việt cho cộng đồng builder Avalanche. Tổ chức meetup, quản lý kênh, viết recap hàng tuần.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p40",
+      "text": "[Part-time] Technical writer viết docs tiếng Việt cho các tool trên L1. 20h/tuần, trả theo bài, remote.",
+      "channel": "jobs"
+    },
+    {
+      "persona": "p40",
+      "text": "Hiring Security Engineer: review contract nội bộ trước audit, xây quy trình bug bounty. 3+ năm kinh nghiệm, remote.",
+      "channel": "jobs"
+    }
+  ],
+  "threads": [
+    {
+      "root": {
+        "persona": "p09",
+        "text": "Debate: should an L1 set a high-ish min base fee from day one, or start low and raise it once usage grows? I lean high-ish. Spam is cheaper to prevent than to clean up.",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p10",
+          "text": "Mình lean low lúc đầu. Hackathon teams với testnet users sẽ bỏ đi nếu phí cao. Raise sau khi có traffic thật."
+        },
+        {
+          "persona": "p09",
+          "text": "Fair, but raising fees later is a governance fight. Users anchor on launch prices. Lowering is easy, raising is drama."
+        },
+        {
+          "persona": "p16",
+          "text": "Compromise: base fee thấp + allowlist cho deploy contract giai đoạn đầu. Bot spam ko deploy được thì bớt nhiều."
+        },
+        {
+          "persona": "p09",
+          "text": "An allowlist helps with contract spam, not tx spam though. A bot can still hammer plain transfers."
+        },
+        {
+          "persona": "p10",
+          "text": "Đúng. Vậy thì rate limit ở RPC public + base fee vừa phải. Ko có silver bullet."
+        },
+        {
+          "persona": "p09",
+          "text": "Agreed. Writing a short guide with both options and the trade-offs. Will share in builders."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p11",
+        "text": "Anyone else seeing eth_getLogs time out on large ranges for a custom L1? 5k blocks works, 10k dies.",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p14",
+          "text": "Gặp rồi. RPC node của L1 đó giới hạn response size. Chia range nhỏ lại, adaptive như tool của anh đó."
+        },
+        {
+          "persona": "p11",
+          "text": "Ha, my own tool does exactly that. I just ran a one-off script without it. Classic."
+        },
+        {
+          "persona": "p07",
+          "text": "We see this across many L1s. Some operators cap by block count, some by log count. We probe limits during onboarding and store them per chain."
+        },
+        {
+          "persona": "p11",
+          "text": "Probing on onboarding is smart. Do you re-probe? Operators change configs silently."
+        },
+        { "persona": "p07", "text": "Weekly, plus on any error spike. Learned that one the hard way." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p01",
+        "text": "Founders: how do you decide when to hire your first non-engineer? Tụi mình 5 dev, 0 sales, và mình đang làm hết phần còn lại.",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p02",
+          "text": "Khi founder ko còn thời gian nói chuyện với khách nữa. Với mình, người đầu tiên là bạn sales đi quán, quyết định đúng nhất."
+        },
+        {
+          "persona": "p01",
+          "text": "Nhưng sales B2B payroll khác F&B nhiều. Chu kỳ bán 3 tháng. Có nên tuyển người senior luôn ko?"
+        },
+        {
+          "persona": "p03",
+          "text": "Don't hire a senior sales lead before you've closed 10 deals yourself. They need a playbook to scale, not to invent."
+        },
+        {
+          "persona": "p02",
+          "text": "Đồng ý với Priya. Mình tự close 30 quán đầu tiên rồi mới tuyển, nên biết chính xác người đó cần làm gì."
+        },
+        { "persona": "p01", "text": "Ok, vậy Q1 mình tự close tiếp và ghi lại playbook. Cảm ơn hai chị." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p13",
+        "text": "Is it ever OK to use block.timestamp for randomness? Asking because a hackathon team just did.",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p08",
+          "text": "Ko bao giờ cho thứ gì có giá trị. Block producer có thể chỉnh timestamp trong một khoảng cho phép."
+        },
+        {
+          "persona": "p13",
+          "text": "Exactly. Their defense was 'it's just a hackathon'. Then they said they'd deploy to mainnet next week."
+        },
+        {
+          "persona": "p15",
+          "text": "For a hackathon, commit-reveal is maybe 30 lines. Worth teaching them. For prod, use a verifiable randomness oracle."
+        },
+        { "persona": "p13", "text": "Sent them a commit-reveal snippet. They're switching. Small win." },
+        { "persona": "p08", "text": "Tốt. Mình sẽ viết bài tiếng Việt về commit-reveal cho ae mới học." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p36",
+        "text": "Grant Q&A: ask me anything about Snowline Builder Fund round 3. I'll answer here for the next hour.",
+        "channel": "grants"
+      },
+      "replies": [
+        {
+          "persona": "p14",
+          "text": "Team mình 2 người, chưa có user, có demo chạy trên Fuji. Nên apply bây giờ hay đợi?"
+        },
+        {
+          "persona": "p36",
+          "text": "Apply now if the demo works end to end. But your first milestone should be getting 20 real users, not more features."
+        },
+        { "persona": "p06", "text": "Do you fund teams that already raised a seed round?" },
+        {
+          "persona": "p36",
+          "text": "Yes, but we look at what the grant unlocks that the seed doesn't. Open-source or public goods components are a good fit."
+        },
+        {
+          "persona": "p16",
+          "text": "Tool open-source ko có revenue thì budget nên ghi gì? Chỉ lương dev được ko?"
+        },
+        {
+          "persona": "p36",
+          "text": "Dev time is fine. Add a small line for docs and a workshop. Adoption is the milestone, so budget for getting people to use it."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p12",
+        "text": "Ae ơi, user báo bấm 'Ký' trên Core wallet mobile xong thì app mình ko nhận được callback. Desktop thì ok. Ai gặp chưa?",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p14",
+          "text": "Check lại deep link redirect. Trên một số máy, app bị hệ điều hành kill khi chuyển sang ví là mất hết state."
+        },
+        {
+          "persona": "p12",
+          "text": "Đúng là bị kill thật. Vậy phải lưu pending request vào storage trước khi redirect hả?"
+        },
+        {
+          "persona": "p14",
+          "text": "Ừ, lưu request id + timestamp. Khi app mở lại thì check tx hash theo request id."
+        },
+        {
+          "persona": "p11",
+          "text": "Also poll for the tx by sender + nonce as a fallback. Even if the callback is lost, the tx exists onchain."
+        },
+        { "persona": "p12", "text": "Hay quá, làm cả hai luôn. Cảm ơn ae, fix xong mình viết recap." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p17",
+        "text": "Northland wants to fund the new transit line by raising the sales tax 1%. Regressive, but fast. Thoughts?",
+        "channel": "random"
+      },
+      "replies": [
+        {
+          "persona": "p19",
+          "text": "Regressive is the problem. A land value tax around the new stations captures the value the line creates, from the people who benefit most."
+        },
+        {
+          "persona": "p17",
+          "text": "Agreed in theory, but a land value tax takes years to set up. The line needs money next year."
+        },
+        {
+          "persona": "p19",
+          "text": "Then issue bonds now and repay them with land value capture. Sales tax hikes never go away once they're in."
+        },
+        {
+          "persona": "p20",
+          "text": "Đồng ý với Ray. Tăng thuế tiêu dùng thì người thu nhập thấp chịu nặng nhất, mà họ lại là người đi tàu nhiều nhất."
+        },
+        {
+          "persona": "p17",
+          "text": "Fine, you've convinced me. Bonds plus land value capture. Now convince the council."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p05",
+        "text": "Founder advice needed: an L1 team wants a custom feature only they would use, and they'll pay well. Take it or not?",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p07",
+          "text": "We took a deal like that. 30% of eng time for 4 months. Revenue was nice, roadmap died. Only take it if it generalizes."
+        },
+        {
+          "persona": "p05",
+          "text": "It sort of generalizes. Maybe 2-3 other teams would want it eventually."
+        },
+        {
+          "persona": "p03",
+          "text": "Then sell it as a paid pilot with a clause that you can productize it. They get it first, you own it."
+        },
+        {
+          "persona": "p07",
+          "text": "+1. And set an end date. Custom work without an end date is just consulting with extra steps."
+        },
+        {
+          "persona": "p05",
+          "text": "Paid pilot, 8 weeks, we keep the IP. Sending the proposal tomorrow. Thanks both."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p35",
+        "text": "Q&A: Summit Hack 2026 cho người mới. Hỏi gì cứ hỏi ở đây nhé.",
+        "channel": "grants"
+      },
+      "replies": [
+        {
+          "persona": "p31",
+          "text": "Mình ko biết code thì tham gia được ko? Mình chỉ biết làm slide với nói chuyện thôi."
+        },
+        {
+          "persona": "p35",
+          "text": "Được chứ! Team nào cũng cần người pitch. Vào buổi ghép team ngày đầu là có team liền."
+        },
+        { "persona": "p12", "text": "Có cần deploy lên mainnet ko hay Fuji là đủ?" },
+        {
+          "persona": "p35",
+          "text": "Fuji là đủ cho hackathon. Nhưng demo phải chạy thật, ko nhận video quay sẵn."
+        },
+        { "persona": "p37", "text": "Bổ sung: ai ở tỉnh thì track online vẫn được chấm như offline nhé." },
+        { "persona": "p31", "text": "Ok vậy mình đăng ký luôn. Ai cần người pitch thì gọi mình." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p08",
+        "text": "Hỏi nhanh: dùng uint256 hay uint128 cho balance? Thấy nhiều contract dùng uint128 để pack storage, có rủi ro gì ko?",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p13",
+          "text": "uint128 max is ~3.4e38. For an 18-decimal token that's still ~3.4e20 whole tokens. Fine for most, but a token with a huge supply could overflow."
+        },
+        { "persona": "p08", "text": "Token của mình supply 1 tỷ, vậy là dư sức đúng ko?" },
+        {
+          "persona": "p13",
+          "text": "Yes. Just add an explicit check on mint so a future config change can't silently break the assumption."
+        },
+        {
+          "persona": "p16",
+          "text": "Và ghi comment rõ lý do dùng uint128. Người sau đọc sẽ ko 'tối ưu' ngược lại thành uint256."
+        },
+        { "persona": "p08", "text": "Ok, thêm check + comment. Cảm ơn ae." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p06",
+        "text": "Should a consumer savings app ever launch a token? Investors keep asking. Mình nghiêng về ko.",
+        "channel": "avalanche"
+      },
+      "replies": [
+        {
+          "persona": "p27",
+          "text": "Token = community ownership. Our token brought RocketFi its first 400 users. Just saying."
+        },
+        { "persona": "p06", "text": "And how many stayed after the incentives ended?" },
+        {
+          "persona": "p27",
+          "text": "...fair question. About 25%. The real users came later with the v2 vault."
+        },
+        {
+          "persona": "p02",
+          "text": "Mekora cũng bỏ token. User F&B ko cần. Điểm thưởng ko chuyển nhượng là đủ."
+        },
+        {
+          "persona": "p06",
+          "text": "Vậy chốt: ko token cho tới khi có lý do sản phẩm thật. Cảm ơn mọi người."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p10",
+        "text": "Validator của mình bị miss uptime 3% tuần này, CPU với RAM đều thấp. Ae gợi ý check gì?",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p09",
+          "text": "Disk IOPS first. Cheap cloud volumes throttle once burst credits run out."
+        },
+        { "persona": "p10", "text": "Đúng là volume loại burst. Credits về 0 lúc 2h sáng mỗi ngày." },
+        { "persona": "p09", "text": "Move to provisioned IOPS or local NVMe. It's always the disk." },
+        { "persona": "p16", "text": "Thêm alert khi burst credit < 20% nha, để biết trước khi chết." },
+        { "persona": "p10", "text": "Đã chuyển sang NVMe, uptime về 99.9%. Ae cứu mình một bàn thua." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p38",
+        "text": "Ae dev đang tìm việc: CV web3 nên có gì để nổi bật? Mình tổng hợp góp ý ở đây.",
+        "channel": "jobs"
+      },
+      "replies": [
+        {
+          "persona": "p39",
+          "text": "One deployed contract address and a short postmortem. I read thousands of CVs and those two things stand out."
+        },
+        { "persona": "p14", "text": "Repo hackathon có tính ko ạ? Hay phải là project production?" },
+        {
+          "persona": "p39",
+          "text": "Hackathon counts if the readme explains what you built and what you'd do differently."
+        },
+        {
+          "persona": "p40",
+          "text": "Thêm: làm CV tiếng Anh nếu apply team quốc tế. Nhiều bạn giỏi mà CV chỉ có tiếng Việt nên bị lọc."
+        },
+        {
+          "persona": "p38",
+          "text": "Tổng hợp lại: địa chỉ contract, postmortem, readme rõ ràng, CV tiếng Anh. Cảm ơn mọi người!"
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p15",
+        "text": "Debate: should devtools default to mainnet or testnet? I say testnet, always. Prove me wrong.",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p14",
+          "text": "Đồng ý testnet. Mình từng suýt deploy contract chưa test lên mainnet vì CLI default là mainnet."
+        },
+        {
+          "persona": "p05",
+          "text": "Counterpoint: experienced users find it annoying to pass a flag every time. Our CLI remembers the last network per project."
+        },
+        {
+          "persona": "p15",
+          "text": "Remembering per project is nice, but the first run should be testnet. Defaults are for beginners."
+        },
+        {
+          "persona": "p05",
+          "text": "Fair. First run testnet, then sticky per project, with a loud banner when it's mainnet. Shipping that."
+        },
+        { "persona": "p14", "text": "Banner màu đỏ nha anh, to vào." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p03",
+        "text": "Hot take: wallet abstraction matters more than any protocol feature for consumer apps this year.",
+        "channel": "avalanche"
+      },
+      "replies": [
+        {
+          "persona": "p06",
+          "text": "Agree 100%. Koi Vault tăng onboarding từ 31% lên 74% chỉ nhờ login email + gas sponsor."
+        },
+        {
+          "persona": "p13",
+          "text": "Until the server-side key management gets breached. Who audits that part?"
+        },
+        {
+          "persona": "p03",
+          "text": "Valid. We use a separate key service with hardware-backed keys and let users export to self-custody anytime."
+        },
+        {
+          "persona": "p13",
+          "text": "Is the export path tested regularly? Most teams build it and never check it still works."
+        },
+        {
+          "persona": "p03",
+          "text": "We test it monthly with a random account. It broke once. Good catch though."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p19",
+        "text": "Northland's new healthcare budget: more money for hospitals, nothing for local clinics. Good or bad?",
+        "channel": "random"
+      },
+      "replies": [
+        { "persona": "p18", "text": "Tệ. Phòng khám tuyến dưới mới là chỗ giảm tải cho bệnh viện." },
+        {
+          "persona": "p19",
+          "text": "Exactly. Every clinic visit that prevents an ER visit saves several times its cost."
+        },
+        {
+          "persona": "p17",
+          "text": "Devil's advocate: hospitals are overflowing right now. Clinics take years to pay off."
+        },
+        {
+          "persona": "p19",
+          "text": "Then split it: emergency funding for hospitals this year, clinic expansion locked in for the next three."
+        },
+        {
+          "persona": "p18",
+          "text": "Chia 2 giai đoạn là hợp lý. Miễn là có cam kết bằng văn bản, ko thì năm sau lại quên."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p14",
+        "text": "Contract deploy lên Fuji ok nhưng verify source fail hoài, báo bytecode mismatch. Help!",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p08",
+          "text": "Check optimizer runs và compiler version có khớp ko. 90% là do cái này."
+        },
+        { "persona": "p14", "text": "Version khớp, optimizer cũng bật 200 runs rồi..." },
+        { "persona": "p16", "text": "Có bật viaIR ko? Build bật viaIR mà lúc verify ko bật là mismatch." },
+        { "persona": "p14", "text": "Trời, đúng rồi. Config có viaIR mà lúc verify quên mất." },
+        {
+          "persona": "p08",
+          "text": "Classic. Lưu hết compiler settings vào 1 file rồi dùng chung cho cả build và verify."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p25",
+        "text": "$MOONX is the next 100x on Avalanche. Who's in?",
+        "channel": "avalanche"
+      },
+      "replies": [
+        {
+          "persona": "p13",
+          "text": "What does $MOONX actually do? The contract has a mint function owned by a single EOA."
+        },
+        { "persona": "p25", "text": "Fud. The team is building. Utility coming soon." },
+        { "persona": "p13", "text": "The owner can mint unlimited tokens. That's not fud, that's line 84." },
+        { "persona": "p26", "text": "Ae cẩn thận, mint ko giới hạn là red flag lớn đó." },
+        { "persona": "p25", "text": "Whatever, you'll see when we pump." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p37",
+        "text": "Ask me anything about hackathons. Did 11, won 4, lost 7 in creative ways.",
+        "channel": "grants"
+      },
+      "replies": [
+        { "persona": "p12", "text": "Frontend dev solo có nên tham gia ko hay phải có team sẵn?" },
+        {
+          "persona": "p37",
+          "text": "Join team matching. Frontend devs are rare at hackathons, you'll get picked fast."
+        },
+        { "persona": "p11", "text": "Do judges actually read code or just watch the demo?" },
+        {
+          "persona": "p37",
+          "text": "Mostly the demo. But the top 5 often get a code skim. A clean readme helps more than clean code at that stage."
+        },
+        { "persona": "p12", "text": "Vậy mình ưu tiên demo + readme. Thanks!" }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p07",
+        "text": "Asking L1 teams: what's the most annoying part of getting data out of your chain today?",
+        "channel": "avalanche"
+      },
+      "replies": [
+        {
+          "persona": "p10",
+          "text": "Ko có API chuẩn cho validator stats. L1 nào cũng tự viết script riêng."
+        },
+        {
+          "persona": "p04",
+          "text": "Với Vinaroute: query theo lô hàng rất chậm vì phải ghép event từ 3 contract khác nhau."
+        },
+        {
+          "persona": "p07",
+          "text": "Both useful. Validator stats as a standard dataset sounds very doable. Khoa, cross-contract joins are exactly what our transforms are for."
+        },
+        { "persona": "p04", "text": "Nếu có view sẵn cho lô hàng thì team mình trả tiền liền." },
+        { "persona": "p07", "text": "Let's do a 2-week pilot. DMing you." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p22",
+        "text": "Tag 3 người bạn hay rủ bạn đi ăn đêm nhất! Ai bị tag nhớ like nha!",
+        "channel": "random"
+      },
+      "replies": [
+        { "persona": "p33", "text": "Tag thì ko tag đâu, nhưng gợi ý quán cháo lòng đêm gần chợ, ngon lắm." },
+        { "persona": "p22", "text": "Cảm ơn bạn! Like giúp mình bài này để nhiều người thấy nha!" },
+        { "persona": "p29", "text": "Mình chỉ muốn đi ăn, ko muốn tag ai =))" },
+        { "persona": "p33", "text": "ae đi ăn thì rủ mình, mình review luôn" }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p02",
+        "text": "Founders: làm sao viết investor update mà nhà đầu tư thật sự đọc?",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p07",
+          "text": "Short, and the same structure every month. Ours: 3 metrics, 1 win, 1 loss, 1 ask. Nobody reads a 4-page update."
+        },
+        { "persona": "p02", "text": "Mình cũng format gần giống. Có nên gửi cả khi tháng đó tệ ko?" },
+        { "persona": "p01", "text": "Nhất là tháng tệ. Investor ghét bất ngờ hơn ghét số xấu." },
+        {
+          "persona": "p07",
+          "text": "Agree. Bad months with a clear plan build more trust than good months with no detail."
+        },
+        { "persona": "p02", "text": "Ok, tháng này số tệ, mình vẫn gửi đúng hạn. Cảm ơn." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p16",
+        "text": "l1cfg v0.3 sắp ra. Ae muốn thêm tính năng gì? Mình đang nghĩ tới check fee config với load giả lập.",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p09",
+          "text": "Yes please. Also warn when the gas limit drops more than 20% vs the previous config."
+        },
+        { "persona": "p16", "text": "Có trong lệnh diff rồi chị, nhưng chưa có ngưỡng cảnh báo. Thêm liền." },
+        {
+          "persona": "p10",
+          "text": "Thêm check danh sách validator: node ID có trùng ko, weight có hợp lý ko."
+        },
+        { "persona": "p16", "text": "Hay. Weight hợp lý thì định nghĩa thế nào nhỉ? Ko node nào > 33%?" },
+        { "persona": "p10", "text": "Ừ, cảnh báo nếu 1 node > 33% hoặc 3 node cộng lại > 66%." },
+        {
+          "persona": "p09",
+          "text": "Make the thresholds configurable. Some permissioned L1s will intentionally break those rules."
+        },
+        { "persona": "p16", "text": "Ghi nhận. v0.3 có 3 check mới, ngưỡng config được. Cảm ơn ae." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p30",
+        "text": "Pho at home, attempt #2. Charred the onions and ginger this time. Better?",
+        "channel": "random"
+      },
+      "replies": [
+        { "persona": "p31", "text": "Better! Nhưng nhớ chần xương trước để nước dùng trong nha anh." },
+        {
+          "persona": "p30",
+          "text": "Blanch the bones first? That's the step I skipped. Explains the cloudy broth."
+        },
+        { "persona": "p33", "text": "Và đừng nấu lửa lớn, chỉ sôi lăn tăn thôi. Khoảng 6 tiếng là ok." },
+        { "persona": "p30", "text": "6 hours. Okay. Attempt #3 is officially a weekend project." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p26",
+        "text": "Ae ơi $BANHMI đang dip, cơ hội vào lệnh!",
+        "channel": "avalanche"
+      },
+      "replies": [
+        { "persona": "p28", "text": "Gom rồi ae, giá này là quà." },
+        {
+          "persona": "p08",
+          "text": "Contract $BANHMI có hàm blacklist do owner kiểm soát, ae đọc code chưa?"
+        },
+        { "persona": "p26", "text": "Ko quan trọng đâu, team uy tín mà." },
+        {
+          "persona": "p08",
+          "text": "Team ẩn danh, owner chưa renounce, có blacklist. Uy tín ở chỗ nào vậy ae?"
+        },
+        { "persona": "p29", "text": "mình ko hiểu gì nhưng đọc comment này là thấy sợ rồi" }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p39",
+        "text": "Question for builders: do you prefer take-home tasks or live coding in interviews?",
+        "channel": "jobs"
+      },
+      "replies": [
+        {
+          "persona": "p11",
+          "text": "Paid take-home, max 3 hours. Live coding tests stress tolerance, not engineering."
+        },
+        {
+          "persona": "p08",
+          "text": "Đồng ý, take-home có trả tiền. Nhưng đừng giao task 3 ngày rồi bảo 'chỉ mất 3 tiếng'."
+        },
+        { "persona": "p39", "text": "Ha, noted. What about pairing on a real bug instead?" },
+        {
+          "persona": "p01",
+          "text": "Tụi mình làm cách đó ở Lanterna, ứng viên thích hơn và mình đánh giá cũng chính xác hơn."
+        },
+        {
+          "persona": "p11",
+          "text": "Pairing on a real bug is the best of both. Just give the candidate context first."
+        }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p20",
+        "text": "Làn riêng cho xe buýt ở trung tâm Northland: ủng hộ hay phản đối?",
+        "channel": "random"
+      },
+      "replies": [
+        { "persona": "p17", "text": "Support. Bus lanes are the cheapest transit upgrade that exists." },
+        {
+          "persona": "p18",
+          "text": "Ủng hộ, nhưng phải có camera phạt xe lấn làn, ko thì làn riêng chỉ để cho có."
+        },
+        {
+          "persona": "p20",
+          "text": "Đúng, thử nghiệm trước 1 tuyến, đo thời gian di chuyển trước và sau rồi công bố."
+        },
+        { "persona": "p19", "text": "Publish the data weekly. If travel times drop, the debate ends itself." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p04",
+        "text": "Hỏi ae builder: lưu ảnh lô hàng ở đâu cho rẻ mà vẫn chứng minh được ko bị sửa?",
+        "channel": "builders"
+      },
+      "replies": [
+        {
+          "persona": "p15",
+          "text": "Hash on-chain, file in content-addressed storage. The hash proves integrity no matter where the file lives."
+        },
+        { "persona": "p04", "text": "Content-addressed thì có lo chuyện file bị mất ko?" },
+        {
+          "persona": "p15",
+          "text": "Yes. Pin it with at least two providers, or keep your own copy. Integrity and availability are different problems."
+        },
+        {
+          "persona": "p11",
+          "text": "And index the hash-to-file mapping so your app finds it fast. Don't scan events on every request."
+        },
+        { "persona": "p04", "text": "Rõ rồi: hash onchain, lưu 2 nơi, có index. Cảm ơn ae." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p27",
+        "text": "RocketFi v2 audit is out: 1 high, 3 lows, all fixed. Full report linked in our docs.",
+        "channel": "avalanche"
+      },
+      "replies": [
+        {
+          "persona": "p13",
+          "text": "Read it. The high was a share-mint rounding bug. Good that it's fixed. Did you add an invariant test for it?"
+        },
+        {
+          "persona": "p27",
+          "text": "Yes, a fuzz test asserting total shares never exceed the value of deposits. Runs in CI now."
+        },
+        { "persona": "p13", "text": "Nice, that's the right fix. Respect for publishing the full report." },
+        { "persona": "p25", "text": "Bullish on $RKTF after this!" },
+        { "persona": "p27", "text": "Appreciate it, but please read the report, not just the headline." }
+      ]
+    },
+    {
+      "root": {
+        "persona": "p34",
+        "text": "Team1 run club Saturday: 5k easy, then coffee. Who's in?",
+        "channel": "random"
+      },
+      "replies": [
+        { "persona": "p29", "text": "Mình đi bộ được ko? Chạy 5k chắc ko nổi." },
+        { "persona": "p34", "text": "Walkers totally welcome! We wait for everyone at the coffee spot." },
+        { "persona": "p32", "text": "Coming for the coffee. Might run. Might not." },
+        { "persona": "p31", "text": "Mình đi, xong rồi ăn phở luôn nha." },
+        { "persona": "p34", "text": "Pho after coffee after running. The perfect Saturday plan." }
+      ]
+    }
+  ]
+}

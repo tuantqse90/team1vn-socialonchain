@@ -33,6 +33,8 @@ export const PostViewSchema = z
     txHash: z.string().nullable(),
     deleted: z.boolean(),
     labels: z.record(z.string(), z.number()),
+    /** URL embed (http/https). Bài onchain hiện luôn là []. */
+    embeds: z.array(z.string()),
   })
   .openapi("Post");
 export type PostView = z.infer<typeof PostViewSchema>;

@@ -141,6 +141,8 @@ export const fcPosts = app.table(
     createdAt: bigint("created_at", { mode: "number" }).notNull(),
     reactions: integer("reactions").notNull().default(0),
     replies: integer("replies").notNull().default(0),
+    /** URL embed (http/https), tối đa 4. */
+    embeds: text("embeds").array().notNull().default(sql`'{}'::text[]`),
     ingestedAt: timestamp("ingested_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -173,6 +175,8 @@ export const labelBatches = app.table("label_batches", {
   issuedAt: bigint("issued_at", { mode: "number" }).notNull(),
   signature: text("signature").notNull(),
   items: integer("items").notNull(),
+  /** Batch gốc đúng như labeler đã ký, để bên thứ ba tự verify qua `GET /labels?since=`. */
+  payload: jsonb("payload"),
   receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

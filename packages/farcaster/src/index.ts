@@ -26,7 +26,28 @@ export type FcCast = {
   createdAt: number; // unix giây
   reactions: number;
   replies: number;
+  /** URL embed (ảnh, link), chỉ http(s), tối đa MAX_EMBEDS. Embed dạng quote-cast chưa hỗ trợ. */
+  embeds: string[];
 };
+
+export const MAX_EMBEDS = 4;
+
+/** Chỉ giữ URL http(s) hợp lệ, bỏ trùng, cắt còn MAX_EMBEDS. */
+export function cleanEmbeds(urls: (string | null | undefined)[]): string[] {
+  const out: string[] = [];
+  for (const u of urls) {
+    if (!u || u.length > 2048) continue;
+    try {
+      const url = new URL(u);
+      if (url.protocol !== "https:" && url.protocol !== "http:") continue;
+      if (!out.includes(url.href)) out.push(url.href);
+    } catch {
+      // bỏ URL hỏng
+    }
+    if (out.length >= MAX_EMBEDS) break;
+  }
+  return out;
+}
 
 export interface FarcasterSource {
   readonly mode: "fixture" | "neynar";
@@ -63,6 +84,7 @@ const FixtureCast = z.looseObject({
   recasts: z.number().nullish(),
   reactions: z.number().nullish(),
   replies: z.number().nullish(),
+  embeds: z.array(z.string()).nullish(),
 });
 
 const FixtureSchema = z.looseObject({
@@ -107,6 +129,7 @@ export class FixtureFarcaster implements FarcasterSource {
         createdAt: now - Math.round(c.minutes_ago * 60),
         reactions: c.reactions ?? (c.likes ?? 0) + (c.recasts ?? 0),
         replies: c.replies ?? 0,
+        embeds: cleanEmbeds(c.embeds ?? []),
       });
     });
     this.casts.sort((a, b) => b.createdAt - a.createdAt);
@@ -177,6 +200,8 @@ const NeynarCast = z.looseObject({
     .looseObject({ likes_count: z.number().nullish(), recasts_count: z.number().nullish() })
     .nullish(),
   replies: z.looseObject({ count: z.number().nullish() }).nullish(),
+  // Embed URL có `url`; embed quote-cast (không có `url`) bị bỏ qua.
+  embeds: z.array(z.looseObject({ url: z.string().nullish() })).nullish(),
 });
 
 function mapUser(u: z.infer<typeof NeynarUser>): FcUser {
@@ -201,6 +226,7 @@ function mapCast(c: z.infer<typeof NeynarCast>): FcCast {
     createdAt: Math.floor(new Date(c.timestamp).getTime() / 1000),
     reactions: (c.reactions?.likes_count ?? 0) + (c.reactions?.recasts_count ?? 0),
     replies: c.replies?.count ?? 0,
+    embeds: cleanEmbeds((c.embeds ?? []).map((e) => e.url)),
   };
 }
 

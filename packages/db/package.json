@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./migrate": "./src/migrate.ts",
-    "./reset-chain": "./src/reset-chain.ts"
+    "./reset-chain": "./src/reset-chain.ts",
+    "./testing": "./src/testing.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

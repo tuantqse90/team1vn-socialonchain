@@ -1,0 +1,1 @@
+ALTER TABLE "app"."label_batches" ADD COLUMN "payload" jsonb;

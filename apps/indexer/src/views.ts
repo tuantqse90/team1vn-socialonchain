@@ -163,6 +163,7 @@ export async function loadPostViews(db: Db, ids: string[], viewer: string | null
       txHash: r.txHash,
       deleted: r.deleted,
       labels: labelMap.get(r.id) ?? {},
+      embeds: [],
     });
   }
   for (const r of fcRows) {
@@ -200,6 +201,7 @@ export async function loadPostViews(db: Db, ids: string[], viewer: string | null
       txHash: null,
       deleted: false,
       labels: labelMap.get(r.id) ?? {},
+      embeds: r.embeds ?? [],
     });
   }
   return ids.map((i) => byId.get(i)).filter((x): x is PostView => Boolean(x));

@@ -1,0 +1,322 @@
+[
+  {
+    "key": "p01",
+    "handle": "minh_tq",
+    "name": "Trần Quang Minh",
+    "bio": "Founder of Lanterna: stablecoin payroll on our own Avalanche L1. Ex-backend dev. Shipping weekly.",
+    "kind": "founder",
+    "lang": "mixed"
+  },
+  {
+    "key": "p02",
+    "handle": "ha_mekora",
+    "name": "Lê Thu Hà",
+    "bio": "Đồng sáng lập Mekora: điểm thưởng onchain cho quán cà phê, settle trên C-Chain. Founder lần 2.",
+    "kind": "founder",
+    "lang": "vi"
+  },
+  {
+    "key": "p03",
+    "handle": "priya_ships",
+    "name": "Priya Ramdas",
+    "bio": "Founder @ Pholio, anti-scalping ticketing for live music. Ex-fintech PM. On Avalanche since 2021.",
+    "kind": "founder",
+    "lang": "en"
+  },
+  {
+    "key": "p04",
+    "handle": "khoa_vinaroute",
+    "name": "Phạm Đăng Khoa",
+    "bio": "Sáng lập Vinaroute: truy xuất nguồn gốc nông sản trên Avalanche L1. Nửa thời gian ở vườn.",
+    "kind": "founder",
+    "lang": "vi"
+  },
+  {
+    "key": "p05",
+    "handle": "marco_tessellate",
+    "name": "Marco Bellandi",
+    "bio": "Founded Tessellate Labs. Cross-L1 messaging tooling and monitoring. Coffee-driven.",
+    "kind": "founder",
+    "lang": "en"
+  },
+  {
+    "key": "p06",
+    "handle": "an_koivault",
+    "name": "Đỗ Bình An",
+    "bio": "Founder Koi Vault: app tiết kiệm onchain cho Gen Z. Ex-bank analyst, now building on Avalanche.",
+    "kind": "founder",
+    "lang": "mixed"
+  },
+  {
+    "key": "p07",
+    "handle": "sarah_durian",
+    "name": "Sarah Lindqvist",
+    "bio": "Founded Durian Data, indexer-as-a-service for Avalanche L1s. Hiring, always.",
+    "kind": "founder",
+    "lang": "en"
+  },
+  {
+    "key": "p08",
+    "handle": "tuan_solidity",
+    "name": "Vũ Anh Tuấn",
+    "bio": "Solidity dev. Viết smart contract cho vui và cho tiền. Gas golfer.",
+    "kind": "builder",
+    "lang": "vi"
+  },
+  {
+    "key": "p09",
+    "handle": "nora_evm",
+    "name": "Nora Castellan",
+    "bio": "Protocol engineer. Building L1 tooling, precompiles, and too many bash scripts.",
+    "kind": "builder",
+    "lang": "en"
+  },
+  {
+    "key": "p10",
+    "handle": "huy_dev_l1",
+    "name": "Ngô Gia Huy",
+    "bio": "Building validator infra cho Avalanche L1s. Hay debug lúc 3h sáng.",
+    "kind": "builder",
+    "lang": "mixed"
+  },
+  {
+    "key": "p11",
+    "handle": "kenji_indexer",
+    "name": "Kenji Morrow",
+    "bio": "Builder. Indexers, event pipelines, SQL. Maintainer of a tiny open-source event indexer.",
+    "kind": "builder",
+    "lang": "en"
+  },
+  {
+    "key": "p12",
+    "handle": "mai_frontend3",
+    "name": "Hoàng Tuyết Mai",
+    "bio": "Frontend dev xây dApp trên C-Chain. TypeScript, wallet UX, và rất nhiều trà sữa.",
+    "kind": "builder",
+    "lang": "vi"
+  },
+  {
+    "key": "p13",
+    "handle": "omar_gasgolf",
+    "name": "Omar Haddane",
+    "bio": "Solidity builder, auditor-in-training, gas optimizer. Reads other people's contracts for fun.",
+    "kind": "builder",
+    "lang": "en"
+  },
+  {
+    "key": "p14",
+    "handle": "longdev_avax",
+    "name": "Bùi Thành Long",
+    "bio": "Fullstack dev. Building on Fuji testnet mỗi ngày, mainnet thì tùy duyên.",
+    "kind": "builder",
+    "lang": "mixed"
+  },
+  {
+    "key": "p15",
+    "handle": "ivy_zk",
+    "name": "Ivy Brennan",
+    "bio": "Building ZK + EVM experiments on custom L1s. Writes long threads about devtools.",
+    "kind": "builder",
+    "lang": "en"
+  },
+  {
+    "key": "p16",
+    "handle": "quan_rust",
+    "name": "Lương Minh Quân",
+    "bio": "Builder: Rust, Go, Solidity. Đang build l1cfg, CLI kiểm tra L1 config trước khi deploy.",
+    "kind": "builder",
+    "lang": "mixed"
+  },
+  {
+    "key": "p17",
+    "handle": "northland_watch",
+    "name": "Elena Varga",
+    "bio": "Opinions on Northland policy: taxes, transit, housing. Not voting advice.",
+    "kind": "politics",
+    "lang": "en"
+  },
+  {
+    "key": "p18",
+    "handle": "binhluan_chinhsach",
+    "name": "Chú Ba Bình Luận",
+    "bio": "Hay bàn chuyện thuế, nhà ở, giao thông ở xứ Northland. Nói có sách, mách có chứng.",
+    "kind": "politics",
+    "lang": "vi"
+  },
+  {
+    "key": "p19",
+    "handle": "civic_ray",
+    "name": "Ray Okonkwo",
+    "bio": "Policy nerd. Budgets, healthcare, ballot design. Northland resident, low patience for press releases.",
+    "kind": "politics",
+    "lang": "en"
+  },
+  {
+    "key": "p20",
+    "handle": "thao_dothi",
+    "name": "Thảo Đô Thị",
+    "bio": "Quan tâm quy hoạch đô thị, kẹt xe, giá nhà ở Northland. Thích số liệu hơn khẩu hiệu.",
+    "kind": "politics",
+    "lang": "vi"
+  },
+  {
+    "key": "p21",
+    "handle": "viral_vibes99",
+    "name": "Viral Vibes",
+    "bio": "Daily questions for the timeline. Drop a comment!",
+    "kind": "bait",
+    "lang": "en"
+  },
+  {
+    "key": "p22",
+    "handle": "hongngoc_share",
+    "name": "Hồng Ngọc Share",
+    "bio": "Chia sẻ điều hay mỗi ngày. Like và share nhé!",
+    "kind": "bait",
+    "lang": "vi"
+  },
+  {
+    "key": "p23",
+    "handle": "giveaway_kingz",
+    "name": "Giveaway Kingz",
+    "bio": "Giveaways every week. RT + follow to enter.",
+    "kind": "bait",
+    "lang": "en"
+  },
+  {
+    "key": "p24",
+    "handle": "ae_tuong_tac",
+    "name": "Ae Tương Tác",
+    "bio": "group tuong tac cheo, follow cheo, like cheo. ae vao di",
+    "kind": "bait",
+    "lang": "vi"
+  },
+  {
+    "key": "p25",
+    "handle": "moonx_hunter",
+    "name": "MoonX Hunter",
+    "bio": "$MOONX holder since day 1. NFA. WAGMI.",
+    "kind": "shill",
+    "lang": "en"
+  },
+  {
+    "key": "p26",
+    "handle": "gem_alpha_vn",
+    "name": "Gem Alpha VN",
+    "bio": "Săn gem x100 hệ Avalanche. DYOR nhưng vào sớm nha ae.",
+    "kind": "shill",
+    "lang": "vi"
+  },
+  {
+    "key": "p27",
+    "handle": "lucas_rocketfi",
+    "name": "Lucas Fairbairn",
+    "bio": "Building RocketFi yield vaults. $RKTF believer. Real updates sometimes, I promise.",
+    "kind": "shill",
+    "lang": "en"
+  },
+  {
+    "key": "p28",
+    "handle": "trang_pumpy",
+    "name": "Trang Pumpy",
+    "bio": "Holder $PHOX và $SNOWY. Nói ít, chart nói thay.",
+    "kind": "shill",
+    "lang": "vi"
+  },
+  {
+    "key": "p29",
+    "handle": "linh_caphe",
+    "name": "Linh Cà Phê",
+    "bio": "Cà phê sữa đá, mèo, và thỉnh thoảng code.",
+    "kind": "casual",
+    "lang": "vi"
+  },
+  {
+    "key": "p30",
+    "handle": "jake_weekend",
+    "name": "Jake Pellerin",
+    "bio": "Dad jokes, football on Sundays, occasional crypto lurker.",
+    "kind": "casual",
+    "lang": "en"
+  },
+  {
+    "key": "p31",
+    "handle": "bao_bongda",
+    "name": "Trịnh Gia Bảo",
+    "bio": "Fan bóng đá, ăn phở mỗi sáng, hold AVAX cho vui.",
+    "kind": "casual",
+    "lang": "mixed"
+  },
+  {
+    "key": "p32",
+    "handle": "chloe_memes",
+    "name": "Chloe Ardent",
+    "bio": "Memes, matcha, and mild chaos.",
+    "kind": "casual",
+    "lang": "en"
+  },
+  {
+    "key": "p33",
+    "handle": "ngoc_anvat",
+    "name": "Ngọc Ăn Vặt",
+    "bio": "Review đồ ăn vặt Sài Gòn và Hà Nội. Ko review chart.",
+    "kind": "casual",
+    "lang": "vi"
+  },
+  {
+    "key": "p34",
+    "handle": "sam_runs",
+    "name": "Sam Whitfield",
+    "bio": "Runner, home cook, Team1 meetup regular.",
+    "kind": "casual",
+    "lang": "en"
+  },
+  {
+    "key": "p35",
+    "handle": "grants_hub_vn",
+    "name": "Grants Hub VN",
+    "bio": "Tổng hợp grant, hackathon, bounty cho builder trong hệ Avalanche.",
+    "kind": "grants",
+    "lang": "vi"
+  },
+  {
+    "key": "p36",
+    "handle": "rhea_grants",
+    "name": "Rhea Montague",
+    "bio": "Program lead @ Snowline Builder Fund. Ask me about writing better grant applications.",
+    "kind": "grants",
+    "lang": "en"
+  },
+  {
+    "key": "p37",
+    "handle": "hackathon_den",
+    "name": "Hackathon Den",
+    "bio": "Hackathon calendar + tips. Ship something, win something. EN/VI.",
+    "kind": "grants",
+    "lang": "mixed"
+  },
+  {
+    "key": "p38",
+    "handle": "web3jobs_vn",
+    "name": "Web3 Jobs VN",
+    "bio": "Việc làm web3 cho dev Việt: Solidity, backend, frontend, BD, ops.",
+    "kind": "jobs",
+    "lang": "vi"
+  },
+  {
+    "key": "p39",
+    "handle": "talent_tara",
+    "name": "Tara Kowalczyk",
+    "bio": "Recruiter for early-stage Avalanche startups. DMs open for devs.",
+    "kind": "jobs",
+    "lang": "en"
+  },
+  {
+    "key": "p40",
+    "handle": "tuyendung_onchain",
+    "name": "Tuyển Dụng Onchain",
+    "bio": "Đăng tin tuyển dụng các team build trên L1. Remote-friendly, EN/VI.",
+    "kind": "jobs",
+    "lang": "mixed"
+  }
+]

@@ -2,7 +2,7 @@ import { type ChildProcess, execFileSync, spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createDb } from "@socialonchain/db";
-import { runMigrations } from "@socialonchain/db/migrate";
+import { prepareTestDb } from "@socialonchain/db/testing";
 import { FixtureFarcaster } from "@socialonchain/farcaster";
 import {
   channelHash,
@@ -16,6 +16,7 @@ import {
   signLabelBatch,
   socialGraphAbi,
   testUSDAbi,
+  verifyLabelBatch,
   ZERO_BYTES32,
 } from "@socialonchain/protocol";
 import pino from "pino";
@@ -68,6 +69,7 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
   let pool: { end: () => Promise<void> };
   let app: ReturnType<typeof createApp>;
   let indexer: ChainIndexer;
+  let testDb = "";
   const d = getDeployment(31337);
   const alice = privateKeyToAccount(KEYS.alice);
   const bob = privateKeyToAccount(KEYS.bob);
@@ -121,14 +123,14 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
       { cwd: join(root, "contracts"), stdio: "ignore" },
     );
 
-    await runMigrations(DB_URL);
-    const created = createDb(DB_URL);
+    testDb = (await prepareTestDb("indexer")) as string;
+    const created = createDb(testDb);
     pool = created.pool;
     await created.db.execute(
       "truncate chain.users, chain.delegates, chain.follows, chain.posts, chain.reactions, chain.payments, chain.indexer_state, app.notifications, app.labels, app.author_labels, app.label_batches, app.usage, app.compile_cache, app.saved_feeds, app.events, app.user_settings, app.reports, app.blocklist" as never,
     );
     const env = loadEnv({
-      DATABASE_URL: DB_URL,
+      DATABASE_URL: testDb,
       NETWORK: "local",
       FREE_COMPILES_PER_DAY: "2",
       ANVIL_RPC_URL: RPC,
@@ -342,6 +344,17 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     };
     expect(r.items.some((i) => i.post.id === onchainPostId(alicePost))).toBe(false);
     expect(r.hidden).toBeGreaterThanOrEqual(1);
+    // Luồng nhãn công khai: bên thứ ba lấy lại batch gốc + chữ ký và tự verify.
+    const pub = (await (await app.request("/labels?since=0&limit=10")).json()) as {
+      items: { labeler: string; signature: `0x${string}`; batch: LabelBatch }[];
+      next: string | null;
+    };
+    expect(pub.items).toHaveLength(1);
+    expect(pub.items[0]?.labeler).toBe(labeler.address.toLowerCase());
+    expect(
+      await verifyLabelBatch(pub.items[0]?.batch as LabelBatch, pub.items[0]?.signature as `0x${string}`),
+    ).toBe(true);
+    expect(pub.next).toBeNull();
   });
 
   it("free quota for compile: limit reached → 429 with entitlements", async () => {
@@ -372,11 +385,12 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     await expect(postAs(session, alice.address, "should fail")).rejects.toThrow();
     await indexer.catchUp();
     const before = await (await app.request("/users/alice")).json();
-    const { db } = createDb(DB_URL);
+    const { db, pool: p2 } = createDb(testDb);
     await db.execute(
       "truncate chain.users, chain.delegates, chain.follows, chain.posts, chain.reactions, chain.payments, chain.indexer_state" as never,
     );
     await indexer.catchUp();
+    await p2.end();
     expect(await (await app.request("/users/alice")).json()).toEqual(before);
   });
 

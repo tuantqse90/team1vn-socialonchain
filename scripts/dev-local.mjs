@@ -79,8 +79,11 @@ log("Postgres (docker compose)…");
 run("docker", ["compose", "up", "-d", "--wait", "postgres"]);
 
 if (!(await anvilUp())) {
-  log("Khởi động Anvil (chainId 31337)…");
-  start("anvil", "90", "anvil", ["--silent", "--port", "8545", "--chain-id", "31337", "--block-time", "1"]);
+  log("Khởi động Anvil (chainId 31337, automine)…");
+  // Với --seed: lùi đồng hồ chain 8 ngày để seed trải bài đều 7 ngày, rồi seed tự đồng bộ về hiện tại.
+  const anvilArgs = ["--silent", "--port", "8545", "--chain-id", "31337"];
+  if (args.has("--seed")) anvilArgs.push("--timestamp", String(Math.floor(Date.now() / 1000) - 8 * 86400));
+  start("anvil", "90", "anvil", anvilArgs);
   for (let i = 0; i < 50 && !(await anvilUp()); i++) await new Promise((r) => setTimeout(r, 200));
 } else {
   log("Anvil đã chạy sẵn");

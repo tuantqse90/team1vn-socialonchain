@@ -31,7 +31,7 @@ const w = (s: string) => new RegExp(`(^|[^a-z0-9])(${s})([^a-z0-9]|$)`);
 const P = {
   politics: [
     w(
-      "election|elections|vote|voters|voting|ballot|parliament|senate|congress|minister|president|government|govt|policy|policies|tax|taxes|taxation|budget deficit|left[- ]wing|right[- ]wing|referendum|campaign trail|northland",
+      "election|elections|vote|voters|voting|ballot|parliament|senate|congress|minister|president|government|govt|policy|policies|tax|taxes|taxation|budget deficit|left[- ]wing|right[- ]wing|referendum|campaign trail",
     ),
     w(
       "bau cu|chinh sach|chinh phu|quoc hoi|bo truong|thue|ngan sach|dang phai|ung cu vien|bieu tinh|luat moi|chinh tri",

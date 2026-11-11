@@ -1,0 +1,1154 @@
+{
+  "users": [
+    {
+      "fid": 10001,
+      "username": "avaxbuilder_kai",
+      "display_name": "Kai Duran",
+      "bio": "Smart contract dev. Gas nerd. Building on C-Chain and a couple of L1s.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000001"]
+    },
+    {
+      "fid": 10002,
+      "username": "thu_solidity",
+      "display_name": "Phạm Anh Thư",
+      "bio": "Solidity dev ở Sài Gòn. Thích audit nội bộ và trà đá.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000002"]
+    },
+    {
+      "fid": 10003,
+      "username": "l1_operator_ben",
+      "display_name": "Ben Achterberg",
+      "bio": "Running validators for Avalanche L1s. Boring dashboards, loud alerts.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000003"]
+    },
+    {
+      "fid": 10004,
+      "username": "founder_mira",
+      "display_name": "Mira Solberg",
+      "bio": "Founder of Glassline, an L1 block explorer with human-readable errors.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000004"]
+    },
+    {
+      "fid": 10005,
+      "username": "quynh_ships",
+      "display_name": "Lâm Như Quỳnh",
+      "bio": "Founder. Thanh toán stablecoin cho merchant nhỏ trên Avalanche.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000005"]
+    },
+    {
+      "fid": 10006,
+      "username": "gasless_gabe",
+      "display_name": "Gabe Ferreira",
+      "bio": "Building open-source relayers and gas sponsorship tooling.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000006"]
+    },
+    {
+      "fid": 10007,
+      "username": "duc_indexer",
+      "display_name": "Hà Minh Đức",
+      "bio": "Data engineer, viết indexer và SQL views cho L1.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000007"]
+    },
+    {
+      "fid": 10008,
+      "username": "moonboi_alpha",
+      "display_name": "Moonboi Alpha",
+      "bio": "$MOONX maxi. NFA. Diamond hands.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000008"]
+    },
+    {
+      "fid": 10009,
+      "username": "pumpqueen_vn",
+      "display_name": "Pump Queen VN",
+      "bio": "Săn kèo $PHOX và mấy con gem hệ AVAX.",
+      "verified_addresses": ["0x1000000000000000000000000000000000000009"]
+    },
+    {
+      "fid": 10010,
+      "username": "likeforlike_lu",
+      "display_name": "Lulu Engage",
+      "bio": "Recast if you agree. Daily engagement.",
+      "verified_addresses": ["0x100000000000000000000000000000000000000a"]
+    },
+    {
+      "fid": 10011,
+      "username": "replyguy_rex",
+      "display_name": "Rex Reply",
+      "bio": "Reply to my casts and I reply to yours.",
+      "verified_addresses": ["0x100000000000000000000000000000000000000b"]
+    },
+    {
+      "fid": 10012,
+      "username": "pho_and_code",
+      "display_name": "Vy Phở & Code",
+      "bio": "Ăn phở, viết code, nuôi mèo.",
+      "verified_addresses": ["0x100000000000000000000000000000000000000c"]
+    },
+    {
+      "fid": 10013,
+      "username": "weekend_wren",
+      "display_name": "Wren Hollis",
+      "bio": "Weekend person trapped in a weekday world.",
+      "verified_addresses": ["0x100000000000000000000000000000000000000d"]
+    },
+    {
+      "fid": 10014,
+      "username": "northland_notes",
+      "display_name": "Iris Kemble",
+      "bio": "Notes on Northland policy: housing, transit, budgets.",
+      "verified_addresses": ["0x100000000000000000000000000000000000000e"]
+    },
+    {
+      "fid": 10015,
+      "username": "dan_chinhsach",
+      "display_name": "Dân Chính Sách",
+      "bio": "Bàn chuyện chính sách xứ Northland: thuế, xe buýt, y tế.",
+      "verified_addresses": ["0x100000000000000000000000000000000000000f"]
+    },
+    {
+      "fid": 10016,
+      "username": "zara_devrel",
+      "display_name": "Zara Quint",
+      "bio": "DevRel. Running Team1 workshops on deploying your first L1.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10017,
+      "username": "tien_fuji",
+      "display_name": "Nguyễn Văn Tiến",
+      "bio": "Dev mới vào nghề, ngày nào cũng deploy lên Fuji.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10018,
+      "username": "otto_founder",
+      "display_name": "Otto Lindahl",
+      "bio": "Founder, B2B tooling for L1 teams. Writing things down.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10019,
+      "username": "hieu_gemhunter",
+      "display_name": "Hiếu Gem",
+      "bio": "Kèo sớm, kèo thơm. Inbox để vào group.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10020,
+      "username": "giveaway_gus",
+      "display_name": "Gus Giveaway",
+      "bio": "Giveaways weekly. Follow + recast to enter.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10021,
+      "username": "nhi_matcha",
+      "display_name": "Nhi Matcha",
+      "bio": "Matcha, mưa, và thỉnh thoảng crypto.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10022,
+      "username": "rustacean_raf",
+      "display_name": "Rafael Inge",
+      "bio": "Rust relayers, CLIs, and timeouts on every RPC call.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10023,
+      "username": "kim_grants",
+      "display_name": "Kim Arbor",
+      "bio": "Grants and hackathon programs for Avalanche builders.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10024,
+      "username": "tam_jobs",
+      "display_name": "Trần Minh Tâm",
+      "bio": "Đăng tin tuyển dụng web3 cho dev Việt.",
+      "verified_addresses": []
+    },
+    {
+      "fid": 10025,
+      "username": "lazy_sunday_li",
+      "display_name": "Li Okoro",
+      "bio": "Soup enthusiast. Professional napper.",
+      "verified_addresses": []
+    }
+  ],
+  "following": {
+    "10001": [10002, 10003, 10004, 10006, 10007, 10016, 10017, 10022],
+    "10002": [10001, 10005, 10007, 10012, 10017, 10021, 10024],
+    "10003": [10001, 10004, 10006, 10013, 10014, 10016, 10018, 10022, 10023],
+    "10004": [10001, 10003, 10005, 10016, 10018, 10023],
+    "10005": [10002, 10004, 10007, 10009, 10012, 10015, 10017, 10018, 10021, 10023, 10024]
+  },
+  "casts": [
+    {
+      "hash": "0xc001a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10004,
+      "text": "Mira here. Shipping a small update to our L1 explorer: tx pages now show decoded revert reasons. Tiny change, most requested feature of the year.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 9950,
+      "embeds": ["https://build.avax.network/docs"]
+    },
+    {
+      "hash": "0xc002a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10001,
+      "text": "Benchmarked three ways to batch transfers on C-Chain. A single contract looping over recipients won: 41% less gas than separate txs for 50 recipients.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 9870
+    },
+    {
+      "hash": "0xc003a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10008,
+      "text": "$MOONX about to send. Last chance under a penny. Don't fade this.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 9790
+    },
+    {
+      "hash": "0xc004a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10012,
+      "text": "phở sáng nay ngon quá, code cả ngày ko mệt",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 9700
+    },
+    {
+      "hash": "0xc005a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10002,
+      "text": "Mẹo nhỏ: dùng immutable cho biến set trong constructor, đọc rẻ hơn hẳn so với storage. Contract của mình giảm 2.1k gas mỗi lần gọi.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 9620
+    },
+    {
+      "hash": "0xc006a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10010,
+      "text": "Like this cast if you're building on Avalanche. Let's see how many of us there are!",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 9540
+    },
+    {
+      "hash": "0xc007a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10003,
+      "text": "Ran our L1 validators through a simulated region outage. Chain kept finalizing with 4 of 6 up, latency +60%. Writing up the runbook now.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 9460
+    },
+    {
+      "hash": "0xc008a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10005,
+      "text": "Quỳnh đây. Startup mình vừa đạt 1.000 merchant dùng thanh toán stablecoin trên Avalanche. Bài học: hỗ trợ khách 24/7 quan trọng hơn mọi feature.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 9380
+    },
+    {
+      "hash": "0xc009a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10014,
+      "text": "Northland's parking reform passed: no more minimum parking requirements near transit. Cheaper housing, fewer empty lots. Finally.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 9300
+    },
+    {
+      "hash": "0xc010a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10006,
+      "text": "Gas sponsorship pattern: relayer pays, user signs typed data, contract checks nonce + deadline. Don't forget the deadline. I did once.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 9220
+    },
+    {
+      "hash": "0xc011a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10013,
+      "text": "Saturday plan: farmers market, nap, more nap.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 9140
+    },
+    {
+      "hash": "0xc012a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10009,
+      "text": "$PHOX sắp x10, ae nào chưa vào thì vào nhanh. Ko vào đừng hỏi sao ko ai nói.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 9060
+    },
+    {
+      "hash": "0xc013a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10007,
+      "text": "Indexer của mình bị duplicate event sau khi restart. Nguyên nhân: ko lưu checkpoint theo block đã commit. Giờ commit checkpoint cùng transaction với data.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 8980
+    },
+    {
+      "hash": "0xc014a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10001,
+      "text": "Decoded revert reasons in the explorer is huge. Do you handle custom errors too or just strings?",
+      "channel": "avalanche",
+      "parent_hash": "0xc001a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 8900,
+      "embeds": ["https://github.com/ava-labs/avalanchego"]
+    },
+    {
+      "hash": "0xc015a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10004,
+      "text": "Custom errors too, if the contract is verified. For unverified ones we show the 4-byte selector and a best guess.",
+      "channel": "avalanche",
+      "parent_hash": "0xc014a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 8820
+    },
+    {
+      "hash": "0xc016a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10016,
+      "text": "DevRel note: our Avalanche L1 workshop had 60 signups, 22 finished. Biggest drop-off: installing the toolchain. Next time we ship a browser-based setup.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 8740
+    },
+    {
+      "hash": "0xc017a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10011,
+      "text": "Reply with your favorite chain and I'll follow you back. Go!",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 8660
+    },
+    {
+      "hash": "0xc018a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10017,
+      "text": "Fuji faucet hôm nay chậm, ae ai dư test AVAX share mình ít để deploy demo với.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 8580
+    },
+    {
+      "hash": "0xc019a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10018,
+      "text": "Founder lesson: we lost 3 months building for 'all L1s'. Then one L1 team paid us. Now we build for them first. Focus pays.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 8500
+    },
+    {
+      "hash": "0xc020a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10021,
+      "text": "matcha đá xay + mưa chiều = combo hoàn hảo",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 8420
+    },
+    {
+      "hash": "0xc021a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10022,
+      "text": "Rust relayer update: switched to a bounded channel between fetcher and signer. Memory stopped growing under load. Unbounded queues are lies.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 8340
+    },
+    {
+      "hash": "0xc022a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10019,
+      "text": "Gem chưa ai biết trên Avalanche, vốn hoá dưới 1M. Inbox mình gửi tên.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 8260
+    },
+    {
+      "hash": "0xc023a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10002,
+      "text": "Bị y chang tuần trước. Dùng idempotent upsert theo (block, logIndex) là hết lo duplicate.",
+      "channel": "avax-builders",
+      "parent_hash": "0xc013a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 8180
+    },
+    {
+      "hash": "0xc024a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10007,
+      "text": "Đúng, mình thêm unique key luôn. Restart 10 lần cũng ko duplicate.",
+      "channel": "avax-builders",
+      "parent_hash": "0xc023a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 8100
+    },
+    {
+      "hash": "0xc025a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10020,
+      "text": "GIVEAWAY: 25 AVAX to 5 winners. Follow, like, recast, tag 2 friends. Ends Sunday.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 8020
+    },
+    {
+      "hash": "0xc026a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10023,
+      "text": "Snowline Builder Fund round 3 is open: 5k-25k USD for teams building on Avalanche L1s. Milestone-based. Apply by Dec 15.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 7940
+    },
+    {
+      "hash": "0xc027a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10012,
+      "text": "mèo nhà mình lại nằm lên bàn phím, commit message hôm nay là 'jjjjjjjjj'",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 7860
+    },
+    {
+      "hash": "0xc028a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10003,
+      "text": "Hot take: if your L1 has fewer than 5 independent validators, call it what it is: a permissioned database with extra steps. Still useful, just be honest.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 7780
+    },
+    {
+      "hash": "0xc029a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10024,
+      "text": "[Tuyển] Solidity dev 2+ năm, remote, team payment trên Avalanche. Lương 2.5k-4k USD. DM mình.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 7700
+    },
+    {
+      "hash": "0xc030a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10005,
+      "text": "Fundraising update: closed pre-seed với 4 angel là chủ doanh nghiệp bán lẻ. Họ ko hiểu crypto nhưng hiểu khách hàng của mình hơn bất kỳ VC nào.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 7620
+    },
+    {
+      "hash": "0xc031a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10008,
+      "text": "Whales loading $MOONX. Chart says 50x. I say 100x.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 7540
+    },
+    {
+      "hash": "0xc032a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10013,
+      "text": "Burned the toast, saved the coffee. Priorities.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 7460
+    },
+    {
+      "hash": "0xc033a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10006,
+      "text": "Shipped: open-source sponsored-gas relayer for C-Chain with per-user daily limits. Stops one wallet from draining your whole gas budget.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 7380
+    },
+    {
+      "hash": "0xc034a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10015,
+      "text": "Ở Northland người ta đề xuất miễn phí xe buýt cho học sinh. Chi phí ko lớn mà giảm kẹt xe giờ đi học rõ rệt. Ủng hộ.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 7300
+    },
+    {
+      "hash": "0xc035a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10001,
+      "text": "Agree on honesty, but permissioned L1s are fine for enterprise use cases. The problem is when they market decentralization.",
+      "channel": "avalanche",
+      "parent_hash": "0xc028a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 7220
+    },
+    {
+      "hash": "0xc036a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10003,
+      "text": "Exactly my point. Permissioned is a valid choice. Pretending otherwise isn't.",
+      "channel": "avalanche",
+      "parent_hash": "0xc035a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 7140
+    },
+    {
+      "hash": "0xc037a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10010,
+      "text": "Recast if you agree: builders are the real MVPs. Don't scroll past without recasting!",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 7060
+    },
+    {
+      "hash": "0xc038a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10016,
+      "text": "Docs tip: put the expected output after every command in your tutorial. People need to know when it worked.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 6980,
+      "embeds": ["https://docs.avax.network/"]
+    },
+    {
+      "hash": "0xc039a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10009,
+      "text": "ae oi $PHOX sap len san lon, mua lien ko lo",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 6900
+    },
+    {
+      "hash": "0xc040a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10017,
+      "text": "Mình viết script deploy L1 config lên Fuji trong 1 lệnh. Ai cần thì mình share, còn hơi thô.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 6820
+    },
+    {
+      "hash": "0xc041a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10022,
+      "text": "Share pls. Happy to review the Rust bits if there are any.",
+      "channel": "avax-builders",
+      "parent_hash": "0xc040a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 6740
+    },
+    {
+      "hash": "0xc042a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10017,
+      "text": "Bash thôi anh, chưa có Rust =)) mình gửi link repo qua DM nhé.",
+      "channel": "avax-builders",
+      "parent_hash": "0xc041a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 6660,
+      "embeds": ["https://build.avax.network/academy"]
+    },
+    {
+      "hash": "0xc043a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10025,
+      "text": "Lazy Sunday: soup, documentary, zero notifications.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 6580
+    },
+    {
+      "hash": "0xc044a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10004,
+      "text": "Hiring our second engineer. Must have shipped something people use. Tell me about a bug you caused and how you fixed it.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 6500
+    },
+    {
+      "hash": "0xc045a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10014,
+      "text": "A 'temporary' toll that's been in place for 22 years. Northland's longest-running joke.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 6420
+    },
+    {
+      "hash": "0xc046a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10021,
+      "text": "hôm nay đi ăn bún chả với team, ai cũng bàn về gas fee, mình chỉ bàn về nước chấm",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 6340
+    },
+    {
+      "hash": "0xc047a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10002,
+      "text": "Audit nội bộ tuần này tìm ra 1 lỗi reentrancy ở hàm claim. Chưa lên mainnet, may quá. Checks-effects-interactions luôn luôn.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 6260
+    },
+    {
+      "hash": "0xc048a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10011,
+      "text": "Only real ones will reply 'gm' to this. Let's see who's real.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 6180
+    },
+    {
+      "hash": "0xc049a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10018,
+      "text": "We stopped doing weekly all-hands and replaced them with written updates. Meetings dropped 6 hours/week per person. Nobody misses them.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 6100
+    },
+    {
+      "hash": "0xc050a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10019,
+      "text": "Ko phải shill nhưng mình all in con này rồi, x20 là chuyện sớm muộn.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 6020
+    },
+    {
+      "hash": "0xc051a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10007,
+      "text": "Released: small SQL views for common Avalanche L1 analytics (daily active addresses, gas used, top contracts). MIT license.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 5940,
+      "embeds": ["https://subnets.avax.network/"]
+    },
+    {
+      "hash": "0xc052a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10023,
+      "text": "Grant tip: reviewers read your milestones first. Make them measurable: '200 weekly active wallets' beats 'grow community'.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 5860
+    },
+    {
+      "hash": "0xc053a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10012,
+      "text": "nước chấm là trọng tâm, gas fee là phụ",
+      "channel": null,
+      "parent_hash": "0xc046a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 5780
+    },
+    {
+      "hash": "0xc054a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10021,
+      "text": "chuẩn luôn =))",
+      "channel": null,
+      "parent_hash": "0xc053a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 5700
+    },
+    {
+      "hash": "0xc055a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10006,
+      "text": "Postmortem: our relayer signed two txs with the same nonce after a restart. Fix: persist nonce state before broadcast, reconcile on boot.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 5620
+    },
+    {
+      "hash": "0xc056a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10001,
+      "text": "Q for builders: what's your go-to way to simulate a tx before sending on a custom L1? I'm using eth_call with state overrides.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 5540
+    },
+    {
+      "hash": "0xc057a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10022,
+      "text": "Same, plus a forked local node for multi-tx flows. eth_call alone misses state changes between txs.",
+      "channel": "avax-builders",
+      "parent_hash": "0xc056a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 5460
+    },
+    {
+      "hash": "0xc058a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10006,
+      "text": "Forked node + snapshot/revert between test cases. Fast and deterministic.",
+      "channel": "avax-builders",
+      "parent_hash": "0xc057a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 5380
+    },
+    {
+      "hash": "0xc059a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10020,
+      "text": "Recast and follow to win a whitelist spot! 100 spots, winners in 24h.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 5300
+    },
+    {
+      "hash": "0xc060a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10005,
+      "text": "Pricing lesson: merchants want a fixed monthly fee, not per-tx. Đổi pricing xong churn giảm một nửa.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 5220
+    },
+    {
+      "hash": "0xc061a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10013,
+      "text": "My neighbor's dog learned to open the gate. He's smarter than my smart home.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 5140
+    },
+    {
+      "hash": "0xc062a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10003,
+      "text": "Validator upgrade runbook: Fuji first, wait 48h, then rolling upgrade one node at a time with health checks in between. Never all at once.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 5060
+    },
+    {
+      "hash": "0xc063a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10008,
+      "text": "Price prediction: $MOONX $1 by Christmas. Screenshot this.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 4980
+    },
+    {
+      "hash": "0xc064a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10024,
+      "text": "[Tuyển] Frontend dev TypeScript cho dApp tiết kiệm. HCM hybrid. Có kinh nghiệm wallet UX là điểm cộng lớn.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 4900
+    },
+    {
+      "hash": "0xc065a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10016,
+      "text": "Running a Team1 workshop next week: deploy your first Avalanche L1 on Fuji in 60 minutes. Beginners welcome.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 4820
+    },
+    {
+      "hash": "0xc066a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10015,
+      "text": "Ngân sách y tế Northland tăng nhưng phòng khám xã vẫn thiếu bác sĩ. Tiền đi đâu? Cần công khai chi tiết.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 4740
+    },
+    {
+      "hash": "0xc067a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10017,
+      "text": "gm Avalanche",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 4660
+    },
+    {
+      "hash": "0xc068a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10002,
+      "text": "Ai cần checklist audit nội bộ tiếng Việt thì mình đang soạn, tuần sau share.",
+      "channel": "avalanche",
+      "parent_hash": "0xc047a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 4580
+    },
+    {
+      "hash": "0xc069a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10025,
+      "text": "Made banana bread. It's gone. I live alone. No further questions.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 4500
+    },
+    {
+      "hash": "0xc070a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10004,
+      "text": "Explorer usage up 3x since decoded errors shipped. Turns out people mostly want to know why their tx failed.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 4420,
+      "embeds": ["https://build.avax.network/tools"]
+    },
+    {
+      "hash": "0xc071a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10019,
+      "text": "Kèo mới: token AI trên Avalanche, team chưa public, mua sớm ăn dày.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 4340
+    },
+    {
+      "hash": "0xc072a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10009,
+      "text": "$PHOX cộng đồng 50k người, roadmap dày, ai ko mua thì tiếc.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 4260
+    },
+    {
+      "hash": "0xc073a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10010,
+      "text": "Comment YES if you've ever deployed to mainnet on a Friday.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 4180
+    },
+    {
+      "hash": "0xc074a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10022,
+      "text": "Built a tiny Rust CLI that watches your L1 for blocks hitting the gas limit and posts a summary every hour. Saved us twice this week.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 4100
+    },
+    {
+      "hash": "0xc075a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10018,
+      "text": "Humbled and honored to share that we've been featured again. More soon.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 4020
+    },
+    {
+      "hash": "0xc076a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10001,
+      "text": "Gas tip: emit events for data you only need offchain instead of storing it. One of our contracts saved 60% gas per action this way.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 3940
+    },
+    {
+      "hash": "0xc077a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10012,
+      "text": "lần đầu đi meetup Team1, được tặng sticker, hơi ngại nhưng vui",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 3860
+    },
+    {
+      "hash": "0xc078a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10007,
+      "text": "Bài học indexer: luôn trả về số block đi kèm dữ liệu trong API. User thấy số dư 'sai' thật ra chỉ là trễ 2 block.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 3780
+    },
+    {
+      "hash": "0xc079a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10011,
+      "text": "Tag someone who owes you money. Kidding. Tag someone who owes you coffee.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 3700
+    },
+    {
+      "hash": "0xc080a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10023,
+      "text": "Office hours for grant applicants this Thursday. 15 minute slots, bring your milestones.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 3620
+    },
+    {
+      "hash": "0xc081a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10005,
+      "text": "Decoded errors là thứ tụi mình cũng cần. Có API ko chị?",
+      "channel": "avalanche",
+      "parent_hash": "0xc070a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 3540
+    },
+    {
+      "hash": "0xc082a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10004,
+      "text": "Yes, public API with a generous free tier. Docs are linked in the explorer footer.",
+      "channel": "avalanche",
+      "parent_hash": "0xc081a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 3460
+    },
+    {
+      "hash": "0xc083a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10003,
+      "text": "Uptime this month: 99.97% across 6 validators. Only incident was a disk filling up with logs. Log rotation, people.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 3380
+    },
+    {
+      "hash": "0xc084a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10020,
+      "text": "Follow everyone who likes this and they'll follow you back. Easy growth!",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 3300
+    },
+    {
+      "hash": "0xc085a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10024,
+      "text": "[Tuyển] DevOps vận hành validator L1, on-call luân phiên, remote. Biết Linux và monitoring.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 3220
+    },
+    {
+      "hash": "0xc086a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10006,
+      "text": "Solidity pattern I keep using: pull over push payments. Let users withdraw instead of looping transfers. Safer, cheaper, no failed-recipient DoS.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 3140
+    },
+    {
+      "hash": "0xc087a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10013,
+      "text": "Watched the match at the pub. We lost. The fries were excellent though.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 3060
+    },
+    {
+      "hash": "0xc088a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10021,
+      "text": "hôm nay ko làm gì cả, chỉ uống matcha và nghe nhạc",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 2980
+    },
+    {
+      "hash": "0xc089a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10016,
+      "text": "Workshop recap: 31 of 40 attendees deployed their own L1 on Fuji. The browser-based setup cut drop-off by more than half.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 2900
+    },
+    {
+      "hash": "0xc090a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10008,
+      "text": "If you sold $MOONX today, you'll regret it tomorrow. Diamond hands only.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 2820
+    },
+    {
+      "hash": "0xc091a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10002,
+      "text": "Hỏi ae: mọi người set gas limit cho L1 riêng bao nhiêu? Mình đang để 15M, có nên tăng ko?",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 2740
+    },
+    {
+      "hash": "0xc092a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10003,
+      "text": "Depends on your block time and hardware. Load test first. We raised to 20M and validators on smaller boxes fell behind.",
+      "channel": "avalanche",
+      "parent_hash": "0xc091a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 2660
+    },
+    {
+      "hash": "0xc093a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10002,
+      "text": "Cảm ơn anh, mình sẽ load test trước khi tăng.",
+      "channel": "avalanche",
+      "parent_hash": "0xc092a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "minutes_ago": 2580
+    },
+    {
+      "hash": "0xc094a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10017,
+      "text": "Ai làm hackathon tuần sau mà dư designer thì ping mình, team mình còn thiếu 1 người.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 2500
+    },
+    {
+      "hash": "0xc095a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10019,
+      "text": "ae oi con nay sap pump, vao lien di dung de lo",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 2420
+    },
+    {
+      "hash": "0xc096a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10014,
+      "text": "Northland's new rule: every public project more than 20% over budget must publish an explanation. Sounds obvious. Took a decade.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 2340
+    },
+    {
+      "hash": "0xc097a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10025,
+      "text": "Rain all day. Perfect excuse to stay in and cook.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 2260
+    },
+    {
+      "hash": "0xc098a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10018,
+      "text": "Advice for first-time founders on Avalanche: talk to the L1 teams you depend on early. Our biggest blocker was a config change we didn't know was coming.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 2180
+    },
+    {
+      "hash": "0xc099a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10022,
+      "text": "gm",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 2100
+    },
+    {
+      "hash": "0xc100a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10009,
+      "text": "Update thật từ team $PHOX: đã công bố báo cáo audit, 1 lỗi medium đã fix. Ae đọc báo cáo trước khi mua nhé.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 2020
+    },
+    {
+      "hash": "0xc101a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10007,
+      "text": "Cập nhật SQL views: fix lỗi timezone ở daily active addresses, thêm view cho fee burn. Ae pull bản mới nhé.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 1940
+    },
+    {
+      "hash": "0xc102a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10010,
+      "text": "Recast this if you're early. Only early people will understand.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 1860
+    },
+    {
+      "hash": "0xc103a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10001,
+      "text": "Spent the morning profiling a contract. 70% of the gas was one storage write inside a loop. Moved it out of the loop. Sometimes it's that simple.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 1780
+    },
+    {
+      "hash": "0xc104a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10004,
+      "text": "Lesson from 2 years running a small team: write things down. Decisions, incidents, why we said no. Future you will need it.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 1700
+    },
+    {
+      "hash": "0xc105a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10012,
+      "text": "trời Hà Nội se lạnh, ăn bánh cuốn nóng là chân ái",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 1620
+    },
+    {
+      "hash": "0xc106a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10005,
+      "text": "Đang tuyển BD cho thị trường bán lẻ. Ưu tiên người từng bán phần mềm cho cửa hàng nhỏ.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 1540
+    },
+    {
+      "hash": "0xc107a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10016,
+      "text": "New guide: debugging 'execution reverted' on custom L1s, step by step. Decode, simulate, compare state.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 1460
+    },
+    {
+      "hash": "0xc108a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10020,
+      "text": "Final hours! Like + recast + tag 3 to win 10 AVAX. Don't miss it!",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 1380
+    },
+    {
+      "hash": "0xc109a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10003,
+      "text": "The best validator ops teams I know have boring dashboards and very loud alerts. Not the other way around.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 1300
+    },
+    {
+      "hash": "0xc110a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10021,
+      "text": "lần đầu thử bridge sang Avalanche, mất 10 phút đọc hướng dẫn, 1 phút làm. Cảm ơn ae trong group đã chỉ",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 1220
+    },
+    {
+      "hash": "0xc111a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10006,
+      "text": "Shipped v1.1 of our relayer: per-contract allowlists and a dry-run mode. Thanks to everyone who filed issues.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 1140
+    },
+    {
+      "hash": "0xc112a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10015,
+      "text": "Thuế xe cá nhân ở Northland tăng mà xe buýt vẫn 30 phút một chuyến. Đánh thuế trước, cải thiện sau, ai chịu nổi.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 1060
+    },
+    {
+      "hash": "0xc113a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10011,
+      "text": "Most people won't reply to this. Prove me wrong.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 980
+    },
+    {
+      "hash": "0xc114a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10022,
+      "text": "Rust tip for relayers: put a timeout on every RPC call. One hung request blocked our whole pipeline for 40 minutes.",
+      "channel": "avax-builders",
+      "parent_hash": null,
+      "minutes_ago": 900
+    },
+    {
+      "hash": "0xc115a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10017,
+      "text": "Demo app của mình chạy được trên Fuji rồi, ae vào test thử và góp ý giúp mình với. Login bằng Core wallet.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 820
+    },
+    {
+      "hash": "0xc116a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10008,
+      "text": "$MOONX holders, we eat soon.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 740
+    },
+    {
+      "hash": "0xc117a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10013,
+      "text": "Football, chili, nap. Sunday perfected.",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 660
+    },
+    {
+      "hash": "0xc118a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10023,
+      "text": "Summit Hack 2026: 3 tracks, 60k USD prize pool, online + offline. Team matching on day one.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 580
+    },
+    {
+      "hash": "0xc119a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10001,
+      "text": "Reminder: test your contracts with a token that has 6 decimals, not just 18. Found two bugs today because of it.",
+      "channel": "avalanche",
+      "parent_hash": null,
+      "minutes_ago": 400
+    },
+    {
+      "hash": "0xc120a1b2c3d4e5f60718293a4b5c6d7e8f901234",
+      "fid": 10012,
+      "text": "đi ngủ thôi, mai lại debug tiếp",
+      "channel": null,
+      "parent_hash": null,
+      "minutes_ago": 120
+    }
+  ]
+}

@@ -519,6 +519,7 @@ export function writeRoutes(ctx: AppContext) {
           issuedAt: b.batch.issuedAt,
           signature: b.signature,
           items: b.batch.items.length,
+          payload: b.batch,
         })
         .onConflictDoNothing();
       const postItems = b.batch.items.filter((i) => !i.subject.startsWith("author:"));

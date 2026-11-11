@@ -1,0 +1,1 @@
+ALTER TABLE "app"."fc_posts" ADD COLUMN "embeds" text[] DEFAULT '{}'::text[] NOT NULL;

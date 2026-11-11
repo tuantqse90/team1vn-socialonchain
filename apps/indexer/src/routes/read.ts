@@ -632,6 +632,83 @@ export function readRoutes(ctx: AppContext) {
     });
   });
 
+  // Luồng nhãn có chữ ký, công khai: client/indexer khác tự verify bằng `verifyLabelBatch` (packages/protocol).
+  const SignedBatchSchema = z
+    .object({
+      digest: z.string(),
+      labeler: z.string(),
+      issuedAt: z.number(),
+      signature: z.string(),
+      batch: z.unknown(),
+    })
+    .openapi("SignedLabelBatch");
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/labels",
+      tags: ["labels"],
+      description:
+        "Batch nhãn đã ký, theo (`issuedAt`, `digest`) tăng dần. Lần đầu dùng `since`; trang sau truyền `next` vào `cursor`.",
+      request: {
+        query: z.object({
+          since: z.coerce
+            .number()
+            .int()
+            .min(0)
+            .default(0)
+            .openapi({ description: "issuedAt (unix giây), loại trừ" }),
+          cursor: z
+            .string()
+            .regex(/^\d+:0x[0-9a-f]{64}$/)
+            .optional()
+            .openapi({ description: "`next` của trang trước" }),
+          labeler: z
+            .string()
+            .regex(/^0x[0-9a-fA-F]{40}$/)
+            .optional(),
+          limit: z.coerce.number().int().min(1).max(100).default(50),
+        }),
+      },
+      responses: {
+        200: json(z.object({ items: z.array(SignedBatchSchema), next: z.string().nullable() })),
+      },
+    }),
+    async (c) => {
+      const q = c.req.valid("query");
+      const [at, dg] = q.cursor?.split(":") ?? [];
+      const cursor = at && dg ? { issuedAt: Number(at), digest: dg } : null;
+      const r = await ctx.db.execute<{
+        digest: string;
+        labeler: string;
+        issued_at: string | number;
+        signature: string;
+        payload: unknown;
+      }>(sql`
+        select digest, labeler, issued_at, signature, payload from app.label_batches
+        where payload is not null
+          and ${
+            cursor
+              ? sql`(issued_at, digest) > (${cursor.issuedAt}, ${cursor.digest})`
+              : sql`issued_at > ${q.since}`
+          }
+          ${q.labeler ? sql`and labeler = ${q.labeler.toLowerCase()}` : sql``}
+        order by issued_at asc, digest asc
+        limit ${q.limit}`);
+      const items = r.rows.map((b) => ({
+        digest: b.digest,
+        labeler: b.labeler,
+        issuedAt: Number(b.issued_at),
+        signature: b.signature,
+        batch: b.payload,
+      }));
+      const last = items.at(-1);
+      return c.json(
+        { items, next: items.length === q.limit && last ? `${last.issuedAt}:${last.digest}` : null },
+        200,
+      );
+    },
+  );
+
   // Dùng trong UI: các tác giả bị gán nhãn nhiều (debug) — giữ nội bộ.
   app.get("/labels/{id}", async (c) => {
     const id = c.req.param("id");

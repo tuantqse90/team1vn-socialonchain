@@ -1,0 +1,283 @@
+{
+  "engine": "heuristic",
+  "at": "2026-11-11T15:26:31.467Z",
+  "macroF1": 0.7763064971751412,
+  "rows": [
+    {
+      "label": "topic:politics",
+      "tp": 12,
+      "fp": 0,
+      "fn": 8,
+      "precision": 1,
+      "recall": 0.6,
+      "f1": 0.7499999999999999
+    },
+    {
+      "label": "quality:engagement_bait",
+      "tp": 11,
+      "fp": 0,
+      "fn": 11,
+      "precision": 1,
+      "recall": 0.5,
+      "f1": 0.6666666666666666
+    },
+    {
+      "label": "quality:shill",
+      "tp": 14,
+      "fp": 1,
+      "fn": 3,
+      "precision": 0.9333333333333333,
+      "recall": 0.8235294117647058,
+      "f1": 0.8749999999999999
+    },
+    {
+      "label": "quality:substantive",
+      "tp": 24,
+      "fp": 8,
+      "fn": 3,
+      "precision": 0.75,
+      "recall": 0.8888888888888888,
+      "f1": 0.8135593220338982
+    }
+  ],
+  "errors": [
+    {
+      "id": "g002",
+      "label": "topic:politics",
+      "expected": 1,
+      "got": 0,
+      "text": "Oh wonderful, a fifth committee to study why the first four committees didn't fix traffic."
+    },
+    {
+      "id": "g006",
+      "label": "topic:politics",
+      "expected": 1,
+      "got": 0,
+      "text": "Who decided the minimum wage should be a yearly fight? Index it to inflation and move on."
+    },
+    {
+      "id": "g008",
+      "label": "topic:politics",
+      "expected": 1,
+      "got": 0,
+      "text": "Rent control or more supply? Northland tried rent control for a decade and the waitlist do"
+    },
+    {
+      "id": "g009",
+      "label": "topic:politics",
+      "expected": 1,
+      "got": 0,
+      "text": "Comment YES if you think Northland's mayor should resign over the bridge budget overrun."
+    },
+    {
+      "id": "g011",
+      "label": "topic:politics",
+      "expected": 1,
+      "got": 0,
+      "text": "Healthcare wait times dropped 12% in districts that added evening clinic hours. Cheap, mea"
+    },
+    {
+      "id": "g014",
+      "label": "topic:politics",
+      "expected": 1,
+      "got": 0,
+      "text": "Should crypto gains be taxed like income or like capital gains? In Northland they count as"
+    },
+    {
+      "id": "g017",
+      "label": "topic:politics",
+      "expected": 1,
+      "got": 0,
+      "text": "Đề xuất làm việc 4 ngày/tuần cho công chức Northland: thử nghiệm 6 tháng rồi đo năng suất,"
+    },
+    {
+      "id": "g020",
+      "label": "topic:politics",
+      "expected": 1,
+      "got": 0,
+      "text": "Public budget dashboards updated monthly, every dollar tagged by department. Transparency "
+    },
+    {
+      "id": "g027",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "Most people scroll past this. The smart ones comment 'gm' and get noticed."
+    },
+    {
+      "id": "g030",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "ae tuong tac cheo nha, ai follow minh minh follow lai 100%"
+    },
+    {
+      "id": "g031",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "cmt 'gm' de dc len top, ae ung ho nha"
+    },
+    {
+      "id": "g032",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "Unpopular opinion, and I want to see who's brave enough to agree publicly: Solidity is bet"
+    },
+    {
+      "id": "g034",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "Type 'AVAX' in the comments and see what happens..."
+    },
+    {
+      "id": "g035",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "Every 100 likes = 1 more winner. You know what to do."
+    },
+    {
+      "id": "g036",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "Share bài này nếu bạn yêu bố mẹ. 99% người lướt qua mà ko share..."
+    },
+    {
+      "id": "g037",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "Builders, quick poll to settle a debate in our team: tabs or spaces? Like for tabs, repost"
+    },
+    {
+      "id": "g040",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "Like and repost to get on the $MOONX presale whitelist! 100x incoming."
+    },
+    {
+      "id": "g041",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "Chọn 1: đi biển hay đi núi? Cmt số 1 hoặc 2, mình trả lời từng người!"
+    },
+    {
+      "id": "g085",
+      "label": "quality:engagement_bait",
+      "expected": 1,
+      "got": 0,
+      "text": "How we cut indexer backfill time 6x: parallel range fetches, merged by (block, txIndex, lo"
+    },
+    {
+      "id": "g044",
+      "label": "quality:shill",
+      "expected": 1,
+      "got": 0,
+      "text": "Quietly accumulating a small-cap on Avalanche that nobody's talking about yet. Team is coo"
+    },
+    {
+      "id": "g051",
+      "label": "quality:shill",
+      "expected": 1,
+      "got": 0,
+      "text": "Not financial advice, but the protocol I'm advising is about to announce something massive"
+    },
+    {
+      "id": "g058",
+      "label": "quality:shill",
+      "expected": 1,
+      "got": 0,
+      "text": "Ko phải shill đâu nhưng token này sẽ top 1 hệ Avalanche cuối năm nay."
+    },
+    {
+      "id": "g076",
+      "label": "quality:shill",
+      "expected": 0,
+      "got": 0.75,
+      "text": "Fee config sanity check before every L1 launch: simulate 10x expected load, watch the base"
+    },
+    {
+      "id": "g004",
+      "label": "quality:substantive",
+      "expected": 0,
+      "got": 0.56,
+      "text": "Ballot design is policy. Last year's two-column layout produced thousands of spoiled ballo"
+    },
+    {
+      "id": "g014",
+      "label": "quality:substantive",
+      "expected": 0,
+      "got": 0.59,
+      "text": "Should crypto gains be taxed like income or like capital gains? In Northland they count as"
+    },
+    {
+      "id": "g016",
+      "label": "quality:substantive",
+      "expected": 0,
+      "got": 0.76,
+      "text": "Voter ID requirements in Northland cut turnout among elderly voters by 3 points in the pil"
+    },
+    {
+      "id": "g018",
+      "label": "quality:substantive",
+      "expected": 0,
+      "got": 0.74,
+      "text": "Imagine paying property tax based on 2016 prices while your neighbor pays 2026 prices. Ann"
+    },
+    {
+      "id": "g020",
+      "label": "quality:substantive",
+      "expected": 0,
+      "got": 0.57,
+      "text": "Public budget dashboards updated monthly, every dollar tagged by department. Transparency "
+    },
+    {
+      "id": "g028",
+      "label": "quality:substantive",
+      "expected": 0,
+      "got": 0.55,
+      "text": "Curious: what's the one tool you can't build without? I'll compile every answer into a pub"
+    },
+    {
+      "id": "g032",
+      "label": "quality:substantive",
+      "expected": 0,
+      "got": 0.75,
+      "text": "Unpopular opinion, and I want to see who's brave enough to agree publicly: Solidity is bet"
+    },
+    {
+      "id": "g044",
+      "label": "quality:substantive",
+      "expected": 0,
+      "got": 0.57,
+      "text": "Quietly accumulating a small-cap on Avalanche that nobody's talking about yet. Team is coo"
+    },
+    {
+      "id": "g063",
+      "label": "quality:substantive",
+      "expected": 1,
+      "got": 0.15,
+      "text": "Mẹo Solidity: dùng custom error thay cho require string, tiết kiệm cả gas deploy lẫn gas r"
+    },
+    {
+      "id": "g076",
+      "label": "quality:substantive",
+      "expected": 1,
+      "got": 0.27,
+      "text": "Fee config sanity check before every L1 launch: simulate 10x expected load, watch the base"
+    },
+    {
+      "id": "g079",
+      "label": "quality:substantive",
+      "expected": 1,
+      "got": 0.25,
+      "text": "Proxy upgrade lưu ý: ko được đổi thứ tự biến storage. Thêm biến mới ở cuối và dùng storage"
+    }
+  ]
+}
