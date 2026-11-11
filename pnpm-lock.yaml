@@ -32,9 +32,15 @@ importers:
       '@socialonchain/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@socialonchain/farcaster':
+        specifier: workspace:*
+        version: link:../../packages/farcaster
       '@socialonchain/feed-sdk':
         specifier: workspace:*
         version: link:../../packages/feed-sdk
+      '@socialonchain/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
       '@socialonchain/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
@@ -148,9 +154,15 @@ importers:
       '@socialonchain/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@socialonchain/farcaster':
+        specifier: workspace:*
+        version: link:../../packages/farcaster
       '@socialonchain/feed-sdk':
         specifier: workspace:*
         version: link:../../packages/feed-sdk
+      '@socialonchain/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
       '@socialonchain/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
@@ -220,6 +232,25 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/farcaster:
+    dependencies:
+      viem:
+        specifier: ^2.50.0
+        version: 2.57.17(bufferutil@4.2.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.6.7)
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(vite@8.3.7(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
   packages/feed-sdk:
     dependencies:
       zod:
@@ -235,6 +266,22 @@ importers:
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(vite@8.3.7(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/llm:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^1.0.0
+        version: 1.7.0(zod@4.6.7)
+      '@socialonchain/feed-sdk':
+        specifier: workspace:*
+        version: link:../feed-sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   packages/protocol:
     dependencies:

@@ -48,3 +48,21 @@ describe("label batch", () => {
     expect(await verifyLabelBatch(tampered, sig)).toBe(false);
   });
 });
+
+import { channelHash as ch2, channelNameFromHash, parseHashtags, parseMentions } from "./index";
+
+describe("text helpers", () => {
+  it("parses mentions and hashtags", () => {
+    const t =
+      "gm @alice_dev and @0xAbCdEf0123456789abcdef0123456789ABCDEF01 #Avalanche #xây_dựng email a@b.com";
+    expect(parseMentions(t)).toEqual({
+      handles: ["alice_dev"],
+      addresses: ["0xabcdef0123456789abcdef0123456789abcdef01"],
+    });
+    expect(parseHashtags(t)).toEqual(["avalanche", "xây_dựng"]);
+  });
+  it("maps known channel hashes back to names", () => {
+    expect(channelNameFromHash(ch2("avalanche"))).toBe("avalanche");
+    expect(channelNameFromHash("0x00")).toBeNull();
+  });
+});

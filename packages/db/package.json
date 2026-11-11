@@ -4,12 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./migrate": "./src/migrate.ts",
+    "./reset-chain": "./src/reset-chain.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "generate": "drizzle-kit generate",
-    "migrate": "tsx src/migrate.ts"
+    "migrate": "tsx --env-file-if-exists=../../.env src/migrate.ts",
+    "reset-chain": "tsx --env-file-if-exists=../../.env src/reset-chain.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",
