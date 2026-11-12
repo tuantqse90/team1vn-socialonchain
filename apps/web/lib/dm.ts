@@ -13,11 +13,12 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import type { Address, Hex } from "viem";
-import { usePublicClient, useSignMessage } from "wagmi";
+import { usePublicClient } from "wagmi";
 import { api } from "./api";
 import { chain } from "./chain";
 import { useSession } from "./session";
 import type { Author } from "./types";
+import { useMainWallet } from "./wallet";
 
 /**
  * Tin nhắn riêng, mã hoá đầu cuối (xem packages/protocol/src/dm.ts).
@@ -69,6 +70,10 @@ function readKeys(owner: string): DmKeyPair | null {
     return null;
   }
 }
+/** Đăng xuất: xoá khoá nhắn tin của owner khỏi thiết bị (đăng nhập lại thì sinh lại đúng khoá đó). */
+export function clearDmKeys(owner: string) {
+  writeKeys(owner, null);
+}
 function writeKeys(owner: string, kp: DmKeyPair | null) {
   try {
     if (kp) localStorage.setItem(storageKey(owner), JSON.stringify(kp));
@@ -85,7 +90,7 @@ export type DmStatus = "no-session" | "loading" | "off" | "stale" | "ready";
 export function useDmKeys() {
   const { owner, status: session, token } = useSession();
   const qc = useQueryClient();
-  const { signMessageAsync } = useSignMessage();
+  const { signMessage: signMessageAsync } = useMainWallet();
   const [keys, setKeys] = useState<DmKeyPair | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [enabling, setEnabling] = useState(false);

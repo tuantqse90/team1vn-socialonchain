@@ -12,7 +12,7 @@ import { privateKeyToAccount } from "viem/accounts";
 
 /**
  * Hành trình cốt lõi, chạy trên chain + indexer thật ở local:
- * kết nối → đăng ký (1 tx, kèm session key) → đăng bài không popup → why → follow
+ * ví nhúng (tự mở khoá bằng Anvil #2) → đăng ký (1 tx, kèm session key) → đăng bài không popup → why → follow
  * → feed builder bằng lời + preview rank() trong trình duyệt → lưu tab → báo cáo → admin → faucet tUSD + mua Pro bằng permit.
  * Chạy lại được nhiều lần: account đã đăng ký thì bỏ qua bước join.
  */
@@ -74,12 +74,9 @@ test("onboarding: đăng ký 1 tx kèm session key (hoặc bật thiết bị m�
     await expect(join).toBeEnabled({ timeout: 15_000 });
     await join.click();
     await waitTxOk(page);
-  } else if (await enable.isVisible()) {
-    // Account đã đăng ký từ lần chạy trước, đây là "thiết bị mới": 1 tx addDelegate.
-    await enable.click();
-    await waitTxOk(page);
   }
-  await expect(done).toBeVisible({ timeout: 30_000 });
+  // Account đã đăng ký từ lần chạy trước = "thiết bị mới": ví nhúng tự gửi 1 tx addDelegate, không cần bấm.
+  await expect(done).toBeVisible({ timeout: 60_000 });
   await page.context().storageState({ path: STATE });
 });
 
@@ -333,4 +330,83 @@ test.describe("đã đăng nhập", () => {
     expect(texts.some((x) => x?.t === "react" && x.emoji === "❤️")).toBe(true);
     expect(JSON.stringify(thread)).not.toContain(`chào ${RUN}`);
   });
+});
+
+/** Máy "trắng": tắt ví e2e tự mở khoá, đi qua intro (vai trò Reader) tới bước tài khoản. */
+async function freshToAccountStep(page: Page) {
+  await page.addInitScript(() => localStorage.setItem("soc:e2e-off", "1"));
+  await page.goto("/welcome");
+  await page.getByTestId("welcome-start").click();
+  await page.getByTestId("role-reader").click();
+  await page.getByTestId("role-continue").click();
+  await page.getByTestId("role-next").click();
+  await expect(page.getByTestId("password-input")).toBeVisible();
+}
+
+test("tài khoản mật khẩu: tạo (app tặng gas, tự lên chain) → xuất khoá → đăng xuất → máy khác đăng nhập (tự bật thiết bị)", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(240_000);
+  const handle = `pw_${RUN}`.slice(0, 20);
+  const password = `e2e-pass-${RUN}`;
+
+  // Máy A: tạo tài khoản. Không có popup nào: ví sinh trong máy, vòi tặng gas, registerWithDelegate tự gửi.
+  await freshToAccountStep(page);
+  await page.getByTestId("handle-input").fill(handle);
+  await page.getByTestId("name-input").fill("Password Tester");
+  await page.getByTestId("password-input").fill(password);
+  await expect(page.getByTestId("account-submit")).toBeEnabled({ timeout: 15_000 });
+  await page.getByTestId("account-submit").click();
+  await expect(page.getByTestId("welcome-done")).toBeVisible({ timeout: 90_000 });
+  const stored = await page.evaluate(() => {
+    const k = Object.keys(localStorage).find((x) => x.startsWith("soc:wallet:"));
+    return k ? (JSON.parse(localStorage.getItem(k) ?? "{}") as { address: string; handle: string }) : null;
+  });
+  expect(stored?.handle).toBe(handle);
+  const address = (stored?.address ?? "").toLowerCase();
+
+  // Tài khoản có trên server (tham số KDF công khai), danh tính onchain đã được index.
+  const kdf = await (await fetch(`${API}/accounts/kdf/${handle}`)).json();
+  expect(kdf.kdf.name).toBe("scrypt");
+  expect((await fetch(`${API}/users/${address}`)).status).toBe(200);
+
+  // Xuất khoá (hỏi lại mật khẩu) ra đúng private key của địa chỉ đó.
+  await page.goto("/settings");
+  await page.getByTestId("settings-export-key").click();
+  await page.getByTestId("export-key-password").fill(password);
+  await page.getByTestId("export-key-reveal").click();
+  const exported = (await page.getByTestId("export-key-value").textContent())?.trim() as Hex;
+  expect(exported).toMatch(/^0x[0-9a-f]{64}$/);
+  expect(privateKeyToAccount(exported).address.toLowerCase()).toBe(address);
+  await page.keyboard.press("Escape");
+
+  // Đăng xuất: ví bị xoá khỏi máy.
+  await page.getByTestId("settings-logout").click();
+  await expect(page).toHaveURL(/\/welcome/, { timeout: 20_000 });
+  expect(
+    await page.evaluate(() => Object.keys(localStorage).filter((x) => x.startsWith("soc:wallet:"))),
+  ).toEqual([]);
+
+  // Máy B: sai mật khẩu → báo lỗi; đúng → mở khoá, tự addDelegate cho thiết bị mới.
+  const ctx = await browser.newContext({
+    baseURL: test.info().project.use.baseURL,
+    viewport: { width: 393, height: 852 },
+  });
+  const b = await ctx.newPage();
+  await freshToAccountStep(b);
+  await b.getByTestId("auth-switch").click();
+  await b.getByTestId("handle-input").fill(handle);
+  await b.getByTestId("password-input").fill(`${password}-wrong`);
+  await b.getByTestId("account-submit").click();
+  await expect(b.getByTestId("account-hint")).toHaveText(/wrong|sai/i, { timeout: 30_000 });
+  await b.getByTestId("password-input").fill(password);
+  await b.getByTestId("account-submit").click();
+  await expect(b.getByTestId("welcome-done")).toBeVisible({ timeout: 90_000 });
+  const bAddr = await b.evaluate(() => {
+    const k = Object.keys(localStorage).find((x) => x.startsWith("soc:wallet:"));
+    return k ? (JSON.parse(localStorage.getItem(k) ?? "{}") as { address: string }).address : null;
+  });
+  expect(bAddr?.toLowerCase()).toBe(address);
+  await ctx.close();
 });

@@ -19,8 +19,9 @@ import { useSession } from "@/lib/session";
 type Step = "splash" | "role" | "pick" | "wallet";
 
 /**
- * Onboarding: splash → "Bạn là ai?" → bước theo vai trò → ví (kết nối, mạng, nạp AVAX, handle, ký 1 tx).
- * Ví đã kết nối sẵn (vd. e2e) thì vào thẳng bước ví. Luôn có "Bỏ qua" về bảng tin (đọc trước, viết sau).
+ * Onboarding: splash → "Bạn là ai?" → bước theo vai trò → tài khoản (tên + mật khẩu → ví nhúng, app tặng gas,
+ * tự lên chain 1 tx, không popup). Đã đăng nhập sẵn (vd. e2e) thì vào thẳng bước tài khoản.
+ * Luôn có "Bỏ qua" về bảng tin (đọc trước, viết sau).
  */
 export default function Welcome() {
   const t = useTranslations("onboarding");
@@ -42,7 +43,8 @@ export default function Welcome() {
   }, []);
 
   useEffect(() => {
-    if (status !== "disconnected" && !touched.current) setStep("wallet");
+    // "loading" gồm cả lần render đầu (chưa đọc localStorage): chỉ nhảy bước khi chắc chắn đã có ví trên máy.
+    if (status !== "disconnected" && status !== "loading" && !touched.current) setStep("wallet");
   }, [status]);
 
   function go(next: Step) {

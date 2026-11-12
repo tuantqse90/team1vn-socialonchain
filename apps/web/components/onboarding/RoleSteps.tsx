@@ -1,6 +1,5 @@
 "use client";
 
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -95,12 +94,12 @@ function useCountTo(target: number) {
   return v;
 }
 
-/** Builder: chỉ quét địa chỉ ví đang kết nối (địa chỉ gõ tay thì không chứng minh được là của mình). */
+/** Builder: chỉ quét địa chỉ ví của chính tài khoản (địa chỉ gõ tay thì không chứng minh được là của mình). */
 export function BuilderStep({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   const t = useTranslations("onboarding");
   const tc = useTranslations("idcard");
+  const ta = useTranslations("account");
   const { owner } = useSession();
-  const { openConnectModal } = useConnectModal();
   const addr = owner?.toLowerCase();
   const q = useQuery({
     queryKey: ["onb-user", addr],
@@ -138,15 +137,10 @@ export function BuilderStep({ onBack, onNext }: { onBack: () => void; onNext: ()
       {!addr ? (
         <div className={`${s.rise} mt-10 flex flex-col gap-4`}>
           <h1 className={s.title}>{t("builderTitle")}</h1>
-          <button
-            type="button"
-            onClick={() => openConnectModal?.()}
-            className={s.bigBtn}
-            data-testid="builder-connect"
-          >
-            <Icon name="wallet" className="h-[22px] w-[22px]" />
-            {t("connectTitle")}
-          </button>
+          <p className="flex items-center gap-2 text-[15px] text-[var(--muted)]" data-testid="builder-later">
+            <Icon name="cube" className="h-[18px] w-[18px] shrink-0" />
+            {ta("builderLater")}
+          </p>
         </div>
       ) : (
         <div className="mt-8">

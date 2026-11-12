@@ -5,9 +5,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { type Address, createWalletClient, type Hex, http, type WalletClient } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { useAccount, useBalance, useReadContract } from "wagmi";
+import { useBalance, useReadContract } from "wagmi";
 import { api, setApiToken } from "./api";
 import { chain, contracts, rpcUrl } from "./chain";
+import { useEmbeddedWallet } from "./embedded";
+import { EMPTY_GAS_WEI, LOW_GAS_WEI } from "./gas";
 import type { Me } from "./types";
 
 /**
@@ -59,7 +61,7 @@ type Ctx = {
 const SessionContext = createContext<Ctx | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const { address: owner, isConnected } = useAccount();
+  const { address: owner, hydrated } = useEmbeddedWallet();
   const qc = useQueryClient();
   const [session, setSession] = useState<StoredSession | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -171,7 +173,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [registered, authorized, balance, me]);
 
   let status: SessionStatus = "loading";
-  if (!isConnected || !owner) status = "disconnected";
+  if (hydrated && !owner) status = "disconnected";
+  else if (!owner) status = "loading";
   else if (registered.data === false) status = "unregistered";
   else if (registered.data === true) status = session && authorized.data !== false ? "ready" : "needs-key";
 
@@ -203,12 +206,7 @@ export function useSession(): Ctx {
   return c;
 }
 
-/** Ngưỡng nhắc nạp gas: đủ cho ~5 bài ở 25 nAVAX/gas. */
-export const LOW_GAS_WEI = 10_000_000_000_000_000n; // 0.01 AVAX
-/** Dưới mức này coi như hết gas: khoá nút đăng, mở sheet nạp. */
-export const EMPTY_GAS_WEI = 100_000_000_000_000n; // 0.0001 AVAX
-/** Các mức nạp gợi ý cho session key (AVAX). */
-export const TOP_UP_OPTIONS = ["0.02", "0.05", "0.1"] as const;
+export { EMPTY_GAS_WEI, LOW_GAS_WEI, TOP_UP_OPTIONS } from "./gas";
 
 export type GasLevel = "ok" | "low" | "empty";
 export function gasLevel(balance: bigint | undefined): GasLevel {

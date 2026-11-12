@@ -1,16 +1,13 @@
 "use client";
 
-import {
-  DEFAULT_SESSION_DAYS,
-  DEFAULT_SESSION_FUNDING_WEI,
-  identityRegistryAbi,
-} from "@socialonchain/protocol";
+import { DEFAULT_SESSION_DAYS, identityRegistryAbi } from "@socialonchain/protocol";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import type { Address } from "viem";
 import { addressUrl, contracts } from "@/lib/chain";
 import { formatAvax, shortAddr } from "@/lib/format";
+import { OWNER_FEE_RESERVE_WEI, SESSION_FUNDING_WEI } from "@/lib/gas";
 import { gasLevel, sweepKey, useSession } from "@/lib/session";
 import { publicClient, useTx } from "@/lib/tx";
 import { useMainWallet } from "@/lib/wallet";
@@ -159,6 +156,13 @@ export function SessionCard() {
     setConfirm(false);
     setBusy("renew");
     const old = session;
+    // Trả gas dư của key cũ về owner TRƯỚC (ký bằng chính key cũ), để owner đủ tiền nạp cho key mới.
+    if (old) {
+      await sweepKey(old.pk, owner).catch(() => null);
+    }
+    const ownerBal = await publicClient.getBalance({ address: owner }).catch(() => 0n);
+    const spare = ownerBal - OWNER_FEE_RESERVE_WEI;
+    const value = spare > SESSION_FUNDING_WEI ? SESSION_FUNDING_WEI : spare > 0n ? spare : 0n;
     const key = prepareKey(DEFAULT_SESSION_DAYS);
     const r = await trackTx(t("newKey"), () =>
       main.writeContract({
@@ -166,12 +170,10 @@ export function SessionCard() {
         abi: identityRegistryAbi,
         functionName: "addDelegate",
         args: [key.address, BigInt(key.expiresAt)],
-        value: DEFAULT_SESSION_FUNDING_WEI,
+        value,
       }),
     );
     if (old) {
-      // Key cũ không còn trên thiết bị (kể cả khi huỷ ký): trả gas dư về owner, ký bằng chính key cũ, không popup.
-      await sweepKey(old.pk, owner).catch(() => null);
       if (r.ok && old.expiresAt > Date.now() / 1000 && (await stillDelegate(owner, old.address))) {
         await track(t("revoked"), () =>
           main.writeContract({
@@ -236,7 +238,7 @@ export function SessionCard() {
   const level = gasLevel(sessionBalance);
   const low = alive && level !== "ok";
   const balance = Number(sessionBalance ?? 0n) / 1e18;
-  const balFrac = Math.min(1, Number(sessionBalance ?? 0n) / Number(DEFAULT_SESSION_FUNDING_WEI));
+  const balFrac = Math.min(1, Number(sessionBalance ?? 0n) / Number(SESSION_FUNDING_WEI));
   const url = addr ? addressUrl(addr) : null;
 
   return (

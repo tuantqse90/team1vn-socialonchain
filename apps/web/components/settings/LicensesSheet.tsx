@@ -10,8 +10,8 @@ const OSS = [
   { name: "React", license: "MIT", url: "https://github.com/facebook/react" },
   { name: "viem", license: "MIT", url: "https://github.com/wevm/viem" },
   { name: "wagmi", license: "MIT", url: "https://github.com/wevm/wagmi" },
-  { name: "RainbowKit", license: "MIT", url: "https://github.com/rainbow-me/rainbowkit" },
   { name: "TanStack Query", license: "MIT", url: "https://github.com/TanStack/query" },
+  { name: "noble-ciphers / noble-hashes", license: "MIT", url: "https://github.com/paulmillr/noble-ciphers" },
   {
     name: "OpenZeppelin Contracts",
     license: "MIT",

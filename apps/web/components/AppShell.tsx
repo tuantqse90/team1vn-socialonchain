@@ -1,7 +1,5 @@
 "use client";
 
-import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { DEFAULT_SESSION_FUNDING_WEI } from "@socialonchain/protocol";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +8,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { clientConfig } from "@/configs";
 import { api } from "@/lib/api";
 import { network } from "@/lib/chain";
+import { SESSION_FUNDING_WEI } from "@/lib/gas";
 import { gasLevel, useSession } from "@/lib/session";
 import { useCompose } from "./Compose";
 import { InboxButton } from "./dm/InboxButton";
@@ -51,7 +50,7 @@ export function SessionChip({ className = "" }: { className?: string }) {
   if (status !== "ready" || sessionBalance === undefined) return null;
   const level = gasLevel(sessionBalance);
   const low = level !== "ok";
-  const frac = Math.min(1, Number(sessionBalance) / Number(DEFAULT_SESSION_FUNDING_WEI));
+  const frac = Math.min(1, Number(sessionBalance) / Number(SESSION_FUNDING_WEI));
   const val = (Number(sessionBalance) / 1e18).toFixed(4);
   const aria = `${level === "empty" ? t("keyEmpty") : low ? t("keyLow") : t("key")}: ${val} AVAX`;
 
@@ -123,23 +122,21 @@ export function SessionChip({ className = "" }: { className?: string }) {
 /** Tên cũ, giữ cho code khác còn import. */
 export const SessionBadge = SessionChip;
 
-/** Kết nối ví / tham gia (đăng ký, bật thiết bị). Khi đã sẵn sàng thì không hiện (hồ sơ nằm ở tab bar). */
+/** Đăng nhập / tham gia (đăng ký, bật thiết bị). Khi đã sẵn sàng thì không hiện (hồ sơ nằm ở tab bar). */
 function AccountButton() {
-  const tc = useTranslations("common");
+  const ta = useTranslations("account");
   const t = useTranslations("tabbar");
   const { status } = useSession();
-  const { openConnectModal } = useConnectModal();
   if (status === "disconnected") {
     return (
-      <button
-        type="button"
-        onClick={() => openConnectModal?.()}
+      <Link
+        href="/welcome"
         className="press flex h-9 items-center gap-2 rounded-full bg-[var(--ink)] px-3.5 text-sm font-semibold text-[var(--bg)]"
         data-testid="connect"
       >
-        <Icon name="wallet" className="h-4 w-4" />
-        <span className="hidden sm:inline">{tc("connect")}</span>
-      </button>
+        <Icon name="user" className="h-4 w-4" />
+        <span className="hidden sm:inline">{ta("signIn")}</span>
+      </Link>
     );
   }
   if (status === "unregistered" || status === "needs-key") {

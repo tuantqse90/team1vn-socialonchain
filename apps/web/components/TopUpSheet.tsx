@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { createContext, type ReactNode, useCallback, useContext, useState } from "react";
 import { parseEther } from "viem";
-import { txUrl } from "@/lib/chain";
+import { useBalance } from "wagmi";
+import { FAUCET_URL, network, txUrl } from "@/lib/chain";
 import { formatAvax, shortAddr } from "@/lib/format";
+import { OWNER_FEE_RESERVE_WEI, SESSION_FUNDING_WEI } from "@/lib/gas";
 import { gasLevel, TOP_UP_OPTIONS, useSession } from "@/lib/session";
 import { type TxResult, useTx } from "@/lib/tx";
 import { useMainWallet } from "@/lib/wallet";
@@ -23,7 +25,7 @@ export function useTopUp(): Ctx {
   return c;
 }
 
-/** Sheet nạp gas cho session key: 1 tx từ ví chính (có popup ví), luôn đúng chain của app. */
+/** Sheet nạp gas cho session key: 1 tx từ ví chính (ví nhúng, ký ngầm), luôn đúng chain của app. */
 export function TopUpProvider({ children }: { children: ReactNode }) {
   const [reason, setReason] = useState<Reason | null>(null);
   const open = useCallback((r?: Reason) => setReason(r ?? "manual"), []);
@@ -37,10 +39,18 @@ export function TopUpProvider({ children }: { children: ReactNode }) {
 
 function TopUpBody({ reason, onClose }: { reason: Reason; onClose: () => void }) {
   const t = useTranslations("topUp");
+  const ta = useTranslations("account");
   const { owner, session, sessionBalance, refresh } = useSession();
   const { trackTx } = useTx();
   const main = useMainWallet();
-  const [amount, setAmount] = useState<(typeof TOP_UP_OPTIONS)[number]>("0.05");
+  const [amount, setAmount] = useState<(typeof TOP_UP_OPTIONS)[number]>(TOP_UP_OPTIONS[1]);
+  const ownerBal = useBalance({
+    address: owner,
+    query: { enabled: Boolean(owner), refetchInterval: 10_000 },
+  });
+  /** Ví chính không đủ cho mức đã chọn (+ phí): chỉ chỗ lấy thêm thay vì gửi tx chắc chắn lỗi. */
+  const ownerShort =
+    ownerBal.data !== undefined && ownerBal.data.value < parseEther(amount) + OWNER_FEE_RESERVE_WEI / 10n;
   const [step, setStep] = useState<"pick" | "wallet" | "funding" | "done" | "fail">("pick");
   const [result, setResult] = useState<Extract<TxResult, { ok: true }> | null>(null);
   const level = reason === "manual" ? gasLevel(sessionBalance) : reason;
@@ -162,7 +172,7 @@ function TopUpBody({ reason, onClose }: { reason: Reason; onClose: () => void })
                   ) : (
                     <Icon name="check" className="h-4 w-4" />
                   )}
-                  {t("confirmInWallet")}
+                  {ta("sending")}
                 </li>
                 <li
                   className={`flex items-center gap-1.5 ${step === "funding" ? "" : "text-[var(--muted)]"}`}
@@ -176,15 +186,24 @@ function TopUpBody({ reason, onClose }: { reason: Reason; onClose: () => void })
                 </li>
               </ol>
             )}
-            {main.wrongNetwork && (
-              <p className="flex items-center justify-center gap-1.5 text-[13px] text-[var(--warn-ink)]">
-                <Icon name="alert" className="h-4 w-4" /> {t("willSwitch")}
+            {ownerShort && step === "pick" && (
+              <p
+                className="flex flex-wrap items-center justify-center gap-1.5 text-[13px] text-[var(--warn-ink)]"
+                data-testid="topup-owner-short"
+              >
+                <Icon name="alert" className="h-4 w-4" />
+                {ta("ownerShort", { amount: formatAvax(ownerBal.data?.value ?? 0n, 4) })}
+                {network.name === "fuji" && (
+                  <a href={FAUCET_URL} target="_blank" rel="noreferrer" className="font-semibold underline">
+                    {ta("faucet")}
+                  </a>
+                )}
               </p>
             )}
             <button
               type="button"
               onClick={() => void fund()}
-              disabled={!session || step === "wallet" || step === "funding"}
+              disabled={!session || ownerShort || step === "wallet" || step === "funding"}
               className="press flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] font-semibold text-white disabled:opacity-60"
               data-testid="topup-submit"
             >
@@ -199,7 +218,12 @@ function TopUpBody({ reason, onClose }: { reason: Reason; onClose: () => void })
                 aria-label={t("settings")}
               >
                 <Icon name="gear" className="h-4 w-4" />
-                <Ring value={balance / 0.05} size={16} stroke={2.5} danger={level !== "ok"} />
+                <Ring
+                  value={balance / (Number(SESSION_FUNDING_WEI) / 1e18)}
+                  size={16}
+                  stroke={2.5}
+                  danger={level !== "ok"}
+                />
                 <span className="mono">{formatAvax(sessionBalance ?? 0n, 4)}</span>
               </Link>
               {level !== "empty" && (

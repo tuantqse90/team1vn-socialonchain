@@ -1,24 +1,21 @@
 "use client";
 
-import { useConnectModal } from "@rainbow-me/rainbowkit";
-import {
-  DEFAULT_SESSION_DAYS,
-  DEFAULT_SESSION_FUNDING_WEI,
-  identityRegistryAbi,
-} from "@socialonchain/protocol";
+import { DEFAULT_SESSION_DAYS, HANDLE_RE, identityRegistryAbi, PASSWORD_MIN } from "@socialonchain/protocol";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { type Hash, keccak256, toBytes, zeroAddress } from "viem";
 import { useBalance, useReadContract, useReadContracts } from "wagmi";
 import { Icon } from "@/components/Icon";
 import { IdCard, type IdCardVariant, type IdField } from "@/components/IdCard";
 import { Burst, CountUp } from "@/components/kit";
 import { clientConfig } from "@/configs";
-import { API_URL, api, track } from "@/lib/api";
-import { chain, contracts, FAUCET_URL, network, rpcUrl } from "@/lib/chain";
+import { API_URL, ApiError, api, track } from "@/lib/api";
+import { contracts, FAUCET_URL, network, rpcUrl } from "@/lib/chain";
+import { login, signup, useEmbeddedWallet } from "@/lib/embedded";
 import { shortAddr } from "@/lib/format";
+import { MIN_OWNER_WEI, OWNER_FEE_RESERVE_WEI, SESSION_FUNDING_WEI } from "@/lib/gas";
 import { useSession } from "@/lib/session";
 import { publicClient, useTx } from "@/lib/tx";
 import type { User } from "@/lib/types";
@@ -28,31 +25,29 @@ import { Arrow, Dots, TopBar } from "./parts";
 import { type Picks, patchPending, type Role } from "./picks";
 import { roleFields } from "./RoleSteps";
 
-const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
-/** Cần đủ để nạp gas cho session key + phí tx đăng ký. */
-const MIN_OWNER_WEI = DEFAULT_SESSION_FUNDING_WEI + 10_000_000_000_000_000n;
 const APP_NET = network.name === "fuji" ? "Fuji" : "Local";
+const FUJI = network.name === "fuji";
 const FC_ENABLED = clientConfig.enabledSources.some((x) => x.startsWith("farcaster"));
 
 type Phase =
-  | "connect"
+  | "account"
+  | "creating"
   | "loading"
-  | "network"
   | "fund"
   | "register"
   | "taken"
   | "signing"
-  | "rejected"
   | "failed"
   | "device"
   | "done";
+type Mode = "signup" | "login";
+type AuthError = "bad_credentials" | "handle_taken" | "rate_limited" | "failed";
 
-function chainName(id: number | undefined): string {
-  if (id === 43114) return "C-CHAIN";
-  if (id === 43113) return "FUJI";
-  if (id === 31337) return "LOCAL";
-  if (id === 1) return "ETHEREUM";
-  return id ? `#${id}` : "—";
+/** Số AVAX gọn: số nhỏ (Fuji tặng 0.002) thì giữ 4 chữ số. */
+function avax(wei: bigint | undefined): string {
+  if (wei === undefined) return "—";
+  const v = Number(wei) / 1e18;
+  return `${v.toFixed(v > 0 && v < 0.1 ? 4 : 2)} AVAX`;
 }
 
 /** Tên custom error của contract (vd. HandleTaken) nếu lỗi là revert. */
@@ -67,43 +62,22 @@ function revertName(err: unknown): string | null {
   return null;
 }
 
+function authErrorOf(e: unknown, mode: Mode): AuthError {
+  if (e instanceof ApiError) {
+    if (mode === "login" && (e.status === 401 || e.status === 404)) return "bad_credentials";
+    if (e.status === 409) return "handle_taken";
+    if (e.status === 429) return "rate_limited";
+  }
+  // Giải mã keystore lỗi (keystore hỏng/bị sửa) → coi như sai mật khẩu.
+  if (mode === "login" && e instanceof Error && /aes|tag|invalid/i.test(e.message)) return "bad_credentials";
+  return "failed";
+}
+
 /** 3 gợi ý: @{h}_vn, @{h}_dev, dạng ngắn. */
 function suggestHandles(h: string): string[] {
   const compact = h.length > 4 ? `${h.charAt(0)}${h.slice(-3)}` : `${h}_x`;
   return [...new Set([`${h}_vn`, `${h}_dev`, compact].map((x) => x.slice(0, 20)))].filter(
     (x) => x !== h && HANDLE_RE.test(x),
-  );
-}
-
-/** Chain id cuộn từng chữ số từ mạng của ví sang mạng của app. */
-function Odometer({ from, to, settled }: { from: number; to: number; settled: boolean }) {
-  const a = String(from);
-  const b = String(to);
-  const len = Math.max(a.length, b.length);
-  const pa = a.padStart(len, " ");
-  const pb = b.padStart(len, " ");
-  return (
-    <span aria-hidden className={s.odo}>
-      {Array.from({ length: len }, (_, i) =>
-        pa[i] === pb[i] ? (
-          // biome-ignore lint/suspicious/noArrayIndexKey: vị trí chữ số cố định
-          <span key={i}>{pb[i]}</span>
-        ) : (
-          <span
-            // biome-ignore lint/suspicious/noArrayIndexKey: vị trí chữ số cố định
-            key={i}
-            className={s.odoCol}
-            style={{
-              transform: `translateY(${settled ? -72 : 0}px)`,
-              color: settled ? "var(--ink)" : "var(--err-ink)",
-            }}
-          >
-            <span style={{ minWidth: "0.3em" }}>{pa[i]}</span>
-            <span>{pb[i]}</span>
-          </span>
-        ),
-      )}
-    </span>
   );
 }
 
@@ -117,8 +91,9 @@ export function WalletStep({
   onBack?: () => void;
 }) {
   const t = useTranslations("onboarding");
+  const ta = useTranslations("account");
   const tc = useTranslations("idcard");
-  const { openConnectModal } = useConnectModal();
+  const wallet = useEmbeddedWallet();
   const { status, owner, prepareKey, refresh } = useSession();
   const { trackTx } = useTx();
   const mw = useMainWallet();
@@ -134,21 +109,33 @@ export function WalletStep({
     retry: false,
   });
 
+  const [mode, setMode] = useState<Mode>("signup");
   const [handle, setHandle] = useState("");
   const [debounced, setDebounced] = useState("");
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState<AuthError | null>(null);
+  const [dripSkipped, setDripSkipped] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [outcome, setOutcome] = useState<null | "rejected" | "failed" | "taken">(null);
+  const [outcome, setOutcome] = useState<null | "failed" | "taken">(null);
   const [lastAction, setLastAction] = useState<"join" | "device">("join");
   const [doneBlock, setDoneBlock] = useState<bigint | null>(null);
   /** Tx đăng ký đã lên chain, đang đợi trạng thái session cập nhật: giữ spinner, không nháy "tên đã có chủ". */
   const [joined, setJoined] = useState(false);
   const [burst, setBurst] = useState(0);
   const [funding, setFunding] = useState(false);
-  const [netFlash, setNetFlash] = useState(false);
   const [fundFlash, setFundFlash] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [shake, setShake] = useState(0);
-  const wrongId = useRef<number | undefined>(undefined);
+  /** Mỗi owner chỉ tự chạy join/bật thiết bị 1 lần; lỗi thì người dùng bấm "Thử lại". */
+  const autoRan = useRef<string | null>(null);
+
+  // Đã có ví (đăng nhập ở máy này) mà chưa có danh tính onchain: điền sẵn tên tài khoản.
+  useEffect(() => {
+    if (wallet.handle && !handle) setHandle(wallet.handle);
+  }, [wallet.handle, handle]);
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(handle), 300);
@@ -163,31 +150,48 @@ export function WalletStep({
     args: [keccak256(toBytes(debounced || "_"))],
     query: { enabled: Boolean(contracts && HANDLE_RE.test(debounced)) },
   });
-  const available = valid && ownerOf.data === zeroAddress;
-  const takenNow =
+  /** Tên đã có tài khoản trong app (chưa chắc đã lên chain). */
+  const accountExists = useQuery({
+    queryKey: ["account-exists", debounced],
+    queryFn: async () => {
+      try {
+        await api(`/accounts/kdf/${encodeURIComponent(debounced)}`);
+        return true;
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 404) return false;
+        throw e;
+      }
+    },
+    enabled: status === "disconnected" && mode === "signup" && HANDLE_RE.test(debounced),
+    retry: false,
+    staleTime: 30_000,
+  });
+  const ownsHandle = (o: string | undefined) =>
+    Boolean(o && owner && o.toLowerCase() === owner.toLowerCase());
+  const chainFree = ownerOf.data === zeroAddress || ownsHandle(ownerOf.data);
+  const available =
     valid &&
     ownerOf.data !== undefined &&
-    ownerOf.data !== zeroAddress &&
-    ownerOf.data.toLowerCase() !== owner?.toLowerCase();
+    chainFree &&
+    (status !== "disconnected" || accountExists.data === false);
+  const takenNow =
+    valid &&
+    ((ownerOf.data !== undefined && !chainFree) ||
+      (status === "disconnected" && accountExists.data === true));
 
-  const enough = (bal.data?.value ?? 0n) >= MIN_OWNER_WEI;
+  const balance = bal.data?.value;
+  const enough = (balance ?? 0n) >= MIN_OWNER_WEI;
+  /** Bật thiết bị mới: owner nạp cho key mới phần còn lại sau khi chừa phí (tối đa mức chuẩn). */
+  const deviceValue = (() => {
+    if (balance === undefined) return 0n;
+    const spare = balance - OWNER_FEE_RESERVE_WEI;
+    // bigint: không dùng Math.min
+    if (spare > SESSION_FUNDING_WEI) return SESSION_FUNDING_WEI;
+    return spare;
+  })();
+  const deviceShort = balance !== undefined && deviceValue <= 0n;
 
-  // Sai mạng → đã chuyển: giữ trạng thái "đã ở Fuji" (check xanh) một nhịp rồi đi tiếp.
-  useEffect(() => {
-    if (mw.wrongNetwork) {
-      wrongId.current = mw.walletChainId;
-      return;
-    }
-    if (wrongId.current === undefined) return;
-    setNetFlash(true);
-    const id = setTimeout(() => {
-      setNetFlash(false);
-      wrongId.current = undefined;
-    }, 1200);
-    return () => clearTimeout(id);
-  }, [mw.wrongNetwork, mw.walletChainId]);
-
-  // Vừa đủ AVAX: để số chạy xong rồi mới sang bước đặt tên.
+  // Vừa đủ AVAX: để số chạy xong rồi mới đi tiếp.
   const wasShort = useRef(false);
   useEffect(() => {
     if (!bal.data) return;
@@ -204,33 +208,37 @@ export function WalletStep({
   }, [enough, bal.data]);
 
   useEffect(() => {
-    if (status === "unregistered") track("onboarding_started");
+    if (status === "unregistered") track("onboarding_step", { step: "started" });
   }, [status]);
 
   let phase: Phase;
-  if (status === "disconnected") phase = "connect";
-  else if (mw.wrongNetwork || netFlash) phase = "network";
+  if (status === "disconnected") phase = authBusy ? "creating" : "account";
   else if (status === "loading") phase = "loading";
   else if (status === "ready") phase = "done";
   else if (busy || (joined && status === "unregistered")) phase = "signing";
-  else if (outcome === "rejected") phase = "rejected";
   else if (outcome === "failed") phase = "failed";
-  else if (status === "needs-key") phase = "device";
+  else if (status === "needs-key")
+    phase = deviceShort ? "fund" : balance === undefined ? "loading" : "device";
   else if (!bal.data) phase = "loading";
   else if (!enough || fundFlash) phase = "fund";
   else if (takenNow || outcome === "taken") phase = "taken";
   else phase = "register";
+  const showTaken = phase === "account" && mode === "signup" && takenNow;
 
   // Lắc thẻ khi vào trạng thái lỗi.
   const prevPhase = useRef<Phase>(phase);
   useEffect(() => {
-    if (prevPhase.current !== phase && ["network", "taken", "rejected", "failed"].includes(phase)) {
-      setShake((k) => k + 1);
-    }
+    if (prevPhase.current !== phase && ["taken", "failed"].includes(phase)) setShake((k) => k + 1);
     prevPhase.current = phase;
   }, [phase]);
+  useEffect(() => {
+    if (authError) setShake((k) => k + 1);
+  }, [authError]);
 
-  const suggestions = useMemo(() => (phase === "taken" ? suggestHandles(handle) : []), [phase, handle]);
+  const suggestions = useMemo(
+    () => (phase === "taken" || showTaken ? suggestHandles(handle) : []),
+    [phase, showTaken, handle],
+  );
   const suggestQ = useReadContracts({
     contracts: suggestions.map((h) => ({
       address: contracts?.IdentityRegistry ?? zeroAddress,
@@ -243,6 +251,31 @@ export function WalletStep({
   const freeSuggestions = suggestions.filter(
     (_, i) => suggestQ.data?.[i]?.status === "success" && suggestQ.data[i]?.result === zeroAddress,
   );
+
+  async function submitAccount(e?: FormEvent) {
+    e?.preventDefault();
+    if (authBusy) return;
+    const h = handle;
+    if (!HANDLE_RE.test(h) || password.length < PASSWORD_MIN) return;
+    if (mode === "signup" && !available) return;
+    setAuthError(null);
+    setAuthBusy(true);
+    try {
+      if (mode === "signup") {
+        const r = await signup(h, password);
+        setDripSkipped(!r.drip && r.dripSkipped !== "funded");
+        track("onboarding_step", { step: "account_created", drip: Boolean(r.drip) });
+      } else {
+        await login(h, password);
+        track("onboarding_step", { step: "account_login" });
+      }
+      setPassword("");
+    } catch (err) {
+      setAuthError(authErrorOf(err, mode));
+    } finally {
+      setAuthBusy(false);
+    }
+  }
 
   async function devFund() {
     if (!owner) return;
@@ -264,12 +297,23 @@ export function WalletStep({
     }
   }
 
+  async function copyAddress() {
+    if (!owner) return;
+    try {
+      await navigator.clipboard.writeText(owner);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard bị chặn (http LAN): người dùng chép từ thẻ
+    }
+  }
+
   async function join() {
     if (!contracts || !owner || !available || busy) return;
     setLastAction("join");
     setOutcome(null);
     setBusy(true);
-    // Kiểm tra lại ngay trước khi ký: tránh tốn gas khi handle vừa bị lấy.
+    // Kiểm tra lại ngay trước khi gửi: tránh tốn gas khi handle vừa bị lấy.
     try {
       const o = await publicClient.readContract({
         address: contracts.IdentityRegistry,
@@ -277,7 +321,7 @@ export function WalletStep({
         functionName: "ownerOfHandle",
         args: [keccak256(toBytes(handle))],
       });
-      if (o !== zeroAddress) {
+      if (o !== zeroAddress && !ownsHandle(o)) {
         setBusy(false);
         setOutcome("taken");
         return;
@@ -294,7 +338,7 @@ export function WalletStep({
           abi: identityRegistryAbi,
           functionName: "registerWithDelegate",
           args: [handle, `${API_URL}/profiles/${owner.toLowerCase()}`, key.address, BigInt(key.expiresAt)],
-          value: DEFAULT_SESSION_FUNDING_WEI,
+          value: SESSION_FUNDING_WEI,
         });
       } catch (e) {
         revert = revertName(e);
@@ -307,15 +351,14 @@ export function WalletStep({
       setJoined(true);
       setBurst((k) => k + 1);
       if (name.trim()) patchPending({ name: name.trim(), owner: owner.toLowerCase() });
-      track("registered");
+      track("onboarding_step", { step: "registered" });
       refresh();
-    } else if (r.rejected) setOutcome("rejected");
-    else if (revert === "HandleTaken" || /HandleTaken/.test(r.error)) setOutcome("taken");
+    } else if (revert === "HandleTaken" || /HandleTaken/.test(r.error)) setOutcome("taken");
     else setOutcome("failed");
   }
 
   async function enableDevice() {
-    if (!contracts || !owner || busy) return;
+    if (!contracts || !owner || busy || deviceValue <= 0n) return;
     setLastAction("device");
     setOutcome(null);
     setBusy(true);
@@ -326,15 +369,32 @@ export function WalletStep({
         abi: identityRegistryAbi,
         functionName: "addDelegate",
         args: [key.address, BigInt(key.expiresAt)],
-        value: DEFAULT_SESSION_FUNDING_WEI,
+        value: deviceValue,
       }),
     );
     setBusy(false);
     if (r.ok) {
       setBurst((k) => k + 1);
       refresh();
-    } else setOutcome(r.rejected ? "rejected" : "failed");
+    } else setOutcome("failed");
   }
+
+  // Ví nhúng ký ngầm: vừa tạo tài khoản (có tên) thì tự lên chain; máy mới thì tự bật thiết bị.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: join/enableDevice đọc state mới nhất trong lần render này
+  useEffect(() => {
+    if (!owner || busy) return;
+    if (phase === "register" && wallet.handle && handle === wallet.handle && available) {
+      const k = `join:${owner}`;
+      if (autoRan.current === k) return;
+      autoRan.current = k;
+      void join();
+    } else if (phase === "device") {
+      const k = `device:${owner}`;
+      if (autoRan.current === k) return;
+      autoRan.current = k;
+      void enableDevice();
+    }
+  }, [phase, owner, busy, wallet.handle, handle, available]);
 
   function onHandle(v: string) {
     setHandle(
@@ -344,8 +404,8 @@ export function WalletStep({
         .replace(/[^a-z0-9_]/g, "")
         .slice(0, 20),
     );
-    // Sửa handle sau lỗi/huỷ ký: quay về trạng thái nhập bình thường.
     if (outcome) setOutcome(null);
+    if (authError) setAuthError(null);
   }
 
   // ---------- Thẻ ----------
@@ -354,15 +414,20 @@ export function WalletStep({
   const registeredHandle = user.data?.handle ?? null;
   /** Đã có danh tính onchain (chỉ còn bật thiết bị hoặc đã xong). */
   const registered = status === "ready" || status === "needs-key";
+  const accountForm = phase === "account" || phase === "creating";
   const editing =
     !registered &&
+    !accountForm &&
     (phase === "register" ||
       phase === "taken" ||
-      (lastAction === "join" && (phase === "signing" || phase === "rejected" || phase === "failed")));
-  const cardHandle = registered ? (registeredHandle ?? (handle || null)) : editing && handle ? handle : null;
-  const balanceText = bal.data ? `${(Number(bal.data.value) / 1e18).toFixed(2)} AVAX` : "—";
+      (lastAction === "join" && (phase === "signing" || phase === "failed")));
+  const cardHandle = registered
+    ? (registeredHandle ?? (handle || null))
+    : (editing || accountForm) && handle
+      ? handle
+      : null;
   let fields: IdField[];
-  if (registered && phase !== "network") {
+  if (registered) {
     fields = role
       ? roleFields(role, picks, tc, t, {
           contracts: contractsN,
@@ -373,54 +438,117 @@ export function WalletStep({
           { k: tc("chain"), v: APP_NET.toUpperCase() },
           { k: tc("session"), v: tc("days", { n: DEFAULT_SESSION_DAYS }) },
         ];
-  } else if (phase === "network") {
-    fields = [
-      { k: tc("wallet"), v: shortAddr(addr) },
-      { k: tc("network"), v: mw.wrongNetwork ? chainName(mw.walletChainId) : APP_NET.toUpperCase() },
-      { k: tc("session"), v: "—" },
-    ];
   } else {
     fields = [
       { k: tc("wallet"), v: addr ? shortAddr(addr) : "—" },
-      { k: tc("balance"), v: addr ? balanceText : "—" },
+      { k: tc("balance"), v: addr ? avax(balance) : "—" },
       { k: tc("session"), v: addr && enough ? tc("days", { n: DEFAULT_SESSION_DAYS }) : "—" },
     ];
   }
   const block = doneBlock ?? user.data?.registeredBlock ?? null;
-  const minted = registered;
-
-  // Huy hiệu góc thẻ
-  const badge: { kind: "warn" | "ok" | "err"; label: string } | null =
-    phase === "network"
-      ? mw.wrongNetwork
-        ? { kind: "warn", label: t("wrongNetwork") }
-        : { kind: "ok", label: t("onNetwork", { name: APP_NET }) }
-      : phase === "rejected" || phase === "failed"
-        ? { kind: "err", label: phase === "rejected" ? t("rejectedTitle") : t("failedTitle") }
-        : null;
-  const badgeStyle =
-    badge?.kind === "warn"
-      ? { background: "var(--warn-tint)", color: "var(--warn-ink)", "--halo": "var(--warn)" }
-      : badge?.kind === "ok"
-        ? { background: "var(--ok)", color: "var(--bg)", "--halo": "transparent" }
-        : { background: "var(--accent)", color: "var(--accent-ink)", "--halo": "var(--accent)" };
+  const badge: { kind: "err"; label: string } | null =
+    phase === "failed" ? { kind: "err", label: t("failedTitle") } : null;
 
   const titles: Record<Phase, ReactNode> = {
-    connect: t("connectTitle"),
+    account: mode === "signup" ? (showTaken ? t("handleTaken") : ta("signupTitle")) : ta("loginTitle"),
+    creating: mode === "signup" ? ta("creating") : ta("unlocking"),
     loading: t("loadingTitle"),
-    network: t("wrongNetwork"),
     fund: t("fundTitle"),
     register: t("handleTitle"),
     taken: t("handleTaken"),
-    signing: t("signingTitle"),
-    rejected: t("rejectedTitle"),
+    signing: lastAction === "device" ? ta("enablingDevice") : t("signingTitle"),
     failed: t("failedTitle"),
-    device: t("deviceTitle"),
+    device: ta("enablingDevice"),
     done: registeredHandle || handle ? `@${registeredHandle ?? handle}` : t("ready"),
   };
 
   const blockUrl = network.explorerUrl && block !== null ? `${network.explorerUrl}/block/${block}` : null;
   const cardAnim = phase === "done" && burst > 0 ? "anim-celebrate" : shake > 0 ? s.shake : "";
+  const pwShort = password.length > 0 && password.length < PASSWORD_MIN;
+  const canSubmit =
+    HANDLE_RE.test(handle) && password.length >= PASSWORD_MIN && (mode === "login" || available);
+
+  const handleInput = (
+    <div
+      className={`${s.handleRow} ${phase === "taken" || showTaken || (handle && !HANDLE_RE.test(handle)) ? s.handleBad : ""}`}
+    >
+      <label htmlFor="onb-handle" className="sr-only">
+        {t("handleLabel")}
+      </label>
+      <span aria-hidden className="text-[32px] font-extrabold text-[var(--muted)]">
+        @
+      </span>
+      <input
+        id="onb-handle"
+        name="username"
+        value={handle}
+        onChange={(e) => onHandle(e.target.value)}
+        disabled={phase === "signing" || phase === "creating"}
+        aria-invalid={phase === "taken" || showTaken}
+        autoCapitalize="none"
+        autoCorrect="off"
+        autoComplete="username"
+        spellCheck={false}
+        placeholder={tc("placeholder")}
+        className={`${s.handleInput} placeholder:text-[var(--muted)]`}
+        data-testid="handle-input"
+      />
+      {(phase === "taken" || showTaken) && (
+        <span
+          role="img"
+          aria-label={t("takenAria")}
+          className="anim-pop flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-ink)]"
+        >
+          <Icon name="x" className="h-3.5 w-3.5" strokeWidth={3.4} />
+        </span>
+      )}
+      {(phase === "register" || (phase === "account" && mode === "signup")) && available && (
+        <span
+          role="img"
+          aria-label={t("handleOk")}
+          className="anim-pop flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[var(--ok)] text-[var(--bg)]"
+        >
+          <Icon name="check" className="h-[15px] w-[15px]" strokeWidth={3.4} />
+        </span>
+      )}
+    </div>
+  );
+
+  const suggestionChips = freeSuggestions.length > 0 && (
+    <fieldset className="mt-4 flex flex-wrap gap-2 border-0 p-0">
+      <legend className="sr-only">{t("suggestions")}</legend>
+      {freeSuggestions.map((h, i) => (
+        <button
+          key={h}
+          type="button"
+          onClick={() => onHandle(h)}
+          className={s.chip}
+          style={{ animationDelay: `${140 + i * 80}ms` }}
+        >
+          @{h}
+        </button>
+      ))}
+    </fieldset>
+  );
+
+  const nameInput = (
+    <div className="mt-4 flex items-center gap-2 border-b border-[var(--line)]">
+      <Icon name="user" className="h-[18px] w-[18px] shrink-0 text-[var(--muted)]" />
+      <label htmlFor="onb-name" className="sr-only">
+        {t("namePlaceholder")}
+      </label>
+      <input
+        id="onb-name"
+        value={name}
+        onChange={(e) => setName(e.target.value.slice(0, 50))}
+        disabled={phase === "signing" || phase === "creating"}
+        placeholder={t("namePlaceholder")}
+        autoComplete="name"
+        className="h-11 min-w-0 flex-1 text-[16px] font-semibold placeholder:text-[var(--muted)]"
+        data-testid="name-input"
+      />
+    </div>
+  );
 
   return (
     <>
@@ -432,17 +560,17 @@ export function WalletStep({
         )}
       </TopBar>
 
-      <div className="relative mx-auto mt-3 w-full max-w-[342px]">
+      <div className={`relative mx-auto mt-3 w-full max-w-[342px] ${accountForm ? s.cardCompact : ""}`}>
         <div key={`${cardAnim}-${shake}-${burst}`} className={cardAnim}>
           <IdCard
             variant={variant}
             handle={cardHandle}
             address={addr}
             fields={fields}
-            minted={minted}
+            minted={registered}
             block={block}
             verified={variant === "builder" && contractsN > 0 ? tc("stampSub", { n: contractsN }) : null}
-            printing={phase === "signing"}
+            printing={phase === "signing" || phase === "creating"}
             shine={phase === "done" ? "once" : "none"}
             tilt
           />
@@ -452,153 +580,120 @@ export function WalletStep({
           <span
             role="img"
             aria-label={badge.label}
-            className={`${s.badge} ${badge.kind !== "ok" ? s.halo : ""}`}
-            style={badgeStyle as React.CSSProperties}
+            className={`${s.badge} ${s.halo}`}
+            style={
+              {
+                background: "var(--accent)",
+                color: "var(--accent-ink)",
+                "--halo": "var(--accent)",
+              } as React.CSSProperties
+            }
           >
-            <span key={badge.kind} className="anim-pop flex">
-              <Icon
-                name={badge.kind === "ok" ? "check" : badge.kind === "warn" ? "alert" : "x"}
-                className="h-[22px] w-[22px]"
-                strokeWidth={2.8}
-              />
+            <span className="anim-pop flex">
+              <Icon name="x" className="h-[22px] w-[22px]" strokeWidth={2.8} />
             </span>
           </span>
         )}
       </div>
 
-      <div aria-live="polite" className="mt-8 min-h-[44px]">
-        <h1 key={phase} className={`${s.title} ${s.rise}`}>
+      <div aria-live="polite" className={`${accountForm ? "mt-5" : "mt-8"} min-h-[44px]`}>
+        <h1 key={`${phase}-${mode}`} className={`${s.title} ${s.rise}`}>
           {titles[phase]}
         </h1>
       </div>
 
       <div className="mt-5">
-        {phase === "network" && (
-          <div className={`${s.rise} flex items-center gap-4`}>
-            <span className="sr-only">Chain ID {mw.wrongNetwork ? mw.walletChainId : chain.id}</span>
-            <Odometer
-              from={wrongId.current ?? mw.walletChainId ?? chain.id}
-              to={chain.id}
-              settled={!mw.wrongNetwork}
-            />
-            <span aria-hidden className="flex flex-col gap-1.5">
-              <span className="mono text-[11px] font-semibold tracking-[.12em] text-[var(--muted)]">
-                CHAIN ID
-              </span>
-              {mw.wrongNetwork ? (
-                <span className="mono flex h-[26px] items-center self-start rounded-full bg-[var(--warn-tint)] px-2.5 text-[12px] font-bold tracking-[.06em] text-[var(--warn-ink)]">
-                  {chainName(mw.walletChainId)}
-                </span>
-              ) : (
-                <span className="anim-pop mono flex h-[26px] items-center gap-1 self-start rounded-full bg-[var(--ink)] px-2.5 pl-2 text-[12px] font-bold tracking-[.06em] text-[var(--bg)]">
-                  <Icon name="check" className="h-3.5 w-3.5 text-[var(--accent)]" strokeWidth={3.2} />
-                  {APP_NET.toUpperCase()}
-                </span>
-              )}
-            </span>
-          </div>
+        {accountForm && (
+          <form id="onb-account" onSubmit={(e) => void submitAccount(e)} className={s.rise} noValidate>
+            {handleInput}
+            {showTaken && suggestionChips}
+            {mode === "signup" && nameInput}
+            <div
+              className={`mt-4 flex items-center gap-2 border-b ${pwShort || authError === "bad_credentials" ? "border-[var(--err)]" : "border-[var(--line)]"}`}
+            >
+              <Icon name="lock" className="h-[18px] w-[18px] shrink-0 text-[var(--muted)]" />
+              <label htmlFor="onb-password" className="sr-only">
+                {ta("password")}
+              </label>
+              <input
+                id="onb-password"
+                name="password"
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (authError) setAuthError(null);
+                }}
+                disabled={phase === "creating"}
+                placeholder={ta("password")}
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                className="h-11 min-w-0 flex-1 text-[16px] font-semibold placeholder:text-[var(--muted)]"
+                data-testid="password-input"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((v) => !v)}
+                aria-label={showPw ? ta("hidePassword") : ta("showPassword")}
+                aria-pressed={showPw}
+                className="press flex h-11 w-11 items-center justify-center text-[var(--muted)]"
+              >
+                <Icon name={showPw ? "eyeoff" : "eye"} className="h-5 w-5" />
+              </button>
+            </div>
+            <p
+              className={`mt-3 flex items-center gap-2 text-[13px] font-semibold ${authError ? "text-[var(--err-ink)]" : "text-[var(--muted)]"}`}
+              data-testid="account-hint"
+            >
+              <Icon
+                name={authError ? "alert" : mode === "signup" ? "key" : "lock"}
+                className="h-4 w-4 shrink-0"
+              />
+              {authError
+                ? ta(`errors.${authError}`)
+                : pwShort || mode === "login"
+                  ? ta("passwordMin", { n: PASSWORD_MIN })
+                  : ta("noRecovery")}
+            </p>
+          </form>
         )}
 
         {phase === "fund" && (
-          <div className={`${s.rise} flex items-baseline gap-2.5`}>
-            <CountUp
-              value={bal.data ? Number(bal.data.value) / 1e18 : 0}
-              decimals={2}
-              duration={900}
-              className="text-[72px] font-extrabold leading-none tracking-[-0.06em]"
-            />
-            <span className="mono text-[14px] font-bold tracking-[.1em] text-[var(--muted)]">AVAX</span>
+          <div className={s.rise}>
+            <div className="flex items-baseline gap-2.5">
+              <CountUp
+                value={balance !== undefined ? Number(balance) / 1e18 : 0}
+                decimals={FUJI ? 4 : 2}
+                duration={900}
+                className="text-[64px] font-extrabold leading-none tracking-[-0.06em]"
+              />
+              <span className="mono text-[14px] font-bold tracking-[.1em] text-[var(--muted)]">AVAX</span>
+            </div>
+            {dripSkipped && (
+              <p className="mt-3 flex items-center gap-2 text-[13px] font-semibold text-[var(--muted)]">
+                <Icon name="fuel" className="h-4 w-4 shrink-0" />
+                {ta("dripSkipped")}
+              </p>
+            )}
+            {owner && (
+              <button
+                type="button"
+                onClick={() => void copyAddress()}
+                className="press mono mt-3 flex h-11 items-center gap-2 text-[13px] font-semibold"
+                data-testid="copy-address"
+              >
+                <Icon name={copied ? "check" : "copy"} className="h-4 w-4" />
+                {copied ? ta("copied") : shortAddr(owner.toLowerCase())}
+              </button>
+            )}
           </div>
         )}
 
         {editing && (
           <div className={s.rise}>
-            <div
-              className={`${s.handleRow} ${phase === "taken" || (handle && !HANDLE_RE.test(handle)) ? s.handleBad : ""}`}
-            >
-              <label htmlFor="onb-handle" className="sr-only">
-                {t("handleLabel")}
-              </label>
-              <span aria-hidden className="text-[32px] font-extrabold text-[var(--muted)]">
-                @
-              </span>
-              <input
-                id="onb-handle"
-                value={handle}
-                onChange={(e) => onHandle(e.target.value)}
-                disabled={phase === "signing"}
-                aria-invalid={phase === "taken"}
-                autoCapitalize="none"
-                autoCorrect="off"
-                autoComplete="off"
-                spellCheck={false}
-                placeholder={tc("placeholder")}
-                className={`${s.handleInput} placeholder:text-[var(--muted)]`}
-                data-testid="handle-input"
-              />
-              {phase === "taken" && (
-                <span
-                  role="img"
-                  aria-label={t("takenAria")}
-                  className="anim-pop flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-ink)]"
-                >
-                  <Icon name="x" className="h-3.5 w-3.5" strokeWidth={3.4} />
-                </span>
-              )}
-              {phase === "register" && available && (
-                <span
-                  role="img"
-                  aria-label={t("handleOk")}
-                  className="anim-pop flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[var(--ok)] text-[var(--bg)]"
-                >
-                  <Icon name="check" className="h-[15px] w-[15px]" strokeWidth={3.4} />
-                </span>
-              )}
-            </div>
-
-            {phase === "taken" && freeSuggestions.length > 0 && (
-              <fieldset className="mt-4 flex flex-wrap gap-2 border-0 p-0">
-                <legend className="sr-only">{t("suggestions")}</legend>
-                {freeSuggestions.map((h, i) => (
-                  <button
-                    key={h}
-                    type="button"
-                    onClick={() => onHandle(h)}
-                    className={s.chip}
-                    style={{ animationDelay: `${140 + i * 80}ms` }}
-                  >
-                    @{h}
-                  </button>
-                ))}
-              </fieldset>
-            )}
-
-            <div className="mt-4 flex items-center gap-2 border-b border-[var(--line)]">
-              <Icon name="user" className="h-[18px] w-[18px] shrink-0 text-[var(--muted)]" />
-              <label htmlFor="onb-name" className="sr-only">
-                {t("namePlaceholder")}
-              </label>
-              <input
-                id="onb-name"
-                value={name}
-                onChange={(e) => setName(e.target.value.slice(0, 50))}
-                disabled={phase === "signing"}
-                placeholder={t("namePlaceholder")}
-                autoComplete="name"
-                className="h-11 min-w-0 flex-1 text-[16px] font-semibold placeholder:text-[var(--muted)]"
-                data-testid="name-input"
-              />
-            </div>
+            {handleInput}
+            {phase === "taken" && suggestionChips}
+            {nameInput}
           </div>
-        )}
-
-        {phase === "rejected" && (
-          <p
-            className={`${s.rise} mt-4 flex items-center gap-2 text-[14px] font-semibold text-[var(--ok-ink)]`}
-          >
-            <Icon name="checks" className="h-[18px] w-[18px]" strokeWidth={2.2} />
-            {t("noGas")}
-          </p>
         )}
 
         {phase === "done" && (
@@ -626,26 +721,38 @@ export function WalletStep({
       </div>
 
       <div className="mt-auto pt-8">
-        {phase !== "done" && (
+        {phase !== "done" && !accountForm && (
           <p className="mono mb-4 text-[10.5px] font-semibold tracking-[.1em] text-[var(--muted)]">
-            {t("footnote", { net: network.name === "fuji" ? "FUJI TESTNET" : "LOCAL CHAIN" })}
+            {t("footnote", { net: FUJI ? "FUJI TESTNET" : "LOCAL CHAIN" })}
           </p>
         )}
         <BottomAction
           phase={phase}
+          mode={mode}
           t={t}
+          ta={ta}
           busy={busy}
           funding={funding}
           available={available}
-          switching={mw.switching}
-          wrong={mw.wrongNetwork}
+          canSubmit={canSubmit}
           lastAction={lastAction}
-          onConnect={() => openConnectModal?.()}
-          onSwitch={() => void mw.switchToApp().catch(() => undefined)}
           onDevFund={() => void devFund()}
           onJoin={() => void join()}
           onDevice={() => void enableDevice()}
         />
+        {phase === "account" && (
+          <button
+            type="button"
+            onClick={() => {
+              setMode((m) => (m === "signup" ? "login" : "signup"));
+              setAuthError(null);
+            }}
+            className="press mt-1.5 flex h-11 w-full items-center justify-center text-[15px] font-semibold underline decoration-[1.5px] underline-offset-4"
+            data-testid="auth-switch"
+          >
+            {mode === "signup" ? ta("haveAccount") : ta("newAccount")}
+          </button>
+        )}
       </div>
     </>
   );
@@ -653,73 +760,51 @@ export function WalletStep({
 
 function BottomAction({
   phase,
+  mode,
   t,
+  ta,
   busy,
   funding,
   available,
-  switching,
-  wrong,
+  canSubmit,
   lastAction,
-  onConnect,
-  onSwitch,
   onDevFund,
   onJoin,
   onDevice,
 }: {
   phase: Phase;
+  mode: Mode;
   t: (key: string, values?: Record<string, string | number>) => string;
+  ta: (key: string, values?: Record<string, string | number>) => string;
   busy: boolean;
   funding: boolean;
   available: boolean;
-  switching: boolean;
-  wrong: boolean;
+  canSubmit: boolean;
   lastAction: "join" | "device";
-  onConnect: () => void;
-  onSwitch: () => void;
   onDevFund: () => void;
   onJoin: () => void;
   onDevice: () => void;
 }) {
   const spin = <span className="spinner h-6! w-6!" aria-hidden />;
 
-  if (phase === "connect")
+  if (phase === "account")
     return (
-      <button type="button" onClick={onConnect} className={s.bigBtn} data-testid="welcome-connect">
-        <Icon name="wallet" className="h-[22px] w-[22px]" />
-        {t("connectTitle")}
+      <button
+        type="submit"
+        form="onb-account"
+        disabled={!canSubmit}
+        className={`${s.bigBtn} ${canSubmit ? "" : s.bigOff}`}
+        data-testid="account-submit"
+      >
+        {mode === "signup" ? ta("submitSignup") : ta("submitLogin")}
       </button>
     );
-  if (phase === "loading")
+  if (phase === "creating" || phase === "loading")
     return (
       <button type="button" disabled className={s.bigBtn} aria-label={t("loadingTitle")}>
         {spin}
       </button>
     );
-  if (phase === "network") {
-    if (!wrong)
-      return (
-        <button
-          type="button"
-          disabled
-          className={`${s.bigBtn} ${s.bigOk}`}
-          aria-label={t("onNetwork", { name: APP_NET })}
-        >
-          <span className="anim-pop flex">
-            <Icon name="check" className="h-7 w-7" strokeWidth={2.8} />
-          </span>
-        </button>
-      );
-    return switching ? (
-      <button type="button" disabled className={s.bigBtn} aria-label={t("switching")}>
-        {spin}
-      </button>
-    ) : (
-      <button type="button" onClick={onSwitch} className={s.bigBtn} data-testid="welcome-switch">
-        <Icon name="swap" className="h-[22px] w-[22px]" strokeWidth={2.2} />
-        {t("switchTo", { name: APP_NET })}
-      </button>
-    );
-  }
   if (phase === "fund") {
     if (funding)
       return (
@@ -727,7 +812,7 @@ function BottomAction({
           {spin}
         </button>
       );
-    return network.name === "fuji" ? (
+    return FUJI ? (
       <a href={FAUCET_URL} target="_blank" rel="noreferrer" className={s.bigBtn} data-testid="faucet-link">
         <Icon name="external" className="h-5 w-5" />
         {t("faucet")}
@@ -739,37 +824,28 @@ function BottomAction({
       </button>
     );
   }
-  if (
-    phase === "device" ||
-    (lastAction === "device" && (phase === "signing" || phase === "rejected" || phase === "failed"))
-  )
+  if (phase === "device" || (lastAction === "device" && (phase === "signing" || phase === "failed")))
     return (
       <button
         type="button"
         onClick={onDevice}
-        disabled={busy}
+        disabled={busy || phase === "device"}
         className={s.bigBtn}
         data-testid="enable-device"
-        aria-label={busy ? t("signingAria") : undefined}
+        aria-label={busy || phase === "device" ? t("signingAria") : undefined}
       >
-        {busy ? (
+        {busy || phase === "device" ? (
           spin
         ) : (
           <>
-            <Icon name={phase === "device" ? "key" : "refresh"} className="h-5 w-5" strokeWidth={2.2} />
-            {phase === "device" ? t("enableDevice") : t("tryAgain")}
+            <Icon name="refresh" className="h-5 w-5" strokeWidth={2.2} />
+            {t("tryAgain")}
           </>
         )}
       </button>
     );
-  if (
-    phase === "register" ||
-    phase === "taken" ||
-    phase === "signing" ||
-    phase === "rejected" ||
-    phase === "failed"
-  ) {
-    const retry = phase === "rejected" || phase === "failed";
+  if (phase === "register" || phase === "taken" || phase === "signing" || phase === "failed") {
+    const retry = phase === "failed";
     const off = !busy && !retry && !available;
     return (
       <button

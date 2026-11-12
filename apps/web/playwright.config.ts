@@ -3,10 +3,12 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * E2E hành trình chính trên stack local thật (Anvil + Postgres + indexer + worker).
  * Chạy trước: `pnpm dev:local --seed --no-web`. Web là bản production build (tất định hơn `next dev`)
- * ở cổng 3100, với connector giả (Anvil account #2).
+ * ở cổng 3100, ví nhúng tự mở khoá bằng Anvil account #2 (key công khai của Anvil, chỉ local).
  */
 const PORT = Number(process.env.E2E_PORT || 3100);
 export const E2E_ACCOUNT = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc";
+/** Private key CÔNG KHAI của Anvil account #2 (mnemonic mặc định "test test … junk"). Chỉ dùng ở local. */
+const E2E_PRIVATE_KEY = "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -24,13 +26,13 @@ export default defineConfig({
     browserName: "chromium",
   },
   webServer: {
-    // Xoá fetch-cache của SSR: chain local bị reset thì id bài lặp lại, cache cũ (stale-while-revalidate) trả bài của lần chạy trước.
-    command: `rm -rf .next-e2e/cache/fetch-cache && pnpm exec next build && pnpm exec next start -p ${PORT}`,
+    // Xoá hẳn .next-e2e: fetch-cache SSR (chain local reset thì id bài lặp lại) và cache Turbopack giữ URL RPC/API cũ.
+    command: `rm -rf .next-e2e && pnpm exec next build && pnpm exec next start -p ${PORT}`,
     url: `http://localhost:${PORT}/brand/icon`,
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,
     env: {
-      NEXT_PUBLIC_E2E_ACCOUNT: E2E_ACCOUNT,
+      NEXT_PUBLIC_E2E_PRIVATE_KEY: E2E_PRIVATE_KEY,
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:42069",
       NEXT_PUBLIC_NETWORK: "local",
       NEXT_PUBLIC_RPC_URL: process.env.ANVIL_RPC_URL ?? "http://127.0.0.1:8545",

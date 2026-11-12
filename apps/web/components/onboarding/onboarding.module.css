@@ -544,3 +544,13 @@
     font-size: 30px;
   }
 }
+
+/* Bước tài khoản (tên + tên hiển thị + mật khẩu): thẻ nhỏ lại để form + nút vừa 1 màn điện thoại. */
+.cardCompact {
+  zoom: 0.72;
+}
+@media (max-height: 760px) {
+  .cardCompact {
+    zoom: 0.56;
+  }
+}

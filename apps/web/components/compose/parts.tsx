@@ -1,9 +1,10 @@
 "use client";
 
-import { DEFAULT_SESSION_FUNDING_WEI, KNOWN_CHANNELS, MAX_POST_BYTES } from "@socialonchain/protocol";
+import { KNOWN_CHANNELS, MAX_POST_BYTES } from "@socialonchain/protocol";
 import { useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
 import { formatAvax } from "@/lib/format";
+import { SESSION_FUNDING_WEI } from "@/lib/gas";
 import { gasLevel, useSession } from "@/lib/session";
 import { Ring } from "../bits";
 import { Icon } from "../Icon";
@@ -54,7 +55,7 @@ export function GasChip({ small = false }: { small?: boolean }) {
       >
         <span className="relative inline-flex">
           <Ring
-            value={Number(sessionBalance) / Number(DEFAULT_SESSION_FUNDING_WEI)}
+            value={Number(sessionBalance) / Number(SESSION_FUNDING_WEI)}
             size={small ? 22 : 26}
             stroke={3}
             danger={warn}

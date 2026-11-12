@@ -1,0 +1,37 @@
+{
+  "account": {
+    "account": "Tài khoản",
+    "signIn": "Đăng nhập",
+    "signupTitle": "Tạo tài khoản",
+    "loginTitle": "Đăng nhập",
+    "creating": "Đang tạo ví…",
+    "unlocking": "Đang mở khoá…",
+    "enablingDevice": "Đang bật thiết bị…",
+    "password": "Mật khẩu",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "passwordMin": "Tối thiểu {n} ký tự",
+    "noRecovery": "Quên mật khẩu là mất tài khoản · xuất khoá trong Cài đặt",
+    "haveAccount": "Đã có tài khoản? Đăng nhập",
+    "newAccount": "Chưa có tài khoản? Tạo mới",
+    "submitSignup": "Tạo tài khoản",
+    "submitLogin": "Đăng nhập",
+    "dripSkipped": "Tạm hết gas tặng · lấy AVAX test từ faucet",
+    "copied": "Đã chép",
+    "faucet": "Faucet",
+    "sending": "Đang gửi",
+    "ownerShort": "Ví còn {amount}",
+    "builderLater": "Tạo tài khoản xong, app đếm contract do ví của bạn deploy trên Avalanche.",
+    "logout": "Đăng xuất",
+    "exportKey": "Xuất khoá",
+    "exportHint": "Ai có khoá này là có tài khoản của bạn. Không gửi cho ai.",
+    "reveal": "Hiện khoá",
+    "copyKey": "Chép khoá",
+    "errors": {
+      "bad_credentials": "Sai tên hoặc mật khẩu",
+      "handle_taken": "Tên đã có chủ",
+      "rate_limited": "Thử nhiều quá · đợi 1 phút",
+      "failed": "Có lỗi · thử lại"
+    }
+  }
+}

@@ -5,18 +5,20 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { useDisconnect } from "wagmi";
 import { Button } from "@/components/bits";
 import { DmSettings } from "@/components/dm/DmSettings";
 import { Icon, type IconName } from "@/components/Icon";
+import { ExportKeySheet } from "@/components/settings/ExportKeySheet";
 import { LicensesSheet } from "@/components/settings/LicensesSheet";
 import { AutoIcon, Group, Row, Seg, Switch } from "@/components/settings/rows";
 import { SessionCard } from "@/components/settings/SessionCard";
 import { clientConfig } from "@/configs";
 import { api } from "@/lib/api";
+import { clearDmKeys } from "@/lib/dm";
+import { forgetWallet, useEmbeddedWallet } from "@/lib/embedded";
 import { useMyModeration, useUpdateSettings } from "@/lib/feeds";
 import { shortAddr } from "@/lib/format";
-import { useSession } from "@/lib/session";
+import { sweepKey, useSession } from "@/lib/session";
 
 /** Safety luôn bật (ẩn nội dung bất hợp pháp/doxxing/NSFW): không cho tắt ở client A. */
 const LOCKED = new Set(["mod:safety"]);
@@ -40,8 +42,11 @@ export default function SettingsPage() {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const qc = useQueryClient();
-  const { status, owner, me, token } = useSession();
-  const { disconnect } = useDisconnect();
+  const ta = useTranslations("account");
+  const { status, owner, me, token, session, discardKey } = useSession();
+  const wallet = useEmbeddedWallet();
+  const [exportOpen, setExportOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const updateSettings = useUpdateSettings();
   const moderation = useMyModeration();
   const [theme, setTheme] = useState<Theme>("system");
@@ -100,6 +105,21 @@ export default function SettingsPage() {
     const next = on ? [...new Set([...moderation, id])] : moderation.filter((x) => x !== id);
     await updateSettings({ moderation: next }).catch(() => undefined);
     setModPending(({ [id]: _, ...rest }) => rest);
+  }
+
+  /** Đăng xuất khỏi máy này: trả gas thừa của session key về ví, xoá session key, khoá DM và ví khỏi máy. */
+  async function logout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    if (session && owner) {
+      const sweep = sweepKey(session.pk, owner).catch(() => null);
+      await Promise.race([sweep, new Promise((r) => setTimeout(r, 5000))]);
+    }
+    if (owner) clearDmKeys(owner);
+    discardKey();
+    forgetWallet();
+    qc.clear();
+    router.push("/welcome");
   }
 
   async function saveProfile() {
@@ -249,11 +269,32 @@ export default function SettingsPage() {
         </Group>
       )}
 
+      {wallet.handle && (
+        <Group label={ta("account")}>
+          <Row
+            icon="key"
+            label={ta("exportKey")}
+            onClick={() => setExportOpen(true)}
+            testId="settings-export-key"
+          />
+        </Group>
+      )}
+
       {status !== "disconnected" && (
         <div className="pt-8">
-          <Button variant="ghost" className="h-11 w-full text-[var(--muted)]" onClick={() => disconnect()}>
-            <Icon name="logout" className="h-4 w-4" />
-            {t("disconnect")}
+          <Button
+            variant="ghost"
+            className="h-11 w-full text-[var(--muted)]"
+            onClick={() => void logout()}
+            disabled={loggingOut}
+            testId="settings-logout"
+          >
+            {loggingOut ? (
+              <span className="spinner" aria-hidden />
+            ) : (
+              <Icon name="logout" className="h-4 w-4" />
+            )}
+            {ta("logout")}
           </Button>
           <p className="mono mt-3 text-center text-[10px] text-[var(--muted)]">
             {clientConfig.appName} · {owner ? shortAddr(owner) : ""}
@@ -262,6 +303,9 @@ export default function SettingsPage() {
       )}
 
       <LicensesSheet open={licenses} onClose={() => setLicenses(false)} />
+      {wallet.handle && (
+        <ExportKeySheet open={exportOpen} onClose={() => setExportOpen(false)} handle={wallet.handle} />
+      )}
     </div>
   );
 }

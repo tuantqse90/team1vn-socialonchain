@@ -1,0 +1,37 @@
+{
+  "account": {
+    "account": "Account",
+    "signIn": "Log in",
+    "signupTitle": "Create account",
+    "loginTitle": "Log in",
+    "creating": "Creating wallet…",
+    "unlocking": "Unlocking…",
+    "enablingDevice": "Setting up this device…",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "passwordMin": "At least {n} characters",
+    "noRecovery": "No password reset · back up your key in Settings",
+    "haveAccount": "Have an account? Log in",
+    "newAccount": "New here? Create account",
+    "submitSignup": "Create account",
+    "submitLogin": "Log in",
+    "dripSkipped": "No gas gift right now · get test AVAX from the faucet",
+    "copied": "Copied",
+    "faucet": "Faucet",
+    "sending": "Sending",
+    "ownerShort": "Wallet has {amount}",
+    "builderLater": "Once your account exists, we count the contracts its wallet deployed on Avalanche.",
+    "logout": "Log out",
+    "exportKey": "Export key",
+    "exportHint": "Anyone with this key owns your account. Never share it.",
+    "reveal": "Reveal key",
+    "copyKey": "Copy key",
+    "errors": {
+      "bad_credentials": "Wrong handle or password",
+      "handle_taken": "Handle taken",
+      "rate_limited": "Too many tries · wait a minute",
+      "failed": "Something went wrong · try again"
+    }
+  }
+}
