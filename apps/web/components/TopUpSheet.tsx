@@ -138,13 +138,12 @@ function TopUpBody({ reason, onClose }: { reason: Reason; onClose: () => void })
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t("amount")}>
+            <div className="grid grid-cols-3 gap-2" role="group" aria-label={t("amount")}>
               {TOP_UP_OPTIONS.map((a) => (
                 <button
                   key={a}
                   type="button"
-                  role="radio"
-                  aria-checked={amount === a}
+                  aria-pressed={amount === a}
                   onClick={() => setAmount(a)}
                   disabled={step !== "pick" && step !== "fail"}
                   className={`press mono h-12 rounded-2xl text-[15px] font-semibold transition-colors ${
