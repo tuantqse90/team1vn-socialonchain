@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { formatUnits, parseSignature } from "viem";
-import { useReadContracts, useSignTypedData, useWriteContract } from "wagmi";
+import { useReadContracts } from "wagmi";
 import { Button, Empty, Ring } from "@/components/bits";
 import { Icon } from "@/components/Icon";
 import { clientConfig } from "@/configs";
@@ -13,6 +13,7 @@ import { track as trackEvent } from "@/lib/api";
 import { chain, contracts } from "@/lib/chain";
 import { useSession } from "@/lib/session";
 import { useTx } from "@/lib/tx";
+import { useMainWallet } from "@/lib/wallet";
 
 const PLAN_ID = 1;
 
@@ -21,8 +22,7 @@ export default function BillingPage() {
   const locale = useLocale();
   const { status, owner, me, refresh } = useSession();
   const { track } = useTx();
-  const { writeContractAsync } = useWriteContract();
-  const { signTypedDataAsync } = useSignTypedData();
+  const { writeContract: writeContractAsync, signTypedData: signTypedDataAsync } = useMainWallet();
   const [busy, setBusy] = useState(false);
 
   const enabled = Boolean(owner && contracts);

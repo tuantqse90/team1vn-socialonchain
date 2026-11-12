@@ -8,13 +8,20 @@ import { Icon } from "@/components/Icon";
 import { api } from "./api";
 import { chain, rpcUrl, txUrl } from "./chain";
 import { useSession } from "./session";
+import { isUserRejection } from "./wallet";
 
 export const publicClient = createPublicClient({ chain, transport: http(rpcUrl), pollingInterval: 500 });
 
 type Toast = { id: number; state: "sent" | "ok" | "fail"; hash?: string; label: string; error?: string };
+/** Kết quả tx: thành công có block + phí gas thật (wei); thất bại phân biệt người dùng huỷ ký. */
+export type TxResult =
+  | { ok: true; hash: Hash; blockNumber: bigint; fee: bigint }
+  | { ok: false; rejected: boolean; error: string };
 type TxCtx = {
   /** Chạy 1 tx, hiện toast có link explorer, đợi receipt, đợi indexer bắt kịp, rồi làm mới dữ liệu. */
   track: (label: string, send: () => Promise<Hash>) => Promise<boolean>;
+  /** Như `track` nhưng trả về receipt (block, phí) để UI hiện trạng thái thành công. */
+  trackTx: (label: string, send: () => Promise<Hash>) => Promise<TxResult>;
 };
 const Ctx = createContext<TxCtx | null>(null);
 
@@ -41,8 +48,8 @@ export function TxProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const track = useCallback(
-    async (label: string, send: () => Promise<Hash>) => {
+  const trackTx = useCallback(
+    async (label: string, send: () => Promise<Hash>): Promise<TxResult> => {
       const id = Date.now() + Math.random();
       setToasts((all) => [...all.slice(-3), { id, state: "sent", label }]);
       try {
@@ -54,20 +61,26 @@ export function TxProvider({ children }: { children: ReactNode }) {
         await waitIndexed(r.blockNumber);
         await qc.invalidateQueries();
         setTimeout(() => setToasts((all) => all.filter((x) => x.id !== id)), 6000);
-        return true;
+        return { ok: true, hash, blockNumber: r.blockNumber, fee: r.gasUsed * r.effectiveGasPrice };
       } catch (err) {
-        const msg =
-          (err as { shortMessage?: string; message?: string }).shortMessage ?? (err as Error).message;
+        const rejected = isUserRejection(err);
+        const msg = rejected
+          ? t("txRejected")
+          : ((err as { shortMessage?: string; message?: string }).shortMessage ?? (err as Error).message);
         update(id, { state: "fail", error: msg.slice(0, 140) });
-        setTimeout(() => setToasts((all) => all.filter((x) => x.id !== id)), 9000);
-        return false;
+        setTimeout(() => setToasts((all) => all.filter((x) => x.id !== id)), rejected ? 4000 : 9000);
+        return { ok: false, rejected, error: msg };
       }
     },
-    [qc, update],
+    [qc, update, t],
+  );
+  const track = useCallback(
+    async (label: string, send: () => Promise<Hash>) => (await trackTx(label, send)).ok,
+    [trackTx],
   );
 
   return (
-    <Ctx.Provider value={{ track }}>
+    <Ctx.Provider value={{ track, trackTx }}>
       {children}
       <div className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex flex-col items-center gap-2 px-4 md:bottom-6">
         {toasts.map((x) => {
@@ -79,9 +92,9 @@ export function TxProvider({ children }: { children: ReactNode }) {
               className="toast pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl bg-[var(--ink)] px-4 py-3 text-sm text-[var(--bg)] shadow-lg"
             >
               {x.state === "sent" && <span className="spinner" aria-hidden />}
-              {x.state === "ok" && <Icon name="check" className="h-4 w-4 text-emerald-400" />}
+              {x.state === "ok" && <Icon name="check" className="h-4 w-4 text-[var(--ok)]" />}
               {x.state === "fail" && <Icon name="alert" className="h-4 w-4 text-[var(--accent)]" />}
-              <span className="flex-1 truncate">
+              <span className="min-w-0 flex-1">
                 {x.label} ·{" "}
                 {x.state === "sent"
                   ? t("txSent")
@@ -133,5 +146,26 @@ export function useSessionWrite() {
       );
     },
     [sessionWallet, track],
+  );
+}
+
+/** Như `useSessionWrite` nhưng trả về receipt (block, phí trả từ session key). */
+export function useSessionWriteTx() {
+  const { sessionWallet } = useSession();
+  const { trackTx } = useTx();
+  return useCallback(
+    async (
+      label: string,
+      call: { address: `0x${string}`; abi: Abi; functionName: string; args: readonly unknown[] },
+    ): Promise<TxResult> => {
+      if (!sessionWallet?.account) return { ok: false, rejected: false, error: "no session key" };
+      const wallet = sessionWallet;
+      return trackTx(label, () =>
+        wallet.writeContract({ ...call, account: wallet.account!, chain } as Parameters<
+          typeof wallet.writeContract
+        >[0]),
+      );
+    },
+    [sessionWallet, trackTx],
   );
 }

@@ -205,6 +205,18 @@ export function useSession(): Ctx {
 
 /** Ngưỡng nhắc nạp gas: đủ cho ~5 bài ở 25 nAVAX/gas. */
 export const LOW_GAS_WEI = 10_000_000_000_000_000n; // 0.01 AVAX
+/** Dưới mức này coi như hết gas: khoá nút đăng, mở sheet nạp. */
+export const EMPTY_GAS_WEI = 100_000_000_000_000n; // 0.0001 AVAX
+/** Các mức nạp gợi ý cho session key (AVAX). */
+export const TOP_UP_OPTIONS = ["0.02", "0.05", "0.1"] as const;
+
+export type GasLevel = "ok" | "low" | "empty";
+export function gasLevel(balance: bigint | undefined): GasLevel {
+  if (balance === undefined) return "ok";
+  if (balance < EMPTY_GAS_WEI) return "empty";
+  if (balance < LOW_GAS_WEI) return "low";
+  return "ok";
+}
 
 /**
  * Trả phần gas còn lại của session key về ví owner (ký bằng chính key đó, không popup).

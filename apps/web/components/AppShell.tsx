@@ -16,6 +16,7 @@ import { Avatar, Ring } from "./bits";
 import { useCompose } from "./Compose";
 import { Icon, type IconName } from "./Icon";
 import { Logo } from "./Logo";
+import { NetworkGuard } from "./NetworkGuard";
 
 type NavItem = { href: string; icon: IconName; key: string; match: (p: string) => boolean };
 
@@ -198,6 +199,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 <Icon name="search" className="h-[22px] w-[22px]" />
               </Link>
+              <NetworkGuard />
+              {/* DM: <InboxButton /> (nhánh phase-15-dm thêm vào đây khi merge) */}
               <SessionBadge />
               <Link
                 href="/settings"

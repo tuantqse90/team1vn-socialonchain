@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { keccak256, toBytes, zeroAddress } from "viem";
-import { useBalance, useReadContract, useWriteContract } from "wagmi";
+import { useBalance, useReadContract } from "wagmi";
 import { Button } from "@/components/bits";
 import { Icon, type IconName } from "@/components/Icon";
 import { Logo } from "@/components/Logo";
@@ -21,6 +21,7 @@ import { contracts, FAUCET_URL, network, rpcUrl } from "@/lib/chain";
 import { formatAvax } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import { useTx } from "@/lib/tx";
+import { useMainWallet } from "@/lib/wallet";
 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 /** Cần đủ để nạp gas cho session key + phí tx đăng ký. */
@@ -63,7 +64,7 @@ export default function Welcome() {
   const { openConnectModal } = useConnectModal();
   const { status, owner, prepareKey, refresh, token } = useSession();
   const { track: trackTx } = useTx();
-  const { writeContractAsync } = useWriteContract();
+  const { writeContract: writeContractAsync } = useMainWallet();
   const bal = useBalance({ address: owner, query: { enabled: Boolean(owner), refetchInterval: 10_000 } });
   const [handle, setHandle] = useState("");
   const [debounced, setDebounced] = useState("");

@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useState } from "react";
-import { useDisconnect, useSendTransaction, useWriteContract } from "wagmi";
+import { useDisconnect } from "wagmi";
 import { Button, Ring } from "@/components/bits";
 import { Icon, type IconName } from "@/components/Icon";
 import { clientConfig } from "@/configs";
@@ -21,6 +21,7 @@ import { useMyModeration, useUpdateSettings } from "@/lib/feeds";
 import { formatAvax, shortAddr } from "@/lib/format";
 import { LOW_GAS_WEI, sweepKey, useSession } from "@/lib/session";
 import { useTx } from "@/lib/tx";
+import { useMainWallet } from "@/lib/wallet";
 
 /** Safety luôn bật (ẩn nội dung bất hợp pháp/doxxing): không cho tắt ở client A. */
 const LOCKED = new Set(["mod:safety"]);
@@ -114,8 +115,7 @@ export default function SettingsPage() {
   const qc = useQueryClient();
   const { status, owner, me, session, sessionBalance, prepareKey, discardKey, refresh, token } = useSession();
   const { track } = useTx();
-  const { writeContractAsync } = useWriteContract();
-  const { sendTransactionAsync } = useSendTransaction();
+  const { writeContract: writeContractAsync, sendTransaction: sendTransactionAsync } = useMainWallet();
   const { disconnect } = useDisconnect();
   const updateSettings = useUpdateSettings();
   const moderation = useMyModeration();

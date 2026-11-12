@@ -49,6 +49,40 @@ const PATHS = {
   send: "M4 12 20 4l-6 16-3-7z",
   lock: "M6 11h12v10H6zM8 11V8a4 4 0 1 1 8 0v3",
   infinity: "M7 8c-2.2 0-4 1.8-4 4s1.8 4 4 4c4 0 6-8 10-8 2.2 0 4 1.8 4 4s-1.8 4-4 4c-4 0-6-8-10-8Z",
+  clock: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13v4.5l3 2",
+  peak: "M2 20 9 7l4 7 2.5-4L22 20ZM7.3 10.2 9 11.5l1.6-1.4",
+  trophy:
+    "M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5v1A3.5 3.5 0 0 0 8 10.5M16 6h3.5v1a3.5 3.5 0 0 1-3.5 3.5M12 13v4m-4 4h8l-1-4H9z",
+  briefcase: "M3 8h18v12H3zM9 8V5h6v3M3 13h18",
+  chat: "M3 4h12v9H8l-5 4zM18 8h3v12l-4-3H9v-2",
+  flame:
+    "M12 22c4 0 7-2.8 7-7 0-4-3-6-4-10-1.5 2-2.5 3.5-3 6-1-1-1.5-2-1.5-3.5C7.5 9.5 5 12 5 15c0 4.2 3 7 7 7Z",
+  nodes:
+    "M6 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM7.9 5.6l8.2 2.8M6.3 7l1.4 10M16.6 10.4 9.4 17.6",
+  swap: "M4 8h14l-4-4M20 16H6l4 4",
+  gamepad:
+    "M7 8h10a4 4 0 0 1 4 4v1a3 3 0 0 1-5.4 1.8L14.5 13h-5l-1.1 1.8A3 3 0 0 1 3 13v-1a4 4 0 0 1 4-4Zm0 2.5v3m-1.5-1.5h3M16 11h.01M18 13h.01",
+  megaphone: "M3 10v4h3l8 5V5l-8 5zM18 9a4 4 0 0 1 0 6M7 14l1 6h3l-1-5",
+  mail: "M3 5h18v14H3zm0 1 9 7 9-7",
+  idcard: "M3 5h18v14H3zM7 10a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm-1 6a3.5 3.5 0 0 1 6 0M14 9h4m-4 3h4m-4 3h2",
+  scan: "M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M4 12h16",
+  book: "M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z",
+  checks: "M2 12.5 6.5 17 15 8.5M10.5 15.5 12 17l8.5-8.5",
+  chevron: "M6 9l6 6 6-6",
+  chevronr: "M9 6l6 6-6 6",
+  eye: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+  share: "M12 3v12M8 7l4-4 4 4M5 12v8h14v-8",
+  refresh: "M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7",
+  code: "M8 7l-5 5 5 5M16 7l5 5-5 5",
+  minus: "M5 12h14",
+  toxic: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM8 16.5a5 5 0 0 1 8 0M9 9.5h.01M15 9.5h.01",
+  bars: "M5 20v-6M10 20V8M15 20v-9M20 20V4",
+  grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+  crown: "M3 8l4 4 5-7 5 7 4-4-2 11H5z",
+  school: "M2 9l10-5 10 5-10 5zM6 11v5c3 2.5 9 2.5 12 0v-5M22 9v6",
+  image: "M3 4h18v16H3zM3 16l5-5 4 4 3-3 6 6M15.5 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z",
+  network:
+    "M12 3v3M12 18v3M3 12h3M18 12h3M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM5.6 5.6l2.2 2.2M16.2 16.2l2.2 2.2M5.6 18.4l2.2-2.2M16.2 7.8l2.2-2.2",
 } satisfies Record<string, string>;
 
 export type IconName = keyof typeof PATHS;
@@ -57,10 +91,12 @@ export function Icon({
   name,
   className = "h-5 w-5",
   filled = false,
+  strokeWidth = 1.8,
 }: {
   name: IconName;
   className?: string;
   filled?: boolean;
+  strokeWidth?: number;
 }) {
   return (
     <svg
@@ -68,7 +104,7 @@ export function Icon({
       className={className}
       fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
-      strokeWidth={1.8}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden

@@ -36,7 +36,9 @@
     "you": "Bạn",
     "on": "Bật",
     "off": "Tắt",
-    "more": "Thêm"
+    "more": "Thêm",
+    "verifiedBuilder": "Builder đã xác minh · {n} contract",
+    "txRejected": "Đã huỷ ký, chưa trừ gas"
   },
   "onboarding": {
     "title": "Tham gia",
@@ -234,5 +236,29 @@
     "blocks": "{n} block",
     "queues": "Hàng đợi",
     "jobs": "Job"
+  },
+  "follow": {
+    "follow": "Follow",
+    "unfollow": "Bỏ follow",
+    "following": "Đang follow",
+    "followBack": "Follow lại"
+  },
+  "topUp": {
+    "title": "Nạp gas",
+    "low": "Sắp hết gas",
+    "empty": "Hết gas",
+    "amount": "Số AVAX",
+    "confirmInWallet": "Xác nhận trong ví",
+    "funding": "Đang nạp",
+    "willSwitch": "Ví sẽ được chuyển sang mạng của app",
+    "cta": "Nạp {amount}",
+    "settings": "Cài đặt session key",
+    "later": "Để sau",
+    "done": "Xong"
+  },
+  "network": {
+    "wrong": "Sai mạng",
+    "switch": "Chuyển sang {name}",
+    "switched": "Đã ở {name}"
   }
 }

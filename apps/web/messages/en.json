@@ -36,7 +36,9 @@
     "you": "You",
     "on": "On",
     "off": "Off",
-    "more": "More"
+    "more": "More",
+    "verifiedBuilder": "Verified builder · {n, plural, one {# contract} other {# contracts}}",
+    "txRejected": "Signature cancelled, no gas spent"
   },
   "onboarding": {
     "title": "Join",
@@ -234,5 +236,29 @@
     "blocks": "{n} blocks",
     "queues": "Queues",
     "jobs": "Jobs"
+  },
+  "follow": {
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "following": "Following",
+    "followBack": "Follow back"
+  },
+  "topUp": {
+    "title": "Add gas",
+    "low": "Low on gas",
+    "empty": "Out of gas",
+    "amount": "Amount",
+    "confirmInWallet": "Confirm in wallet",
+    "funding": "Funding",
+    "willSwitch": "Switches your wallet to the app network",
+    "cta": "Top up {amount}",
+    "settings": "Session key settings",
+    "later": "Later",
+    "done": "Done"
+  },
+  "network": {
+    "wrong": "Wrong network",
+    "switch": "Switch to {name}",
+    "switched": "On {name}"
   }
 }

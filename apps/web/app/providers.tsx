@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useState } from "react";
 import { useAccount, useConnect, WagmiProvider } from "wagmi";
 import { ComposeProvider } from "@/components/Compose";
+import { TopUpProvider } from "@/components/TopUpSheet";
 import { clientConfig } from "@/configs";
 import { SessionProvider } from "@/lib/session";
 import { TxProvider } from "@/lib/tx";
@@ -55,7 +56,9 @@ export function Providers({ children }: { children: ReactNode }) {
           {E2E_ACCOUNT && <E2EAutoConnect />}
           <SessionProvider>
             <TxProvider>
-              <ComposeProvider>{children}</ComposeProvider>
+              <TopUpProvider>
+                <ComposeProvider>{children}</ComposeProvider>
+              </TopUpProvider>
             </TxProvider>
           </SessionProvider>
         </RainbowKitProvider>
