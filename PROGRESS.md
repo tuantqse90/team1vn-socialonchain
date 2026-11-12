@@ -6,10 +6,11 @@
 > - Sub-task chi tiết của từng phase nằm trong PLAN.md.
 
 **Cập nhật:** 2026-11-12
-**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM)** xong + verify local trên nhánh `phase-15-dm`, chưa merge vào `main`. Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
+**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local trên nhánh `phase-15-ui-design-sync` (đã gộp `phase-15-dm`), **chờ người dùng đồng ý mới ff `main` + push**. Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
 
 ## Bước tiếp theo
 
+0. **Người dùng đồng ý** merge `phase-15-ui-design-sync` vào `main` (ff) + push.
 1. **Người dùng duyệt** (P1, P8, P13 là [REVIEW]): schema event + quyền delegate (`docs/ARCHITECTURE.md` §6), contract thanh toán (`contracts/src/TestUSD.sol`, `PlanPayments.sol`).
 2. Có ví deployer + test AVAX → `forge script` deploy lên Fuji → điền `packages/protocol/deployments/43113.json`.
 3. Railway (Postgres + indexer + worker) và Vercel (web), đặt secrets → chạy lại e2e trên URL public.
@@ -26,7 +27,7 @@
 | P0 | Khung dự án | ✅ (CI GitHub xanh: contracts + ts, có integration test) |
 | P1 | Contract lõi **[REVIEW]** | 🟡 forge 58 test ✅, Slither 0 high ✅; **chờ người dùng duyệt** |
 | P2 | Indexer + API cơ bản | ✅ (indexer viem, không Ponder) |
-| P3 | Walking skeleton online | 🟡 e2e local 9/9 ✅; deploy Fuji/Railway/Vercel ⛔ |
+| P3 | Walking skeleton online | 🟡 e2e local 10/10 ✅; deploy Fuji/Railway/Vercel ⛔ |
 | P4 | Feed engine (chưa LLM) | ✅ |
 | P5 | Đọc Farcaster | 🟡 fixture ✅; Neynar thật ⛔ (thiếu key) |
 | P6 | Labeler LLM + eval | 🟡 heuristic F1 0.776 (chưa đạt ≥ 0.8/nhãn); LLM ⛔ (thiếu key) |
@@ -39,12 +40,13 @@
 | P12 | Thông báo + tìm kiếm | ✅ |
 | P13 | Thanh toán tUSD **[REVIEW]** | 🟡 e2e local ✅ (faucet + permit); Fuji ⛔; **chờ duyệt contract** |
 | P14 | Client B + đo lường | 🟡 client B build + chạy local ✅; Vercel ⛔; bấm giờ fork cần người ngoài ⛔ |
-| P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; nhánh chưa merge |
+| P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; đã gộp vào nhánh design sync, chưa merge `main` |
+| P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối); intro onboarding chưa kết nối ví + client B chưa chụp; nhánh chưa merge |
 
 ## Blockers / câu hỏi mở
 
 - **Cần từ người dùng:** ví deployer có test AVAX (Fuji), tài khoản Railway + Vercel, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`, WalletConnect project id (`NEXT_PUBLIC_WC_PROJECT_ID`), `LABELER_PRIVATE_KEY` (ví riêng).
-- **Merge 2 nhánh song song:** session UI đang làm `phase-15-ui-design-sync` (worktree riêng) và viết lại AppShell/settings/profile. Khi merge: chèn lại `<InboxButton />` (header, đã để sẵn slot) + `<InboxButton variant="rail" />`, `<MessageButton />` cạnh nút Follow, `<DmSettings />` trong Cài đặt; migration của họ là `0005_channels`, sau `0004_dm` (sửa journal nếu cần).
+- **Merge:** nhánh DM + UI đã gộp ở `phase-15-ui-design-sync` (`cffedd3`); chờ người dùng đồng ý ff `main` + push. Worktree UI: `../team1vn-socialonchain-ui`.
 - **Tên sản phẩm / npm scope:** đang dùng `socialonchain` / `@socialonchain/*`.
 - Chưa có CSP header (rủi ro XSS với session key trong localStorage); nên làm trước Alpha.
 
@@ -77,9 +79,24 @@
 | 2026-11-12 | Người lạ: tối đa 3 tin tới khi được chấp nhận, 20 người lạ mới/ngày, 30 tin/phút, phải đăng ký onchain | Chống spam khi server không đọc được nội dung |
 | 2026-11-12 | Twemoji v17.0.3: đóng gói 56 SVG trong `apps/web/public/emoji` (không CDN); credit CC-BY ở Cài đặt › Giấy phép | Không lộ IP/emoji người dùng cho CDN; đúng giấy phép |
 | 2026-11-12 | Chuỗi i18n của DM ở `messages/dm.<locale>.json`; icon DM inline trong `components/dm` | Tránh xung đột với nhánh UI đang sửa `en.json`/`vi.json` và `packages/ui` |
+| 2026-11-12 | API design sync chỉ **thêm** (field `origins`, `viewerFollows`, `registeredBlock`, `topTopics`, `subscribers`, `labelers`, `parent`; endpoint `/builders`, `/channels`, `?kind=`); không đổi/xoá gì | Interface công khai: thêm thì client cũ không vỡ |
+| 2026-11-12 | Lý do report: thêm `shill`, `toxic`, `nsfw`; API vẫn nhận `harassment`, `other` | Theo sheet report 6 ô của design; tương thích client cũ |
+| 2026-11-12 | Tham gia kênh = offchain (`app.user_settings.channels`, migration `0005_channels`); `KNOWN_CHANNELS` thêm infra/defi/gaming/ai | Không cần tx/gas; kênh onchain vẫn là field `channel` của bài |
+| 2026-11-12 | Mọi tx/chữ ký của ví chính đi qua `useMainWallet` (ép `chainId`, đổi mạng trước) | Ví đang ở C-Chain mainnet thì không bao giờ gửi tx thật |
+| 2026-11-12 | Theo design nhưng giữ: quota Pro 200/50 (code), `mod:safety` khoá; bỏ trường "trường học" ở onboarding; quét builder chỉ cho chính owner | Không đổi giá/quyền đã chốt; không thu thông tin cá nhân |
+| 2026-11-12 | Client B đổi tên "Snowfield" → "Phố Builder" (vàng #F5B53D, mặc định tối) | Theo design canvas; chỉ đổi `configs/b.ts` |
+| 2026-11-12 | DM gắn vào shell mới: chat full-screen trên mobile như thread; credit Twemoji chuyển vào sheet Giấy phép | Thống nhất với design mới; giữ đúng CC-BY |
+| 2026-11-12 | Playwright xoá `.next-e2e/cache/fetch-cache` trước khi build | Reset chain local làm id bài lặp lại → SSR trả bài cũ từ cache |
 | 2026-11-11 | Sentry web nạp động trong `instrumentation-client.ts` khi có DSN; `@sentry/browser` 11.11.0 | Không tốn byte khi không có DSN; 11.12.0 vi phạm `minimumReleaseAge` của pnpm |
 
 ## Session log (mới nhất ở trên)
+
+### 2026-11-12 (session 5: P15b đồng bộ UI theo design canvas + gộp DM)
+- Worktree riêng `../team1vn-socialonchain-ui`, nhánh `phase-15-ui-design-sync`, stack cô lập (Anvil 8555, API 42079, DB `socialonchain_ui`, web 3010, e2e 3110). 5 agent làm song song theo màn, rồi gộp i18n vào `en.json`/`vi.json` (556 key, EN/VI khớp).
+- Commit: `10836d1` API, `8f81bf5`+`ac4c39b` foundations, `a675b35` dev tooling, `df13e04` màn hình, `cffedd3` gộp `phase-15-dm` + gắn DM.
+- **Đã verify thật (local):** `pnpm lint` + `pnpm typecheck` sạch; `pnpm test`: forge 58, feed-sdk 29, protocol 11, farcaster 2, worker 7, indexer integration 10 (gồm test API design sync + DM); `drizzle-kit check` OK; Playwright e2e **10/10** trên production build; chụp màn sáng/tối của mọi màn chính + DM trong shell mới.
+- Sự cố: 1 lần `pnpm test` fail ở test DM ngay sau khi tạo lại DB, 5 lần chạy sau đều pass, chưa tái hiện. DB test cũ của worktree đã chạy `0005` trước `0004` nên phải tạo lại (DB khác không bị).
+- **Chưa verify:** intro onboarding khi chưa kết nối ví (e2e tự kết nối); client B; Fuji; ví thật.
 
 ### 2026-11-12 (session 4: P15 tin nhắn riêng)
 - Người dùng chốt: PWA, không gọi điện, làm DM ngay. Thêm P15 vào PLAN; CLAUDE.md/INIT_PROMPT "Chưa làm" đổi DM → gọi thoại/video.
@@ -95,5 +112,3 @@
 - CI GitHub run `43051151040` xanh (sau khi sửa: job `ts` từng gọi `forge` mà không cài Foundry).
 - **Chưa verify:** mọi thứ trên Fuji/Railway/Vercel; labeler + compiler bản LLM; Neynar và Avalanche Data API thật; Sentry thật.
 
-### 2026-11-11 (session 2)
-- Viết lại `CLAUDE.md`, `PROGRESS.md` theo INIT_PROMPT v6; thêm `PLAN.md`, `docs/ARCHITECTURE.md`. Kiểm tra công cụ trên máy.

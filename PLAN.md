@@ -25,6 +25,7 @@
 | P13 | Thanh toán tUSD | 1.5 ngày | ✔ contract thanh toán |
 | P14 | Client B + đo lường | 1 ngày | |
 | P15 | Tin nhắn riêng (DM), thêm ngày 2026-11-12 | 1.5 ngày | |
+| P15b | Đồng bộ UI theo design canvas nâng cấp, thêm ngày 2026-11-12 | 1 ngày | |
 | **Giai đoạn 1** | | **khoảng 9–10 ngày** | |
 
 ## Điều kiện tiên quyết
@@ -208,6 +209,16 @@
 - [x] Seed: 5 builder có khoá nhắn tin; e2e: bật khoá → người lạ nhắn → Yêu cầu → chấp nhận → thả ❤️ → trả lời có Twemoji → người kia giải mã được
 - **Xong khi:** hai ví nhắn qua lại được trên Fuji, server chỉ thấy ciphertext; người lạ vào Yêu cầu, người mình follow vào Chính.
 
+### P15b. Đồng bộ UI theo design canvas nâng cấp · 1 ngày
+> Người dùng yêu cầu ngày 2026-11-12: "giao diện có gì mới chưa làm thì làm luôn". Nhánh `phase-15-ui-design-sync` (đã merge `phase-15-dm`).
+- [x] Foundations: token màu/trạng thái (sáng + tối), motion (`--spring`, `--bouncy`, keyframe), icon mới, `kit.tsx` (Verified, Segmented, CountUp, Burst, BigRing, Eq)
+- [x] An toàn ví chính: `useMainWallet` ép `chainId` + đổi mạng trước mọi tx/chữ ký; chip sai mạng; sheet nạp gas cho session key
+- [x] API bổ sung (chỉ thêm field/endpoint): `origins`, `viewerFollows`, `registeredBlock`, `topTopics`, `?kind=`, `/builders`, `/channels` + join (`user_settings.channels`, migration `0005_channels`), `subscribers`, `labelers`, `parent` trong thông báo, lý do report mới + integration test
+- [x] Màn hình: Home/feed/thread, Why, report, compose, thông báo, Explore, kênh, hồ sơ (IdCard), cài đặt, billing, feed builder, feeds, import, onboarding (intro + vai trò + các trạng thái ví); client B "Phố Builder"
+- [x] Gắn DM vào shell mới: hộp thư ở header + rail, nút nhắn tin trên hồ sơ, mục Tin nhắn trong Cài đặt, credit Twemoji trong sheet Giấy phép, chat full-screen trên mobile
+- [ ] Soát màn intro onboarding khi chưa kết nối ví và client B trên máy thật — _e2e tự kết nối nên chưa chụp_
+- **Xong khi:** lint + typecheck sạch; Vitest + e2e xanh trên stack local; chụp màn sáng/tối khớp design; người dùng duyệt rồi mới merge vào `main`.
+
 ---
 
 ## Rủi ro
@@ -238,3 +249,4 @@ Giai đoạn 2–3 theo INIT_PROMPT §3:
 - cross-post;
 - quyết định có lên mainnet không.
 - Tin nhắn: push notification (Web Push), báo cáo tin nhắn, forward secrecy (double ratchet), ảnh đính kèm.
+- Phần design canvas chưa làm (P15b): mini app (Game/Agent/Dapp, phạm vi chưa chốt trong spec), xuất bản feed onchain + feed trả phí (cần FeedRegistry), upload ảnh, animation xếp hạng lại feed, avatar mini trong thread, quét contract theo yêu cầu (hiện worker quét định kỳ), avatar thành viên kênh (cần API).
