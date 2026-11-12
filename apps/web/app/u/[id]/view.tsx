@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { Empty, Sheet } from "@/components/bits";
+import { MessageButton } from "@/components/dm/MessageButton";
 import { FeedList } from "@/components/FeedList";
 import { useFollow } from "@/components/FollowButton";
 import { Icon } from "@/components/Icon";
@@ -284,7 +285,7 @@ function Hero({
               )}
               {f.following ? t("following") : u.viewer?.followedBy ? t("followBack") : t("follow")}
             </button>
-            {/* DM: <MessageButton address={u.address} /> */}
+            <MessageButton address={u.address} size="lg" />
             <ShareButton title={name} path={path} />
           </>
         )}

@@ -19,7 +19,21 @@ const OSS = [
   },
   { name: "Be Vietnam Pro", license: "OFL-1.1", url: "https://fonts.google.com/specimen/Be+Vietnam+Pro" },
   { name: "Geist Mono", license: "OFL-1.1", url: "https://github.com/vercel/geist-font" },
-] as const;
+  {
+    // CC-BY 4.0: ghi công tác giả + link giấy phép (SVG đóng gói trong public/emoji, không CDN).
+    name: "Twemoji 17.0.3",
+    note: "© 2019 Twitter, Inc and other contributors",
+    license: "CC-BY 4.0",
+    url: "https://github.com/jdecked/twemoji",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+  },
+] as const satisfies readonly {
+  name: string;
+  license: string;
+  url: string;
+  note?: string;
+  licenseUrl?: string;
+}[];
 
 export function LicensesSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useTranslations("settings");
@@ -29,22 +43,39 @@ export function LicensesSheet({ open, onClose }: { open: boolean; onClose: () =>
         className="stagger divide-y divide-[var(--line)] overflow-hidden rounded-[22px] bg-[var(--soft)]"
         data-testid="licenses"
       >
-        {OSS.map((o) => (
-          <li key={o.name}>
-            <a
-              href={o.url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex min-h-[52px] items-center gap-3 px-4 transition-colors active:bg-[var(--line)]"
-            >
-              <span className="min-w-0 flex-1 text-[15px] font-semibold">{o.name}</span>
-              <span className="mono shrink-0 rounded-full bg-[var(--bg)] px-2 py-0.5 text-[11px] font-bold tracking-[.06em]">
-                {o.license}
-              </span>
-              <Icon name="external" className="h-4 w-4 shrink-0 text-[var(--muted)]" />
-            </a>
-          </li>
-        ))}
+        {OSS.map((o) => {
+          const note = "note" in o ? o.note : null;
+          const licenseUrl = "licenseUrl" in o ? o.licenseUrl : null;
+          const pill =
+            "mono shrink-0 rounded-full bg-[var(--bg)] px-2 py-0.5 text-[11px] font-bold tracking-[.06em]";
+          return (
+            <li key={o.name} className="flex min-h-[52px] items-center gap-3 px-4">
+              <a
+                href={o.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex min-w-0 flex-1 items-center gap-3 self-stretch py-2"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-semibold">{o.name}</span>
+                  {note && <span className="block text-[12px] text-[var(--muted)]">{note}</span>}
+                </span>
+                {!licenseUrl && <span className={pill}>{o.license}</span>}
+                <Icon name="external" className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+              </a>
+              {licenseUrl && (
+                <a
+                  href={licenseUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`${pill} underline-offset-2 hover:underline`}
+                >
+                  {o.license}
+                </a>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </Sheet>
   );

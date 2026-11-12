@@ -12,6 +12,7 @@ import { api } from "@/lib/api";
 import { network } from "@/lib/chain";
 import { gasLevel, useSession } from "@/lib/session";
 import { useCompose } from "./Compose";
+import { InboxButton } from "./dm/InboxButton";
 import { Icon, type IconName } from "./Icon";
 import { Logo } from "./Logo";
 import { NetworkGuard } from "./NetworkGuard";
@@ -257,8 +258,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   const bare = pathname.startsWith("/welcome");
-  // Trang thread có header riêng (quay lại + tiêu đề) và thanh trả lời dính đáy: ẩn header + tab bar trên mobile.
-  const thread = pathname.startsWith("/p/");
+  // Thread và khung chat có header riêng (quay lại + tiêu đề) và thanh nhập dính đáy: ẩn header + tab bar trên mobile.
+  const thread = pathname.startsWith("/p/") || /^\/messages\/[^/]+/.test(pathname);
   const dot = (unread.data ?? 0) > 0 && !notifs.match(pathname);
   const tab = (i: NavItem, size: string) => (
     <Tab
@@ -284,6 +285,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Logo size={34} />
           </Link>
           {[home, explore, feeds, notifs, profile].map((i) => tab(i, "h-14 w-14"))}
+          <InboxButton variant="rail" />
           <button
             type="button"
             onClick={() => compose.open()}
@@ -321,7 +323,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </span>
               <div className="flex-1" />
               <NetworkGuard />
-              {/* DM: <InboxButton /> (nhánh phase-15-dm thêm vào đây khi merge) */}
+              <InboxButton />
               <SessionChip className="max-md:order-first" />
               {status !== "ready" && (
                 <Link

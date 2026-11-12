@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useDisconnect } from "wagmi";
 import { Button } from "@/components/bits";
+import { DmSettings } from "@/components/dm/DmSettings";
 import { Icon, type IconName } from "@/components/Icon";
 import { LicensesSheet } from "@/components/settings/LicensesSheet";
 import { AutoIcon, Group, Row, Seg, Switch } from "@/components/settings/rows";
@@ -146,7 +147,7 @@ export default function SettingsPage() {
         </Group>
       )}
 
-      {/* DM: <DmSettings /> */}
+      <DmSettings />
 
       <Group label={t("app")}>
         <Row icon="shield" label={t("labeler")} testId="settings-labeler">

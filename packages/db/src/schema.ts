@@ -345,3 +345,61 @@ export const workerState = app.table("worker_state", {
   value: jsonb("value").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Tin nhắn riêng (DM) mã hoá đầu cuối, KHÔNG lên chain. Server chỉ giữ ciphertext + metadata.
+ * Khoá công khai nhắn tin do owner ký xác nhận; giữ cả lịch sử để giải mã tin cũ sau khi đổi khoá.
+ */
+export const dmKeys = app.table(
+  "dm_keys",
+  {
+    address: text("address").notNull(),
+    publicKey: text("public_key").notNull(),
+    signature: text("signature").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.address, t.publicKey] }),
+    index("dm_keys_addr_idx").on(t.address, t.createdAt),
+  ],
+);
+
+export const dmMessages = app.table(
+  "dm_messages",
+  {
+    id: serial("id").primaryKey(),
+    pair: text("pair").notNull(), // `${min(a,b)}:${max(a,b)}`
+    sender: text("sender").notNull(),
+    recipient: text("recipient").notNull(),
+    senderKey: text("sender_key").notNull(),
+    recipientKey: text("recipient_key").notNull(),
+    nonce: text("nonce").notNull(),
+    ciphertext: text("ciphertext").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("dm_messages_pair_idx").on(t.pair, t.id),
+    index("dm_messages_sender_idx").on(t.sender, t.createdAt),
+  ],
+);
+
+/** Trạng thái hộp thư theo từng người: (owner, peer). state: open | accepted | declined. */
+export const dmThreads = app.table(
+  "dm_threads",
+  {
+    owner: text("owner").notNull(),
+    peer: text("peer").notNull(),
+    state: text("state").notNull().default("open"),
+    lastMessageId: integer("last_message_id").notNull().default(0),
+    lastIncomingId: integer("last_incoming_id").notNull().default(0),
+    lastReadId: integer("last_read_id").notNull().default(0),
+    /** Số tin owner đã gửi trong thread này (giới hạn tin khi người kia chưa chấp nhận). */
+    sentCount: integer("sent_count").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.owner, t.peer] }),
+    index("dm_threads_owner_idx").on(t.owner, t.lastMessageId),
+  ],
+);

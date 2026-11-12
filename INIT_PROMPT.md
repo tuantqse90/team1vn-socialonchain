@@ -100,7 +100,8 @@ Mỗi giai đoạn có tiêu chí để chuyển sang giai đoạn sau. Không n
 - Quyết định có chuyển lên mainnet hay không. Nếu có thì thay tUSD bằng USDC thật.
 
 ### Chưa làm
-Token, DAO/governance, proxy upgradeable, DM, app native (dùng PWA), relayer/tài trợ gas, đưa media lên chain.
+Token, DAO/governance, proxy upgradeable, gọi thoại/video, app native (dùng PWA), relayer/tài trợ gas, đưa media lên chain.
+_(2026-11-12: người dùng chốt làm DM ngay, xem PLAN.md P15; bỏ gọi thoại/video; giữ PWA.)_
 
 ## 4. Kiến trúc và công nghệ
 

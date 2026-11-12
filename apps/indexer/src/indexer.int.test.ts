@@ -6,6 +6,12 @@ import { prepareTestDb } from "@socialonchain/db/testing";
 import { FixtureFarcaster } from "@socialonchain/farcaster";
 import {
   channelHash,
+  dmBindMessage,
+  dmDecrypt,
+  dmDeriveMessage,
+  dmEncrypt,
+  dmKeyFromSignature,
+  dmSharedKey,
   getDeployment,
   identityRegistryAbi,
   type LabelBatch,
@@ -127,7 +133,7 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     const created = createDb(testDb);
     pool = created.pool;
     await created.db.execute(
-      "truncate chain.users, chain.delegates, chain.follows, chain.posts, chain.reactions, chain.payments, chain.indexer_state, app.notifications, app.labels, app.author_labels, app.label_batches, app.usage, app.compile_cache, app.saved_feeds, app.events, app.user_settings, app.reports, app.blocklist" as never,
+      "truncate chain.users, chain.delegates, chain.follows, chain.posts, chain.reactions, chain.payments, chain.indexer_state, app.notifications, app.labels, app.author_labels, app.label_batches, app.usage, app.compile_cache, app.saved_feeds, app.events, app.user_settings, app.reports, app.blocklist, app.dm_keys, app.dm_messages, app.dm_threads" as never,
     );
     const env = loadEnv({
       DATABASE_URL: testDb,
@@ -477,5 +483,185 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     const reply = notes.items.find((n) => n.kind === "reply");
     expect(reply?.parent?.id).toMatch(/^oc:0x/);
     expect(typeof reply?.actor.viewerFollows).toBe("boolean");
+  });
+
+  it("dm: keys bound by owner signature, E2E ciphertext, inbox main/requests, request limit, accept/decline", async () => {
+    type Acc = ReturnType<typeof privateKeyToAccount>;
+    const dave = privateKeyToAccount(generatePrivateKey()); // chưa đăng ký
+    await send(carol, {
+      address: d.IdentityRegistry,
+      abi: identityRegistryAbi,
+      functionName: "register",
+      args: ["carol", ""],
+      chain: anvil,
+      account: carol,
+    });
+    // bob follow carol → carol có 1 "bạn chung" với alice (alice follow bob)
+    await send(bob, {
+      address: d.SocialGraph,
+      abi: socialGraphAbi,
+      functionName: "follow",
+      args: [bob.address, carol.address],
+      chain: anvil,
+      account: bob,
+    });
+    await indexer.catchUp();
+
+    const req = async (token: string, path: string, init: { method?: string; json?: unknown } = {}) => {
+      const r = await app.request(path, {
+        method: init.method ?? "GET",
+        headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+        body: init.json === undefined ? undefined : JSON.stringify(init.json),
+      });
+      return { status: r.status, body: (await r.json()) as Record<string, unknown> & { [k: string]: never } };
+    };
+    const tok = async (acc: Acc) => (await login(acc, acc.address)).body.token;
+    const enable = async (acc: Acc, token: string) => {
+      const keys = await dmKeyFromSignature(await acc.signMessage({ message: dmDeriveMessage(acc.address) }));
+      const signature = await acc.signMessage({ message: dmBindMessage(acc.address, keys.publicKey) });
+      expect(
+        (await req(token, "/dm/key", { method: "PUT", json: { publicKey: keys.publicKey, signature } }))
+          .status,
+      ).toBe(200);
+      return keys;
+    };
+    const T = {
+      alice: await tok(alice),
+      bob: await tok(bob),
+      carol: await tok(carol),
+      dave: await tok(dave),
+    };
+    const K = {
+      alice: await enable(alice, T.alice),
+      bob: await enable(bob, T.bob),
+      carol: await enable(carol, T.carol),
+    };
+
+    // Khoá phải do chính owner ký: bob không công bố khoá hộ người khác được.
+    const forged = await bob.signMessage({ message: dmBindMessage(alice.address, K.bob.publicKey) });
+    expect(
+      (
+        await req(T.alice, "/dm/key", {
+          method: "PUT",
+          json: { publicKey: K.bob.publicKey, signature: forged },
+        })
+      ).status,
+    ).toBe(401);
+    const pubAlice = (await (await app.request(`/dm/keys/${alice.address}`)).json()) as {
+      current: { publicKey: string };
+    };
+    expect(pubAlice.current.publicKey).toBe(K.alice.publicKey);
+
+    const sendDm = async (
+      from: Acc,
+      fromKey: { privateKey: Hex; publicKey: Hex },
+      to: Acc,
+      toPub: Hex,
+      text: string,
+    ) => {
+      const k = await dmSharedKey(fromKey.privateKey, toPub, from.address, to.address);
+      const env = await dmEncrypt(k, { v: 1, t: "text", text }, from.address, to.address);
+      return req(
+        (T as Record<string, string>)[from === bob ? "bob" : from === carol ? "carol" : "alice"] as string,
+        "/dm/messages",
+        {
+          method: "POST",
+          json: { to: to.address, senderKey: fromKey.publicKey, recipientKey: toPub, ...env },
+        },
+      );
+    };
+
+    // bob → alice: alice follow bob → vào "main"; server chỉ thấy ciphertext.
+    const m1 = await sendDm(bob, K.bob, alice, K.alice.publicKey, "gm alice, chào 🔥");
+    expect(m1.status).toBe(201);
+    expect(String(m1.body.ciphertext)).not.toContain("chào");
+    const main = await req(T.alice, "/dm/threads?box=main");
+    const items = main.body.items as unknown as {
+      peer: { address: string };
+      unread: boolean;
+      lastMessage: { nonce: string; ciphertext: string };
+    }[];
+    const fromBob = items.find((i) => i.peer.address === bob.address.toLowerCase());
+    expect(fromBob?.unread).toBe(true);
+    const kAB = await dmSharedKey(K.alice.privateKey, K.bob.publicKey, alice.address, bob.address);
+    expect(await dmDecrypt(kAB, fromBob!.lastMessage, bob.address, alice.address)).toEqual({
+      v: 1,
+      t: "text",
+      text: "gm alice, chào 🔥",
+    });
+    expect((await req(T.alice, "/dm/unread")).body).toEqual({ main: 1, requests: 0 });
+    await req(T.alice, `/dm/threads/${bob.address}/read`, { method: "POST", json: { upTo: m1.body.id } });
+    expect((await req(T.alice, "/dm/unread")).body).toEqual({ main: 0, requests: 0 });
+
+    // carol → alice: người lạ → "requests", có 1 bạn chung; tối đa 3 tin khi chưa được chấp nhận.
+    for (let i = 0; i < 3; i++)
+      expect((await sendDm(carol, K.carol, alice, K.alice.publicKey, `hi ${i}`)).status).toBe(201);
+    const over = await sendDm(carol, K.carol, alice, K.alice.publicKey, "hi 3");
+    expect(over.status).toBe(429);
+    expect(over.body.error).toBe("request_pending");
+    const reqs = (await req(T.alice, "/dm/threads?box=requests")).body.items as unknown as {
+      peer: { address: string };
+      mutuals: number;
+    }[];
+    expect(reqs.map((r) => r.peer.address)).toEqual([carol.address.toLowerCase()]);
+    expect(reqs[0]?.mutuals).toBe(1);
+    expect((await req(T.alice, "/dm/unread")).body).toEqual({ main: 0, requests: 1 });
+
+    // Khoá cũ/sai → 409, client lấy khoá mới.
+    const stale = await req(T.carol, "/dm/messages", {
+      method: "POST",
+      json: {
+        to: alice.address,
+        senderKey: K.carol.publicKey,
+        recipientKey: K.bob.publicKey,
+        nonce: "AAAAAAAAAAAAAAAA",
+        ciphertext: "AAAA",
+      },
+    });
+    expect(stale.status).toBe(409);
+
+    // alice chấp nhận → carol vào main, gửi tiếp được.
+    expect(
+      (
+        await req(T.alice, `/dm/threads/${carol.address}/state`, {
+          method: "POST",
+          json: { state: "accepted" },
+        })
+      ).status,
+    ).toBe(200);
+    expect((await sendDm(carol, K.carol, alice, K.alice.publicKey, "thanks!")).status).toBe(201);
+    const mainAfter = (await req(T.alice, "/dm/threads?box=main")).body.items as unknown as {
+      peer: { address: string };
+    }[];
+    expect(mainAfter.map((i) => i.peer.address)).toContain(carol.address.toLowerCase());
+    const thread = (await req(T.alice, `/dm/threads/${carol.address}`)).body as unknown as {
+      messages: { sender: string }[];
+      box: string;
+    };
+    expect(thread.messages).toHaveLength(4);
+    expect(thread.box).toBe("main");
+
+    // alice từ chối bob → bob biến khỏi hộp thư của alice; bob không biết (vẫn gửi được như tin chờ).
+    await req(T.alice, `/dm/threads/${bob.address}/state`, { method: "POST", json: { state: "declined" } });
+    const mainDeclined = (await req(T.alice, "/dm/threads?box=main")).body.items as unknown as {
+      peer: { address: string };
+    }[];
+    expect(mainDeclined.map((i) => i.peer.address)).not.toContain(bob.address.toLowerCase());
+
+    // Chưa đăng ký onchain thì không gửi được.
+    await enable(dave, T.dave);
+    const daveSend = await req(T.dave, "/dm/messages", {
+      method: "POST",
+      json: {
+        to: alice.address,
+        senderKey: K.alice.publicKey,
+        recipientKey: K.alice.publicKey,
+        nonce: "AAAAAAAAAAAAAAAA",
+        ciphertext: "AAAA",
+      },
+    });
+    expect(daveSend.status).toBe(403);
+    // Không đăng nhập thì không đọc được hộp thư.
+    expect((await app.request("/dm/threads")).status).toBe(401);
   });
 });

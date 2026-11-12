@@ -1,5 +1,14 @@
 import { expect, type Page, test } from "@playwright/test";
-import { encodeFunctionData, parseAbi } from "viem";
+import {
+  dmDecrypt,
+  dmDeriveMessage,
+  dmEncrypt,
+  dmKeyFromSignature,
+  dmSharedKey,
+  sessionAuthMessage,
+} from "@socialonchain/protocol";
+import { type Address, encodeFunctionData, type Hex, keccak256, parseAbi, toBytes } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 /**
  * Hành trình cốt lõi, chạy trên chain + indexer thật ở local:
@@ -139,8 +148,21 @@ test.describe("đã đăng nhập", () => {
     await expect(follow).not.toHaveText(before ?? "");
   });
 
-  test("feed builder: lời nói → rule → preview rank() → lưu tab", async ({ page }) => {
+  test("feed builder: lời nói → rule → preview rank() → lưu tab", async ({ page, request }) => {
     await page.goto("/feeds/new");
+    // Chạy lại sau khi reset chain local: gói Pro (mua ở test cuối) mất, còn feed E2E cũ trong schema `app`
+    // thì vượt quota Free. Dọn feed E2E của lần chạy trước.
+    const token = await page.evaluate(
+      (k) => (JSON.parse(localStorage.getItem(k) ?? "null") as { token?: string } | null)?.token ?? null,
+      `soc:jwt:31337:${ACCOUNT}`,
+    );
+    const feeds = (await (await request.get(`${API}/feeds?viewer=${ACCOUNT}`)).json()) as {
+      mine: { id: string; name: string }[];
+    };
+    for (const f of feeds.mine.filter((x) => x.name.startsWith("E2E ")))
+      await request.delete(`${API}/feeds/${encodeURIComponent(f.id)}`, {
+        headers: { authorization: `Bearer ${token}` },
+      });
     await page
       .getByTestId("builder-input")
       .fill("ít bàn giá, ẩn shill, ưu tiên founder có nội dung, thêm thơ haiku");
@@ -199,5 +221,91 @@ test.describe("đã đăng nhập", () => {
     await buy.click();
     await waitTxOk(page);
     await expect(page.getByTestId("plan-card")).toContainText("Pro", { timeout: 30_000 });
+  });
+  test("tin nhắn E2E: bật khoá (1 chữ ký) → người lạ nhắn → Yêu cầu → chấp nhận → trả lời có Twemoji", async ({
+    page,
+    request,
+  }) => {
+    // 1) Bật tin nhắn trên "thiết bị" này: ký bằng ví (connector giả = Anvil #2), không tx.
+    await page.goto("/messages");
+    const enable = page.getByTestId("dm-enable");
+    const tabs = page.getByTestId("dm-tab-main");
+    await expect(enable.or(tabs)).toBeVisible();
+    if (await enable.isVisible()) await enable.click();
+    await expect(tabs).toBeVisible({ timeout: 30_000 });
+
+    // 2) Một builder trong seed (có khoá nhắn tin) mà ví e2e chưa follow nhắn tới, mã hoá ở phía Node.
+    const following = (await (await request.get(`${API}/users/${ACCOUNT}/following?limit=100`)).json()) as {
+      items: { address: string | null }[];
+    };
+    const followed = new Set(following.items.map((a) => a.address));
+    const persona = ["p08", "p09", "p10", "p11", "p12"]
+      .map((k) => privateKeyToAccount(keccak256(toBytes(`socialonchain-seed:${k}`))))
+      .find((a) => !followed.has(a.address.toLowerCase()));
+    expect(persona).toBeTruthy();
+    const p = persona as ReturnType<typeof privateKeyToAccount>;
+    const issuedAt = Math.floor(Date.now() / 1000);
+    const auth = { owner: p.address, key: p.address, chainId: 31337, issuedAt };
+    const login = (await (
+      await request.post(`${API}/auth/session`, {
+        data: { ...auth, signature: await p.signMessage({ message: sessionAuthMessage(auth) }) },
+      })
+    ).json()) as { token: string };
+    const pk = await dmKeyFromSignature(await p.signMessage({ message: dmDeriveMessage(p.address) }));
+    const mine = (await (await request.get(`${API}/dm/keys/${ACCOUNT}`)).json()) as {
+      current: { publicKey: Hex };
+    };
+    const k = await dmSharedKey(pk.privateKey, mine.current.publicKey, p.address, ACCOUNT as Address);
+    const ping = `e2e ping ${RUN} 🔥`;
+    const env = await dmEncrypt(k, { v: 1, t: "text", text: ping }, p.address, ACCOUNT as Address);
+    const sent = await request.post(`${API}/dm/messages`, {
+      headers: { authorization: `Bearer ${login.token}` },
+      data: { to: ACCOUNT, senderKey: pk.publicKey, recipientKey: mine.current.publicKey, ...env },
+    });
+    expect(sent.status()).toBe(201);
+
+    // 3) Trình duyệt tự giải mã. Lần chạy đầu: nằm ở Yêu cầu → chấp nhận; chạy lại: đã ở Chính.
+    await page.reload();
+    await page.getByTestId("dm-tab-requests").click();
+    // 🔥 hiện bằng ảnh Twemoji (alt), nên lọc theo phần chữ.
+    const reqRow = page.getByTestId("dm-thread").filter({ hasText: `e2e ping ${RUN}` });
+    const inRequests = await reqRow
+      .waitFor({ timeout: 10_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (inRequests) {
+      await reqRow.getByTestId("dm-accept").click();
+      await expect(reqRow).toHaveCount(0);
+    }
+    await page.getByTestId("dm-tab-main").click();
+    const row = page.getByTestId("dm-thread").filter({ hasText: `e2e ping ${RUN}` });
+    await expect(row).toBeVisible({ timeout: 20_000 });
+    await expect(row.locator('img[alt="🔥"]')).toBeVisible();
+
+    // 4) Mở cuộc trò chuyện, thả ❤️, trả lời có emoji → hiện bằng Twemoji.
+    await row.click();
+    const theirs = page.locator('[data-testid="dm-message"][data-mine="false"]').last();
+    await expect(theirs).toContainText(`e2e ping ${RUN}`);
+    await theirs.getByTestId("dm-bubble").click();
+    await page.getByRole("button", { name: /❤️/ }).click();
+    await expect(theirs.getByTestId("dm-reactions").locator('img[alt="❤️"]')).toBeVisible({ timeout: 15_000 });
+    const reply = `chào ${RUN} 🙏`;
+    await page.getByTestId("dm-input").fill(reply);
+    await page.getByTestId("dm-send").click();
+    const last = page.locator('[data-testid="dm-message"][data-mine="true"]').last();
+    await expect(last).toContainText(`chào ${RUN}`);
+    await expect(last.locator('img[alt="🙏"]')).toBeVisible();
+
+    // 5) Builder giải mã được câu trả lời (vòng E2E đủ 2 chiều); server chỉ giữ ciphertext.
+    const thread = (await (
+      await request.get(`${API}/dm/threads/${ACCOUNT}`, {
+        headers: { authorization: `Bearer ${login.token}` },
+      })
+    ).json()) as { messages: { sender: string; nonce: string; ciphertext: string; id: number }[] };
+    const fromMe = thread.messages.filter((m) => m.sender === ACCOUNT);
+    const texts = await Promise.all(fromMe.map((m) => dmDecrypt(k, m, ACCOUNT as Address, p.address)));
+    expect(texts.some((x) => x?.t === "text" && x.text === reply)).toBe(true);
+    expect(texts.some((x) => x?.t === "react" && x.emoji === "❤️")).toBe(true);
+    expect(JSON.stringify(thread)).not.toContain(`chào ${RUN}`);
   });
 });

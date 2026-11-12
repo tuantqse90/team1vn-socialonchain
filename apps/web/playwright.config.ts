@@ -24,7 +24,8 @@ export default defineConfig({
     browserName: "chromium",
   },
   webServer: {
-    command: `pnpm exec next build && pnpm exec next start -p ${PORT}`,
+    // Xoá fetch-cache của SSR: chain local bị reset thì id bài lặp lại, cache cũ (stale-while-revalidate) trả bài của lần chạy trước.
+    command: `rm -rf .next-e2e/cache/fetch-cache && pnpm exec next build && pnpm exec next start -p ${PORT}`,
     url: `http://localhost:${PORT}/brand/icon`,
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,

@@ -38,7 +38,7 @@ type C = Context<{ Variables: AppVars }>;
 const Addr = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
 const Hex32 = z.string().regex(/^0x[0-9a-fA-F]+$/);
 
-function requireAuth(c: C) {
+export function requireAuth(c: C) {
   const a = c.get("auth");
   if (!a) throw new HttpError(401, "unauthorized");
   return a;
@@ -54,7 +54,7 @@ export class HttpError extends Error {
   }
 }
 
-async function body<T extends z.ZodType>(c: C, schema: T): Promise<z.infer<T>> {
+export async function body<T extends z.ZodType>(c: C, schema: T): Promise<z.infer<T>> {
   let raw: unknown;
   try {
     raw = await c.req.json();

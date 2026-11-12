@@ -49,3 +49,15 @@ Viết thẳng để người dùng và dev bên ngoài biết họ đang dựa 
 - Labeler chỉ có một (ký bằng `LABELER_PRIVATE_KEY`); danh sách labeler tin cậy cấu hình ở indexer (`TRUSTED_LABELERS`).
 - Admin = danh sách địa chỉ trong `ADMIN_ADDRESSES`. Blocklist chỉ ẩn ở **client này**; dữ liệu onchain không đổi, client khác tự quyết.
 - Chưa có Sentry thật (thiếu DSN): lỗi chỉ nằm trong log pino.
+
+## Tin nhắn riêng
+
+- **Không có forward secrecy.** Khoá X25519 tĩnh theo ví: ai lấy được khoá riêng (hoặc chữ ký `dmDeriveMessage`) đọc được toàn bộ tin cũ lẫn mới. Chưa có double ratchet.
+- **Metadata không mã hoá:** server biết ai nhắn ai, lúc nào, độ dài xấp xỉ, ai chấp nhận/từ chối ai.
+- **Khoá riêng nằm trong localStorage** (giống session key): XSS là đọc được. Chưa có CSP header; nên làm trước Alpha.
+- **Cần ví ký tất định.** Ví ký không tất định (một số ví hợp đồng/passkey) cho ra khoá khác mỗi lần bật → thiết bị mới đổi khoá, tin mã hoá bằng khoá cũ không đọc được ở thiết bị đó.
+- **Đổi khoá thì mất đọc tin cũ** trên thiết bị không còn khoá cũ (hiện "Mã hoá bằng khoá cũ").
+- Không có gọi thoại/video (đã chốt bỏ), ảnh/file đính kèm, nhóm chat, chỉnh/xoá tin, đang soạn.
+- Chưa có push notification: hộp thư dùng polling (4–20 giây) khi app đang mở.
+- Admin **không đọc được** nội dung để kiểm duyệt; chỉ có giới hạn spam, hộp Yêu cầu và blocklist tác giả. Chưa có nút báo cáo tin nhắn.
+- Emoji: chỉ đóng gói 56 Twemoji (CC-BY 4.0, credit ở Cài đặt › Giấy phép); emoji khác hiện bằng font hệ thống.
