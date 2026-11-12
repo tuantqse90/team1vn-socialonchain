@@ -17,6 +17,7 @@
       "!packages/protocol/src/abis.ts",
       "!packages/protocol/deployments",
       "!packages/db/drizzle",
+      "!apps/web/public/emoji",
       "!**/*.md"
     ]
   },

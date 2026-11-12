@@ -14,6 +14,7 @@ import { formatAvax } from "@/lib/format";
 import { LOW_GAS_WEI, useSession } from "@/lib/session";
 import { Avatar, Ring } from "./bits";
 import { useCompose } from "./Compose";
+import { InboxButton } from "./dm/InboxButton";
 import { Icon, type IconName } from "./Icon";
 import { Logo } from "./Logo";
 
@@ -152,6 +153,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Logo size={34} />
           </Link>
           {items.map((i) => navLink(i, "h-14 w-14"))}
+          <InboxButton variant="rail" />
           <button
             type="button"
             onClick={() => compose.open()}
@@ -198,6 +200,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 <Icon name="search" className="h-[22px] w-[22px]" />
               </Link>
+              <InboxButton />
               <SessionBadge />
               <Link
                 href="/settings"

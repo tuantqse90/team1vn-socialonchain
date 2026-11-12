@@ -13,6 +13,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useState } from "react";
 import { useDisconnect, useSendTransaction, useWriteContract } from "wagmi";
 import { Button, Ring } from "@/components/bits";
+import { DmSettings } from "@/components/dm/DmSettings";
 import { Icon, type IconName } from "@/components/Icon";
 import { clientConfig } from "@/configs";
 import { api } from "@/lib/api";
@@ -396,6 +397,8 @@ export default function SettingsPage() {
           </div>
         </Section>
       )}
+
+      <DmSettings />
 
       <nav className="grid grid-cols-4 gap-2 px-4 py-5">
         {(

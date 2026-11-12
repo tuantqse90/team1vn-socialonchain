@@ -7,9 +7,12 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createDb, profiles } from "@socialonchain/db";
+import { createDb, dmKeys, profiles } from "@socialonchain/db";
 import {
   channelHash,
+  dmBindMessage,
+  dmDeriveMessage,
+  dmKeyFromSignature,
   getDeployment,
   identityRegistryAbi,
   postsAbi,
@@ -235,5 +238,17 @@ if (spread) {
   await test.mine({ blocks: 1 });
 }
 await test.setAutomine(true);
+
+// 6) Tin nhắn: vài builder bật khoá nhắn tin (khoá sinh tất định từ chữ ký persona, như trên client)
+for (const key of ["p08", "p09", "p10", "p11", "p12"]) {
+  const acc = accounts.get(key);
+  if (!acc) continue;
+  const kp = await dmKeyFromSignature(await acc.signMessage({ message: dmDeriveMessage(acc.address) }));
+  const signature = await acc.signMessage({ message: dmBindMessage(acc.address, kp.publicKey) });
+  await db
+    .insert(dmKeys)
+    .values({ address: acc.address.toLowerCase(), publicKey: kp.publicKey, signature })
+    .onConflictDoNothing();
+}
 await pool.end();
 console.log(`seed xong: ${allIds.length} bài onchain. Indexer sẽ tự bắt kịp; worker gán nhãn trong ~1 phút.`);

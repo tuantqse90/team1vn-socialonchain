@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Avatar, Button, Empty, Sheet } from "@/components/bits";
+import { MessageButton } from "@/components/dm/MessageButton";
 import { FeedList } from "@/components/FeedList";
 import { Icon } from "@/components/Icon";
 import { PersonRow } from "@/components/PersonRow";
@@ -188,14 +189,17 @@ export function ProfileView({ id }: { id: string }) {
               {t("edit")}
             </Link>
           ) : (
-            <Button
-              variant={following ? "outline" : "solid"}
-              className="flex-1"
-              onClick={() => void toggleFollow()}
-              testId="follow"
-            >
-              {following ? t("following") : t("follow")}
-            </Button>
+            <>
+              <Button
+                variant={following ? "outline" : "solid"}
+                className="flex-1"
+                onClick={() => void toggleFollow()}
+                testId="follow"
+              >
+                {following ? t("following") : t("follow")}
+              </Button>
+              <MessageButton address={u.address} />
+            </>
           )}
         </div>
       </section>
