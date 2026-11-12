@@ -40,7 +40,9 @@ export class ChainIndexer {
 
   /** Xử lý tối đa 1 chunk. Trả về số block còn lại phía sau head đã biết. */
   async step(): Promise<{ processed: number; behind: number }> {
-    const head = Number(await this.client.getBlockNumber());
+    // cacheTime 0: viem cache số block (mặc định = pollingInterval, và watcher chờ receipt cũng ghi vào cache này).
+    // Head cũ làm catchUp() dừng sớm, bỏ sót event của các block vừa mine.
+    const head = Number(await this.client.getBlockNumber({ cacheTime: 0 }));
     const last = await this.lastBlock();
     if (last >= head) {
       await this.saveState(last, head);
