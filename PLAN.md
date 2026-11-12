@@ -216,7 +216,7 @@
 - [x] API bổ sung (chỉ thêm field/endpoint): `origins`, `viewerFollows`, `registeredBlock`, `topTopics`, `?kind=`, `/builders`, `/channels` + join (`user_settings.channels`, migration `0005_channels`), `subscribers`, `labelers`, `parent` trong thông báo, lý do report mới + integration test
 - [x] Màn hình: Home/feed/thread, Why, report, compose, thông báo, Explore, kênh, hồ sơ (IdCard), cài đặt, billing, feed builder, feeds, import, onboarding (intro + vai trò + các trạng thái ví); client B "Phố Builder"
 - [x] Gắn DM vào shell mới: hộp thư ở header + rail, nút nhắn tin trên hồ sơ, mục Tin nhắn trong Cài đặt, credit Twemoji trong sheet Giấy phép, chat full-screen trên mobile
-- [ ] Soát màn intro onboarding khi chưa kết nối ví và client B trên máy thật — _e2e tự kết nối nên chưa chụp_
+- [ ] Soát màn intro onboarding khi chưa kết nối ví và client B trên máy thật — _intro ✅ (chụp 3 vai trò sáng/tối, sửa tràn màn thấp); client B trên máy thật chưa_
 - **Xong khi:** lint + typecheck sạch; Vitest + e2e xanh trên stack local; chụp màn sáng/tối khớp design; người dùng duyệt rồi mới merge vào `main`.
 
 ---

@@ -54,7 +54,7 @@ Viết thẳng để người dùng và dev bên ngoài biết họ đang dựa 
 
 - **Không có forward secrecy.** Khoá X25519 tĩnh theo ví: ai lấy được khoá riêng (hoặc chữ ký `dmDeriveMessage`) đọc được toàn bộ tin cũ lẫn mới. Chưa có double ratchet.
 - **Metadata không mã hoá:** server biết ai nhắn ai, lúc nào, độ dài xấp xỉ, ai chấp nhận/từ chối ai.
-- **Khoá riêng nằm trong localStorage** (giống session key): XSS là đọc được. Chưa có CSP header; nên làm trước Alpha.
+- **Khoá riêng nằm trong localStorage** (giống session key): XSS là đọc được. CSP có nonce chặn script chèn từ ngoài, nhưng lỗ hổng ngay trong bundle của app (hoặc dependency bị nhiễm) vẫn đọc được.
 - **Cần ví ký tất định.** Ví ký không tất định (một số ví hợp đồng/passkey) cho ra khoá khác mỗi lần bật → thiết bị mới đổi khoá, tin mã hoá bằng khoá cũ không đọc được ở thiết bị đó.
 - **Đổi khoá thì mất đọc tin cũ** trên thiết bị không còn khoá cũ (hiện "Mã hoá bằng khoá cũ").
 - Không có gọi thoại/video (đã chốt bỏ), ảnh/file đính kèm, nhóm chat, chỉnh/xoá tin, đang soạn.

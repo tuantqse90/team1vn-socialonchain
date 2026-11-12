@@ -40,13 +40,13 @@
 | P13 | Thanh toán tUSD **[REVIEW]** | 🟡 e2e local ✅ (faucet + permit); Fuji ⛔; **chờ duyệt contract** |
 | P14 | Client B + đo lường | 🟡 client B build + chạy local ✅; Vercel ⛔; bấm giờ fork cần người ngoài ⛔ |
 | P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; đã merge `main` |
-| P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối cả client A + B, splash intro khi chưa kết nối ví); các bước intro sau splash chưa bấm thử; đã merge `main` |
+| P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối cả client A + B, intro onboarding khi chưa kết nối ví: đủ 3 vai trò, sửa tràn màn thấp); client B trên máy thật chưa thử; đã merge `main` |
 
 ## Blockers / câu hỏi mở
 
 - **Cần từ người dùng:** ví deployer có test AVAX (Fuji), tài khoản Railway + Vercel, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`, WalletConnect project id (`NEXT_PUBLIC_WC_PROJECT_ID`), `LABELER_PRIVATE_KEY` (ví riêng).
 - **Tên sản phẩm / npm scope:** đang dùng `socialonchain` / `@socialonchain/*`.
-- Chưa có CSP header (rủi ro XSS với session key trong localStorage); nên làm trước Alpha.
+- CSP có nonce đã bật (`apps/web/proxy.ts` + `lib/csp.ts`); chưa bấm thử với ví extension thật (MetaMask/Core) khi có CSP.
 
 ## Decision log
 
@@ -87,6 +87,8 @@
 | 2026-11-12 | Config client có `theme.text` / `theme.tint` (sáng/tối) → `--red-ink`/`--blush`; B dùng vàng đậm #8A5A00 (5.9:1) | Chữ thương hiệu của B không còn đỏ Avalanche |
 | 2026-11-12 | Job `onchain-builder` quét user đã đăng ký trước, rồi tác giả onchain, rồi Farcaster | Gợi ý builder + badge hồ sơ có sớm hơn (50 địa chỉ/lượt) |
 | 2026-11-12 | Playwright xoá `.next-e2e/cache/fetch-cache` trước khi build | Reset chain local làm id bài lặp lại → SSR trả bài cũ từ cache |
+| 2026-11-12 | CSP nonce + `'strict-dynamic'` qua `proxy.ts`, mọi trang render động; style vẫn `'unsafe-inline'`; e2e fail nếu có vi phạm CSP | Chặn script lạ đọc session key/khoá DM trong localStorage; style attribute SSR + `<style>` của RainbowKit cần inline |
+| 2026-11-12 | CI: `actions/checkout@v7`, `actions/setup-node@v7`, `pnpm/action-setup@v6` | Runtime Node 20 của action bị deprecated |
 | 2026-11-11 | Sentry web nạp động trong `instrumentation-client.ts` khi có DSN; `@sentry/browser` 11.11.0 | Không tốn byte khi không có DSN; 11.12.0 vi phạm `minimumReleaseAge` của pnpm |
 
 ## Session log (mới nhất ở trên)
@@ -97,7 +99,8 @@
 - **Đã verify thật (local):** `pnpm lint` + `pnpm typecheck` sạch; `pnpm test`: forge 58, feed-sdk 29, protocol 11, farcaster 2, worker 7, indexer integration 10 (gồm test API design sync + DM); `drizzle-kit check` OK; Playwright e2e **10/10** trên production build; chụp màn sáng/tối của mọi màn chính + DM trong shell mới.
 - Sự cố: 1 lần `pnpm test` fail ở test DM ngay sau khi tạo lại DB, 5 lần chạy sau đều pass, chưa tái hiện. DB test cũ của worktree đã chạy `0005` trước `0004` nên phải tạo lại (DB khác không bị).
 - Client B build production + chụp sáng/tối (home, explore, splash intro). Sửa thêm: màu chữ thương hiệu theo client, nút quay lại ở các trạng thái chat trước khi bật khoá, ưu tiên quét builder.
-- **Chưa verify:** các bước intro sau splash (role, các bước theo vai trò) khi chưa kết nối ví; Fuji; ví thật (MetaMask/Core).
+- Sau merge (nhánh `phase-16-local-demo`): indexer đọc head với `cacheTime: 0` (CI từng fail vì head cũ); CSP có nonce + header bảo mật; CI lên action Node 24; onboarding vừa màn 393×659 (splash từng tràn 67px, nút Tiếp dính đáy). **Đã verify:** lint, typecheck, `pnpm test` (forge 58, indexer 10…), e2e 10/10 có kiểm vi phạm CSP, chụp intro 3 vai trò sáng/tối khi chưa kết nối ví + đo tràn ở 3 cỡ màn.
+- **Chưa verify:** ví thật (MetaMask/Core) khi có CSP; client B trên máy thật.
 
 ### 2026-11-12 (session 4: P15 tin nhắn riêng)
 - Người dùng chốt: PWA, không gọi điện, làm DM ngay. Thêm P15 vào PLAN; CLAUDE.md/INIT_PROMPT "Chưa làm" đổi DM → gọi thoại/video.
