@@ -6,11 +6,10 @@
 > - Sub-task chi tiết của từng phase nằm trong PLAN.md.
 
 **Cập nhật:** 2026-11-12
-**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local trên nhánh `phase-15-ui-design-sync` (đã gộp `phase-15-dm`), **chờ người dùng đồng ý mới ff `main` + push**. Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
+**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local, đã ff vào `main` và push (người dùng đồng ý 2026-11-12). Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
 
 ## Bước tiếp theo
 
-0. **Người dùng đồng ý** merge `phase-15-ui-design-sync` vào `main` (ff) + push.
 1. **Người dùng duyệt** (P1, P8, P13 là [REVIEW]): schema event + quyền delegate (`docs/ARCHITECTURE.md` §6), contract thanh toán (`contracts/src/TestUSD.sol`, `PlanPayments.sol`).
 2. Có ví deployer + test AVAX → `forge script` deploy lên Fuji → điền `packages/protocol/deployments/43113.json`.
 3. Railway (Postgres + indexer + worker) và Vercel (web), đặt secrets → chạy lại e2e trên URL public.
@@ -40,13 +39,12 @@
 | P12 | Thông báo + tìm kiếm | ✅ |
 | P13 | Thanh toán tUSD **[REVIEW]** | 🟡 e2e local ✅ (faucet + permit); Fuji ⛔; **chờ duyệt contract** |
 | P14 | Client B + đo lường | 🟡 client B build + chạy local ✅; Vercel ⛔; bấm giờ fork cần người ngoài ⛔ |
-| P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; đã gộp vào nhánh design sync, chưa merge `main` |
-| P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối cả client A + B, splash intro khi chưa kết nối ví); các bước intro sau splash chưa bấm thử; nhánh chưa merge |
+| P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; đã merge `main` |
+| P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối cả client A + B, splash intro khi chưa kết nối ví); các bước intro sau splash chưa bấm thử; đã merge `main` |
 
 ## Blockers / câu hỏi mở
 
 - **Cần từ người dùng:** ví deployer có test AVAX (Fuji), tài khoản Railway + Vercel, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`, WalletConnect project id (`NEXT_PUBLIC_WC_PROJECT_ID`), `LABELER_PRIVATE_KEY` (ví riêng).
-- **Merge:** nhánh DM + UI đã gộp ở `phase-15-ui-design-sync` (`cffedd3`); chờ người dùng đồng ý ff `main` + push. Worktree UI: `../team1vn-socialonchain-ui`.
 - **Tên sản phẩm / npm scope:** đang dùng `socialonchain` / `@socialonchain/*`.
 - Chưa có CSP header (rủi ro XSS với session key trong localStorage); nên làm trước Alpha.
 
