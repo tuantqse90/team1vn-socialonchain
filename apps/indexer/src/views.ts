@@ -3,6 +3,7 @@ import {
   type Db,
   fcPosts,
   fcUsers,
+  follows,
   labels,
   posts,
   profiles,
@@ -205,4 +206,21 @@ export async function loadPostViews(db: Db, ids: string[], viewer: string | null
     });
   }
   return ids.map((i) => byId.get(i)).filter((x): x is PostView => Boolean(x));
+}
+
+/** Gắn `viewerFollows` cho danh sách tác giả (1 query). Tác giả không có địa chỉ (chỉ Farcaster) giữ nguyên. */
+export async function withFollowState<T extends AuthorView>(
+  db: Db,
+  viewer: string | null,
+  authors: T[],
+): Promise<T[]> {
+  if (!viewer) return authors;
+  const addrs = [...new Set(authors.map((a) => a.address).filter((a): a is string => Boolean(a)))];
+  if (addrs.length === 0) return authors;
+  const rows = await db
+    .select({ target: follows.target })
+    .from(follows)
+    .where(and(eq(follows.follower, viewer), inArray(follows.target, addrs)));
+  const set = new Set(rows.map((r) => r.target));
+  return authors.map((a) => (a.address ? { ...a, viewerFollows: set.has(a.address) } : a));
 }

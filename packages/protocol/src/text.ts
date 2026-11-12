@@ -19,6 +19,10 @@ export const KNOWN_CHANNELS = [
   "jobs",
   "general",
   "random",
+  "infra",
+  "defi",
+  "gaming",
+  "ai",
 ];
 
 const hashToName = new Map<string, string>(

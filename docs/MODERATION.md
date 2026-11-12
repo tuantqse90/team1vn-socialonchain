@@ -30,7 +30,7 @@ Bật/tắt ở **Settings → Moderation**. Mỗi bài trong feed có nút ✦ 
 
 ## 3. Báo cáo và blocklist (admin của client)
 
-1. Người dùng bấm `⋯ → Report` trên bài, chọn lý do: illegal, spam, harassment, doxxing, nsfw, other (`POST /reports`).
+1. Người dùng bấm `⋯ → Report` trên bài, chọn lý do: spam, shill, toxic, doxxing, nsfw, illegal (API vẫn nhận harassment, other cho client cũ) (`POST /reports`).
 2. Admin (địa chỉ trong `ADMIN_ADDRESSES`) xem ở `/admin → Reports`, chọn:
    - **Hide post**: thêm `oc:…`/`fc:…` vào blocklist.
    - **Block author**: thêm địa chỉ (hoặc `fid:<n>` với tác giả Farcaster) vào blocklist.

@@ -404,4 +404,78 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     expect(j.toFollow.length + j.pending.length).toBeGreaterThan(0);
     expect(j.estimate.txs).toBeGreaterThanOrEqual(j.toFollow.length ? 1 : 0);
   });
+
+  it("design sync API: channels + join, builders, origins, kind filter, follow state, report reasons", async () => {
+    const token = (await login(bob, bob.address)).body.token;
+    const auth = { authorization: `Bearer ${token}`, "content-type": "application/json" };
+    const put = await app.request("/me/settings", {
+      method: "PUT",
+      headers: auth,
+      body: JSON.stringify({ channels: ["avalanche"] }),
+    });
+    expect(put.status).toBe(200);
+    const ch = (await (await app.request("/channels/avalanche", { headers: auth })).json()) as {
+      name: string;
+      posts: number;
+      members: number;
+      joined: boolean | null;
+    };
+    expect(ch).toMatchObject({ name: "avalanche", members: 1, joined: true });
+    expect(ch.posts).toBeGreaterThan(0);
+    const anon = (await (await app.request("/channels/avalanche")).json()) as { joined: boolean | null };
+    expect(anon.joined).toBeNull();
+    const list = (await (await app.request("/channels")).json()) as { items: { name: string }[] };
+    expect(list.items.some((i) => i.name === "avalanche")).toBe(true);
+
+    const feed = (await (
+      await app.request(`/feed?feedId=default:chronological&viewer=${bob.address.toLowerCase()}`)
+    ).json()) as { items: { origins?: string[] }[] };
+    expect(feed.items.length).toBeGreaterThan(0);
+    expect(feed.items.every((i) => Array.isArray(i.origins) && i.origins.length > 0)).toBe(true);
+
+    const replies = (await (await app.request("/users/alice/posts?kind=replies")).json()) as {
+      items: { parentId: string | null }[];
+    };
+    expect(replies.items.every((p) => p.parentId !== null)).toBe(true);
+    const roots = (await (await app.request("/users/alice/posts?kind=posts")).json()) as {
+      items: { parentId: string | null }[];
+    };
+    expect(roots.items.length).toBeGreaterThan(0);
+    expect(roots.items.every((p) => p.parentId === null)).toBe(true);
+
+    const u = (await (await app.request("/users/alice")).json()) as {
+      registeredBlock: number | null;
+      topTopics: string[];
+    };
+    expect(u.registeredBlock).toBeGreaterThan(0);
+    expect(Array.isArray(u.topTopics)).toBe(true);
+
+    const s = (await (await app.request(`/search?q=alice&viewer=${bob.address.toLowerCase()}`)).json()) as {
+      users: { address: string | null; viewerFollows?: boolean }[];
+    };
+    expect(s.users.length).toBeGreaterThan(0);
+    expect(s.users.filter((x) => x.address).every((x) => typeof x.viewerFollows === "boolean")).toBe(true);
+
+    expect((await app.request("/builders?limit=5")).status).toBe(200);
+    const net = (await (await app.request("/network")).json()) as { labelers: string[] };
+    expect(net.labelers.length).toBeGreaterThan(0);
+
+    const posts = (await (await app.request("/users/alice/posts")).json()) as { items: { id: string }[] };
+    const report = await app.request("/reports", {
+      method: "POST",
+      headers: auth,
+      body: JSON.stringify({ postId: posts.items[0]?.id, reason: "shill" }),
+    });
+    expect(report.status).toBeLessThan(300);
+
+    const aliceToken = (await login(alice, alice.address)).body.token;
+    const notes = (await (
+      await app.request("/notifications", { headers: { authorization: `Bearer ${aliceToken}` } })
+    ).json()) as {
+      items: { kind: string; actor: { viewerFollows?: boolean }; parent: { id: string } | null }[];
+    };
+    const reply = notes.items.find((n) => n.kind === "reply");
+    expect(reply?.parent?.id).toMatch(/^oc:0x/);
+    expect(typeof reply?.actor.viewerFollows).toBe("boolean");
+  });
 });

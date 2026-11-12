@@ -234,6 +234,8 @@ export const userSettings = app.table("user_settings", {
   feeds: text("feeds").array().notNull().default(sql`'{}'::text[]`), // tab feed theo thứ tự
   moderation: text("moderation").array().notNull().default(sql`'{mod:safety}'::text[]`),
   mutedAuthors: text("muted_authors").array().notNull().default(sql`'{}'::text[]`),
+  /** Kênh đã tham gia (offchain, chỉ để lọc/đếm thành viên; không có trên chain). */
+  channels: text("channels").array().notNull().default(sql`'{}'::text[]`),
   locale: text("locale").notNull().default("en"),
   analyticsOptOut: boolean("analytics_opt_out").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

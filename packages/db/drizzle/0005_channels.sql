@@ -1,0 +1,1 @@
+ALTER TABLE "app"."user_settings" ADD COLUMN "channels" text[] DEFAULT '{}'::text[] NOT NULL;

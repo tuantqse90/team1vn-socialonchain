@@ -21,12 +21,14 @@ import {
   MODERATION_STACKS,
   rank,
 } from "@socialonchain/feed-sdk";
-import { getNetwork } from "@socialonchain/protocol";
+import { channelNameFromHash, getNetwork } from "@socialonchain/protocol";
 import { and, desc, eq, or, sql } from "drizzle-orm";
 import type { AppVars } from "../auth";
 import { buildCandidates } from "../candidates";
 import { type AppContext, lookupSpec, resolveFully } from "../context";
 import {
+  type AuthorView,
+  AuthorViewSchema,
   CandidateSchema,
   ErrorSchema,
   FeedItemSchema,
@@ -34,7 +36,7 @@ import {
   type UserView,
   UserViewSchema,
 } from "../schemas";
-import { loadAuthors, loadPostViews } from "../views";
+import { loadAuthors, loadPostViews, withFollowState } from "../views";
 
 const json = <T extends z.ZodType>(schema: T, description = "OK") => ({
   description,
@@ -54,7 +56,7 @@ export async function resolveUser(ctx: AppContext, idOrHandle: string): Promise<
 
 async function userView(ctx: AppContext, address: string, viewer: string | null): Promise<UserView> {
   const db = ctx.db;
-  const [[u], [p], [b], [link], counts, al, rel] = await Promise.all([
+  const [[u], [p], [b], [link], counts, al, rel, topics] = await Promise.all([
     db.select().from(users).where(eq(users.address, address)),
     db.select().from(profiles).where(eq(profiles.address, address)),
     db.select().from(builderStats).where(eq(builderStats.address, address)),
@@ -76,6 +78,10 @@ async function userView(ctx: AppContext, address: string, viewer: string | null)
             ),
           )
       : Promise.resolve([]),
+    db.execute<{ label: string }>(sql`
+      select l.label from app.labels l join chain.posts p on p.id = l.post_id
+      where p.author = ${address} and not p.deleted and l.label like 'topic:%' and l.score >= 0.5
+      group by l.label order by count(*) desc limit 3`),
   ]);
   let fc: { fid: number; username: string } | null = null;
   if (link) {
@@ -98,6 +104,7 @@ async function userView(ctx: AppContext, address: string, viewer: string | null)
     registered: Boolean(u),
     profileUri: u?.profileUri ?? "",
     registeredAt: u?.registeredAt ?? null,
+    registeredBlock: u?.blockNumber ?? null,
     profile: {
       displayName: p?.displayName ?? null,
       bio: p?.bio ?? null,
@@ -110,6 +117,7 @@ async function userView(ctx: AppContext, address: string, viewer: string | null)
       : null,
     farcaster: fc,
     authorLabels: labelsOut,
+    topTopics: topics.rows.map((r) => r.label),
     viewer: viewer
       ? {
           following: rel.some((r) => r.follower === viewer && r.target === address),
@@ -252,7 +260,15 @@ export function readRoutes(ctx: AppContext) {
       method: "get",
       path: "/users/{id}/posts",
       tags: ["users"],
-      request: { params: z.object({ id: z.string() }), query: Page.merge(ViewerQuery) },
+      request: {
+        params: z.object({ id: z.string() }),
+        query: Page.merge(ViewerQuery).extend({
+          kind: z
+            .enum(["all", "posts", "replies"])
+            .optional()
+            .openapi({ description: "posts = chỉ bài gốc, replies = chỉ trả lời; mặc định all" }),
+        }),
+      },
       responses: {
         200: json(z.object({ items: z.array(PostViewSchema), nextCursor: z.number().nullable() })),
         404: notFound,
@@ -261,12 +277,18 @@ export function readRoutes(ctx: AppContext) {
     async (c) => {
       const address = await resolveUser(ctx, c.req.valid("param").id);
       if (!address) return c.json({ error: "not_found" }, 404);
-      const { cursor = 0, limit = 30, viewer } = c.req.valid("query");
+      const { cursor = 0, limit = 30, viewer, kind = "all" } = c.req.valid("query");
+      const parent =
+        kind === "posts"
+          ? sql`and parent_id is null`
+          : kind === "replies"
+            ? sql`and parent_id is not null`
+            : sql``;
       const rows = await ctx.db.execute<{ id: string }>(sql`
         select id from (
-          select id, created_at from chain.posts where author = ${address} and not deleted
+          select id, created_at from chain.posts where author = ${address} and not deleted ${parent}
           union all
-          select id, created_at from app.fc_posts where author_address = ${address}
+          select id, created_at from app.fc_posts where author_address = ${address} ${parent}
         ) t order by created_at desc offset ${cursor} limit ${limit + 1}`);
       const ids = rows.rows.map((r) => r.id);
       const items = await loadPostViews(ctx.db, ids.slice(0, limit), viewerOf(viewer, c));
@@ -474,6 +496,7 @@ export function readRoutes(ctx: AppContext) {
         viewer,
       );
       const byId = new Map(views.map((v) => [v.id, v]));
+      const originsOf = new Map(candidates.map((cd) => [cd.id, cd.origins]));
       return c.json(
         {
           items: page
@@ -482,6 +505,7 @@ export function readRoutes(ctx: AppContext) {
               post: byId.get(i.id) as z.infer<typeof PostViewSchema>,
               score: i.score,
               reasons: i.reasons,
+              origins: originsOf.get(i.id) ?? [],
             })),
           nextCursor: cursor + limit < ranked.items.length ? cursor + limit : null,
           hidden: ranked.hidden,
@@ -498,17 +522,36 @@ export function readRoutes(ctx: AppContext) {
       method: "get",
       path: "/feeds",
       tags: ["feed"],
-      request: { query: ViewerQuery },
+      request: {
+        query: ViewerQuery.extend({
+          q: z.string().max(80).optional().openapi({ description: "Lọc feed công khai theo tên" }),
+          author: Addr.optional().openapi({ description: "Chỉ feed công khai của địa chỉ này" }),
+        }),
+      },
       responses: { 200: json(z.record(z.string(), z.unknown())) },
     }),
     async (c) => {
-      const viewer = viewerOf(c.req.valid("query").viewer, c);
-      const publicFeeds = await ctx.db
+      const query = c.req.valid("query");
+      const viewer = viewerOf(query.viewer, c);
+      const term = query.q?.trim() ? `%${query.q.trim().replace(/[%_\\]/g, "")}%` : null;
+      const rows = await ctx.db
         .select()
         .from(savedFeeds)
-        .where(eq(savedFeeds.isPublic, true))
+        .where(
+          and(
+            eq(savedFeeds.isPublic, true),
+            query.author ? eq(savedFeeds.owner, query.author.toLowerCase()) : undefined,
+            term ? sql`app.f_unaccent(${savedFeeds.name}) ilike app.f_unaccent(${term})` : undefined,
+          ),
+        )
         .orderBy(desc(savedFeeds.updatedAt))
         .limit(50);
+      // Số người đang dùng feed làm tab (đếm offchain từ user_settings.feeds).
+      const subs = await ctx.db.execute<{ id: string; n: number }>(
+        sql`select f as id, count(*)::int as n from app.user_settings, unnest(feeds) f group by f`,
+      );
+      const subCount = new Map(subs.rows.map((r) => [r.id, Number(r.n)]));
+      const publicFeeds = rows.map((f) => ({ ...f, subscribers: subCount.get(f.id) ?? 0 }));
       const mine = viewer
         ? await ctx.db
             .select()
@@ -518,7 +561,11 @@ export function readRoutes(ctx: AppContext) {
         : [];
       return c.json(
         {
-          defaults: Object.entries(DEFAULT_FEEDS).map(([id, spec]) => ({ id, spec })),
+          defaults: Object.entries(DEFAULT_FEEDS).map(([id, spec]) => ({
+            id,
+            spec,
+            subscribers: subCount.get(id) ?? 0,
+          })),
           moderation: Object.entries(MODERATION_STACKS).map(([id, spec]) => ({ id, spec })),
           public: publicFeeds,
           mine,
@@ -585,10 +632,14 @@ export function readRoutes(ctx: AppContext) {
         userRows.rows.map((r) => r.address),
         fcRows.map((r) => r.fid),
       );
-      const usersOut = [
-        ...userRows.rows.map((r) => authors.get(r.address)),
-        ...fcRows.map((r) => authors.get(`fid:${r.fid}`)),
-      ].filter(Boolean);
+      const usersOut = await withFollowState(
+        ctx.db,
+        viewerOf(viewer, c),
+        [
+          ...userRows.rows.map((r) => authors.get(r.address)),
+          ...fcRows.map((r) => authors.get(`fid:${r.fid}`)),
+        ].filter((a): a is AuthorView => Boolean(a)),
+      );
       const postsOut = await loadPostViews(
         ctx.db,
         postRows.rows.map((r) => r.id),
@@ -615,12 +666,135 @@ export function readRoutes(ctx: AppContext) {
     },
   );
 
-  app.get("/channels", async (c) => {
-    const r = await ctx.db.execute<{ channel: string; n: number }>(
-      sql`select channel, count(*)::int as n from app.fc_posts where channel is not null group by channel order by n desc limit 30`,
-    );
-    return c.json({ farcaster: r.rows });
-  });
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/builders",
+      tags: ["users"],
+      description: "Builder đã xác minh (onchain_builder), nhiều contract nhất trước.",
+      request: {
+        query: ViewerQuery.extend({ limit: z.coerce.number().int().min(1).max(50).optional() }),
+      },
+      responses: { 200: json(z.object({ items: z.array(AuthorViewSchema) })) },
+    }),
+    async (c) => {
+      const { viewer, limit = 10 } = c.req.valid("query");
+      const me = viewerOf(viewer, c);
+      const rows = await ctx.db.execute<{ address: string }>(sql`
+        select b.address from app.builder_stats b join chain.users u on u.address = b.address
+        where b.contracts_deployed > 0 ${me ? sql`and b.address <> ${me}` : sql``}
+        order by b.contracts_deployed desc, b.address limit ${limit}`);
+      const authors = await loadAuthors(
+        ctx.db,
+        rows.rows.map((r) => r.address),
+      );
+      const items = rows.rows.map((r) => authors.get(r.address)).filter((a): a is AuthorView => Boolean(a));
+      return c.json({ items: await withFollowState(ctx.db, me, items) }, 200);
+    },
+  );
+
+  /** Thống kê kênh: bài onchain (channel = keccak256(tên)) + cast Farcaster, nhịp 24h, số thành viên. */
+  async function channelStats(name?: string) {
+    const now = ctx.now();
+    const since = now - 86400;
+    const [oc, fc, members] = await Promise.all([
+      ctx.db.execute<{ channel: string; n: number; d: number }>(sql`
+        select channel, count(*)::int as n, count(*) filter (where created_at >= ${since})::int as d
+        from chain.posts where channel is not null and not deleted group by channel`),
+      ctx.db.execute<{ channel: string; n: number; d: number }>(sql`
+        select channel, count(*)::int as n, count(*) filter (where created_at >= ${since})::int as d
+        from app.fc_posts where channel is not null ${name ? sql`and channel = ${name}` : sql``} group by channel`),
+      ctx.db.execute<{ channel: string; n: number }>(sql`
+        select ch as channel, count(*)::int as n from app.user_settings, unnest(channels) ch group by ch`),
+    ]);
+    const out = new Map<string, { name: string; posts: number; posts24h: number; members: number }>();
+    const get = (n: string) => {
+      let v = out.get(n);
+      if (!v) {
+        v = { name: n, posts: 0, posts24h: 0, members: 0 };
+        out.set(n, v);
+      }
+      return v;
+    };
+    for (const r of oc.rows) {
+      const n = channelNameFromHash(r.channel);
+      if (!n || (name && n !== name)) continue;
+      const v = get(n);
+      v.posts += Number(r.n);
+      v.posts24h += Number(r.d);
+    }
+    for (const r of fc.rows) {
+      const v = get(r.channel);
+      v.posts += Number(r.n);
+      v.posts24h += Number(r.d);
+    }
+    for (const r of members.rows) {
+      if (name && r.channel !== name) continue;
+      get(r.channel).members = Number(r.n);
+    }
+    return [...out.values()]
+      .map((v) => ({ ...v, perHour: Math.round((v.posts24h / 24) * 10) / 10 }))
+      .sort((a, b) => b.posts24h - a.posts24h || b.posts - a.posts || a.name.localeCompare(b.name));
+  }
+
+  const ChannelStatsSchema = z
+    .object({
+      name: z.string(),
+      posts: z.number(),
+      posts24h: z.number(),
+      perHour: z.number(),
+      members: z.number(),
+    })
+    .openapi("ChannelStats");
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/channels",
+      tags: ["channels"],
+      description: "Kênh đang sôi động (onchain + Farcaster). `farcaster` giữ cho tương thích ngược.",
+      responses: {
+        200: json(
+          z.object({
+            items: z.array(ChannelStatsSchema),
+            farcaster: z.array(z.object({ channel: z.string(), n: z.number() })),
+          }),
+        ),
+      },
+    }),
+    async (c) => {
+      const items = await channelStats();
+      const r = await ctx.db.execute<{ channel: string; n: number }>(
+        sql`select channel, count(*)::int as n from app.fc_posts where channel is not null group by channel order by n desc limit 30`,
+      );
+      return c.json({ items: items.slice(0, 30), farcaster: r.rows }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/channels/{name}",
+      tags: ["channels"],
+      request: { params: z.object({ name: z.string().regex(/^[a-z0-9-]{1,32}$/) }) },
+      responses: {
+        200: json(ChannelStatsSchema.extend({ joined: z.boolean().nullable() })),
+      },
+    }),
+    async (c) => {
+      const name = c.req.valid("param").name;
+      const [st] = await channelStats(name);
+      const viewer = c.get("auth")?.address ?? null;
+      let joined: boolean | null = null;
+      if (viewer) {
+        const r = await ctx.db.execute<{ j: boolean }>(
+          sql`select ${name} = any(channels) as j from app.user_settings where address = ${viewer}`,
+        );
+        joined = Boolean(r.rows[0]?.j);
+      }
+      return c.json({ ...(st ?? { name, posts: 0, posts24h: 0, perHour: 0, members: 0 }), joined }, 200);
+    },
+  );
 
   app.get("/network", (c) => {
     const n = getNetwork(ctx.env.NETWORK);
@@ -629,6 +803,7 @@ export function readRoutes(ctx: AppContext) {
       chainId: n.chain.id,
       explorer: n.explorerUrl,
       contracts: ctx.deployment,
+      labelers: [...ctx.env.labelers],
     });
   });
 

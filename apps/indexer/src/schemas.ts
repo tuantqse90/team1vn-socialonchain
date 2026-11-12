@@ -14,6 +14,8 @@ export const AuthorViewSchema = z
     fid: z.number().nullable(),
     fcUsername: z.string().nullable(),
     contractsDeployed: z.number().openapi({ description: "Signal onchain_builder (verified)" }),
+    /** Chỉ có khi biết người xem (danh sách người: thông báo, tìm kiếm, gợi ý builder). */
+    viewerFollows: z.boolean().optional(),
   })
   .openapi("Author");
 export type AuthorView = z.infer<typeof AuthorViewSchema>;
@@ -51,7 +53,13 @@ export const ReasonSchema = z
   .openapi("Reason");
 
 export const FeedItemSchema = z
-  .object({ post: PostViewSchema, score: z.number(), reasons: z.array(ReasonSchema) })
+  .object({
+    post: PostViewSchema,
+    score: z.number(),
+    reasons: z.array(ReasonSchema),
+    /** Nguồn đưa bài vào candidate (vd. `following`, `farcaster:channel:avalanche`). */
+    origins: z.array(z.string()).optional(),
+  })
   .openapi("FeedItem");
 
 export const UserViewSchema = z
@@ -61,6 +69,8 @@ export const UserViewSchema = z
     registered: z.boolean(),
     profileUri: z.string(),
     registeredAt: z.number().nullable(),
+    /** Block của tx đăng ký (link explorer). */
+    registeredBlock: z.number().nullable(),
     profile: z.object({
       displayName: z.string().nullable(),
       bio: z.string().nullable(),
@@ -77,6 +87,8 @@ export const UserViewSchema = z
       .nullable(),
     farcaster: z.object({ fid: z.number(), username: z.string() }).nullable(),
     authorLabels: z.record(z.string(), z.number()),
+    /** Chủ đề (`topic:*`) xuất hiện nhiều nhất trong bài của user, tối đa 3. */
+    topTopics: z.array(z.string()),
     viewer: z.object({ following: z.boolean(), followedBy: z.boolean() }).nullable(),
   })
   .openapi("User");

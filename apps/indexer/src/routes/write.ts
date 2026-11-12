@@ -32,7 +32,7 @@ import { type AppVars, issueJwt } from "../auth";
 import type { AppContext } from "../context";
 import { getEntitlements, incrementUsage } from "../entitlements";
 import { ErrorSchema } from "../schemas";
-import { loadAuthors, loadPostViews } from "../views";
+import { loadAuthors, loadPostViews, withFollowState } from "../views";
 
 type C = Context<{ Variables: AppVars }>;
 const Addr = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
@@ -176,6 +176,10 @@ export function writeRoutes(ctx: AppContext) {
     feeds: z.array(z.string().max(80)).max(20).optional(),
     moderation: z.array(z.string().max(80)).max(10).optional(),
     mutedAuthors: z.array(z.string().max(60)).max(500).optional(),
+    channels: z
+      .array(z.string().regex(/^[a-z0-9-]{1,32}$/))
+      .max(50)
+      .optional(),
     locale: z.enum(["en", "vi"]).optional(),
     analyticsOptOut: z.boolean().optional(),
   });
@@ -221,9 +225,12 @@ export function writeRoutes(ctx: AppContext) {
       .where(and(eq(notifications.recipient, a.address), before ? lt(notifications.id, before) : undefined))
       .orderBy(desc(notifications.id))
       .limit(50);
-    const actors = await loadAuthors(
+    const actorMap = await loadAuthors(
       db,
       rows.map((r) => r.actor),
+    );
+    const actors = new Map(
+      (await withFollowState(db, a.address, [...actorMap.values()])).map((x) => [x.address, x]),
     );
     const postsById = new Map(
       (
@@ -233,6 +240,16 @@ export function writeRoutes(ctx: AppContext) {
           a.address,
         )
       ).map((p) => [p.id, p]),
+    );
+    // Bài gốc mà người kia trả lời (ngữ cảnh 1 dòng trong thông báo reply).
+    const parentIds = [
+      ...new Set([...postsById.values()].map((p) => p.parentId).filter((x): x is string => Boolean(x))),
+    ];
+    const parents = new Map(
+      (parentIds.length ? await loadPostViews(db, parentIds, null) : []).map((p) => [
+        p.id,
+        { id: p.id, text: p.deleted ? "" : p.text.slice(0, 140), deleted: p.deleted },
+      ]),
     );
     const [unread] = await db
       .select({ n: sql<number>`count(*)::int` })
@@ -245,6 +262,10 @@ export function writeRoutes(ctx: AppContext) {
         kind: r.kind,
         actor: actors.get(r.actor),
         post: r.postId ? (postsById.get(r.postId) ?? null) : null,
+        parent: (() => {
+          const pid = r.postId ? postsById.get(r.postId)?.parentId : null;
+          return pid ? (parents.get(pid) ?? null) : null;
+        })(),
         createdAt: r.createdAt,
         read: Boolean(r.readAt),
       })),
@@ -370,7 +391,7 @@ export function writeRoutes(ctx: AppContext) {
       c,
       z.object({
         postId: z.string().regex(/^(oc|fc):0x[0-9a-f]+$/),
-        reason: z.enum(["illegal", "spam", "harassment", "doxxing", "nsfw", "other"]),
+        reason: z.enum(["illegal", "spam", "shill", "toxic", "harassment", "doxxing", "nsfw", "other"]),
         note: z.string().max(500).optional(),
       }),
     );
