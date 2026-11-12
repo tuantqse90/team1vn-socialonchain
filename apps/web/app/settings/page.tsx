@@ -1,136 +1,71 @@
 "use client";
 
 import { MODERATION_STACKS } from "@socialonchain/feed-sdk";
-import {
-  DEFAULT_SESSION_DAYS,
-  DEFAULT_SESSION_FUNDING_WEI,
-  identityRegistryAbi,
-} from "@socialonchain/protocol";
-import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDisconnect } from "wagmi";
-import { Button, Ring } from "@/components/bits";
+import { Button } from "@/components/bits";
 import { Icon, type IconName } from "@/components/Icon";
+import { LicensesSheet } from "@/components/settings/LicensesSheet";
+import { AutoIcon, Group, Row, Seg, Switch } from "@/components/settings/rows";
+import { SessionCard } from "@/components/settings/SessionCard";
 import { clientConfig } from "@/configs";
 import { api } from "@/lib/api";
-import { addressUrl, contracts } from "@/lib/chain";
 import { useMyModeration, useUpdateSettings } from "@/lib/feeds";
-import { formatAvax, shortAddr } from "@/lib/format";
-import { LOW_GAS_WEI, sweepKey, useSession } from "@/lib/session";
-import { useTx } from "@/lib/tx";
-import { useMainWallet } from "@/lib/wallet";
+import { shortAddr } from "@/lib/format";
+import { useSession } from "@/lib/session";
 
-/** Safety luôn bật (ẩn nội dung bất hợp pháp/doxxing): không cho tắt ở client A. */
+/** Safety luôn bật (ẩn nội dung bất hợp pháp/doxxing/NSFW): không cho tắt ở client A. */
 const LOCKED = new Set(["mod:safety"]);
+const MOD_ICON: Record<string, IconName> = {
+  "mod:safety": "shield",
+  "mod:no-toxic": "toxic",
+  "mod:no-bait": "flame",
+  "mod:no-shill": "coin",
+  "mod:less-politics": "megaphone",
+};
 
-function Section({
-  id,
-  icon,
-  title,
-  children,
-}: {
-  id?: string;
-  icon: IconName;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section id={id} className="border-b border-[var(--line)] px-4 py-5">
-      <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-        <Icon name={icon} className="h-4 w-4" />
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function Segmented<T extends string>({
-  value,
-  options,
-  onChange,
-}: {
-  value: T;
-  options: { id: T; label: ReactNode }[];
-  onChange: (v: T) => void;
-}) {
-  return (
-    <div className="flex rounded-full bg-[var(--soft)] p-1">
-      {options.map((o) => (
-        <button
-          key={o.id}
-          type="button"
-          onClick={() => onChange(o.id)}
-          className={`press flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full text-[13px] font-medium ${
-            value === o.id ? "bg-[var(--bg)] shadow-sm" : "text-[var(--muted)]"
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function Toggle({
-  on,
-  onChange,
-  disabled,
-  testId,
-}: {
-  on: boolean;
-  onChange: (v: boolean) => void;
-  disabled?: boolean;
-  testId?: string;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      disabled={disabled}
-      onClick={() => onChange(!on)}
-      data-testid={testId}
-      className={`relative h-[30px] w-[50px] shrink-0 rounded-full transition-colors disabled:opacity-50 ${on ? "bg-[var(--accent)]" : "bg-[var(--line)]"}`}
-    >
-      <span
-        className={`absolute top-[3px] h-6 w-6 rounded-full bg-white shadow transition-transform ${on ? "translate-x-[23px]" : "translate-x-[3px]"}`}
-      />
-    </button>
-  );
-}
+type Theme = "light" | "dark" | "system";
+type Locale = "en" | "vi";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
-  const ts = useTranslations("session");
   const tm = useTranslations("moderation");
   const tn = useTranslations("nav");
   const tp = useTranslations("profile");
   const tc = useTranslations("common");
-  const locale = useLocale() as "en" | "vi";
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const qc = useQueryClient();
-  const { status, owner, me, session, sessionBalance, prepareKey, discardKey, refresh, token } = useSession();
-  const { track } = useTx();
-  const { writeContract: writeContractAsync, sendTransaction: sendTransactionAsync } = useMainWallet();
+  const { status, owner, me, token } = useSession();
   const { disconnect } = useDisconnect();
   const updateSettings = useUpdateSettings();
   const moderation = useMyModeration();
-  const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
+  const [theme, setTheme] = useState<Theme>("system");
+  const [lang, setLang] = useState<Locale>(locale);
+  /** Bật/tắt lạc quan để công tắc trượt ngay, trước khi `me` được làm mới. */
+  const [modPending, setModPending] = useState<Record<string, boolean>>({});
   const [profile, setProfile] = useState({ displayName: "", bio: "", avatarUrl: "" });
   const [savedProfile, setSavedProfile] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [licenses, setLicenses] = useState(false);
+
+  const net = useQuery({
+    queryKey: ["network"],
+    queryFn: () => api<{ labelers: string[] }>("/network"),
+    staleTime: 5 * 60_000,
+  });
+  const labeler = net.data?.labelers[0] ?? null;
 
   useEffect(() => {
     try {
-      setTheme((localStorage.getItem("soc:theme") as "system" | "light" | "dark") || "system");
+      setTheme((localStorage.getItem("soc:theme") as Theme) || clientConfig.defaultTheme || "system");
     } catch {
       // bỏ qua
     }
   }, []);
+  useEffect(() => setLang(locale), [locale]);
   useEffect(() => {
     if (me?.profile)
       setProfile({
@@ -140,7 +75,7 @@ export default function SettingsPage() {
       });
   }, [me?.profile]);
 
-  function applyTheme(v: "system" | "light" | "dark") {
+  function applyTheme(v: Theme) {
     setTheme(v);
     try {
       localStorage.setItem("soc:theme", v);
@@ -151,7 +86,8 @@ export default function SettingsPage() {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
   }
 
-  async function setLocale(v: "en" | "vi") {
+  async function setLocale(v: Locale) {
+    setLang(v);
     // biome-ignore lint/suspicious/noDocumentCookie: cookie ngôn ngữ đơn giản, server đọc qua next-intl
     document.cookie = `locale=${v}; path=/; max-age=31536000; samesite=lax`;
     if (token) await updateSettings({ locale: v }).catch(() => undefined);
@@ -159,65 +95,10 @@ export default function SettingsPage() {
   }
 
   async function toggleMod(id: string, on: boolean) {
+    setModPending((p) => ({ ...p, [id]: on }));
     const next = on ? [...new Set([...moderation, id])] : moderation.filter((x) => x !== id);
-    await updateSettings({ moderation: next });
-  }
-
-  async function topUp() {
-    if (!session) return;
-    await track(ts("topUp"), () =>
-      sendTransactionAsync({ to: session.address, value: DEFAULT_SESSION_FUNDING_WEI }),
-    );
-    refresh();
-  }
-
-  async function renew() {
-    if (!contracts || !owner) return;
-    setBusy(true);
-    const old = session;
-    const key = prepareKey(DEFAULT_SESSION_DAYS);
-    const ok = await track(ts("renew"), () =>
-      writeContractAsync({
-        address: contracts!.IdentityRegistry,
-        abi: identityRegistryAbi,
-        functionName: "addDelegate",
-        args: [key.address, BigInt(key.expiresAt)],
-        value: DEFAULT_SESSION_FUNDING_WEI,
-      }),
-    );
-    if (ok && old) {
-      // Key cũ: trả gas dư về owner, rồi thu hồi nếu còn hạn (key cũ không còn trên thiết bị).
-      await sweepKey(old.pk, owner).catch(() => null);
-      if (old.expiresAt > Date.now() / 1000) {
-        await track(ts("revoke"), () =>
-          writeContractAsync({
-            address: contracts!.IdentityRegistry,
-            abi: identityRegistryAbi,
-            functionName: "removeDelegate",
-            args: [old.address],
-          }),
-        );
-      }
-    }
-    setBusy(false);
-    refresh();
-  }
-
-  async function revoke() {
-    if (!contracts || !owner || !session) return;
-    setBusy(true);
-    await sweepKey(session.pk, owner).catch(() => null);
-    const ok = await track(ts("revoke"), () =>
-      writeContractAsync({
-        address: contracts!.IdentityRegistry,
-        abi: identityRegistryAbi,
-        functionName: "removeDelegate",
-        args: [session.address],
-      }),
-    );
-    if (ok) discardKey();
-    setBusy(false);
-    refresh();
+    await updateSettings({ moderation: next }).catch(() => undefined);
+    setModPending(({ [id]: _, ...rest }) => rest);
   }
 
   async function saveProfile() {
@@ -234,109 +115,112 @@ export default function SettingsPage() {
     setTimeout(() => setSavedProfile(false), 1500);
   }
 
-  const daysLeft = session ? Math.max(0, Math.ceil((session.expiresAt - Date.now() / 1000) / 86400)) : 0;
-  const low = sessionBalance !== undefined && sessionBalance < LOW_GAS_WEI;
+  const ready = status === "ready";
+  const plan = me?.entitlements?.plan;
 
   return (
-    <div>
-      <h1 className="px-4 pt-4 pb-1 text-[22px] font-bold tracking-tight">{t("title")}</h1>
+    <div className="px-4 pb-10">
+      <h1 className="pb-4 pt-4 text-[22px] font-bold tracking-tight">{t("title")}</h1>
 
-      {status !== "disconnected" && (
-        <Section id="session" icon="key" title={ts("title")}>
-          {session && status === "ready" ? (
-            <div className="space-y-3" data-testid="session-card">
-              <div className="flex items-center gap-4 rounded-3xl bg-[var(--soft)] p-4">
-                <Ring
-                  value={Number(sessionBalance ?? 0n) / Number(DEFAULT_SESSION_FUNDING_WEI)}
-                  danger={low}
-                  size={44}
-                  stroke={5}
+      <SessionCard />
+
+      {ready && (
+        <Group label={t("moderation")} testId="moderation">
+          {Object.keys(MODERATION_STACKS).map((id) => {
+            const locked = LOCKED.has(id);
+            const on = locked || (modPending[id] ?? moderation.includes(id));
+            const label = tm(id as "mod:safety");
+            return (
+              <Row key={id} icon={MOD_ICON[id] ?? "filter"} label={label}>
+                <Switch
+                  on={on}
+                  locked={locked}
+                  lockedLabel={t("alwaysOn")}
+                  label={label}
+                  onChange={(v) => void toggleMod(id, v)}
+                  testId={`mod-${id}`}
                 />
-                <div className="min-w-0 flex-1">
-                  <div className="mono text-[17px] font-semibold">
-                    {formatAvax(sessionBalance ?? 0n, 4)} AVAX
-                  </div>
-                  <div className="mono flex items-center gap-2 text-[12px] text-[var(--muted)]">
-                    {addressUrl(session.address) ? (
-                      <a
-                        href={addressUrl(session.address) ?? "#"}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="hover:underline"
-                      >
-                        {shortAddr(session.address)}
-                      </a>
-                    ) : (
-                      shortAddr(session.address)
-                    )}
-                    <span>·</span>
-                    <span>{ts("daysLeft", { days: daysLeft })}</span>
-                  </div>
-                </div>
-                {low && <Icon name="fuel" className="h-5 w-5 text-[var(--accent)]" />}
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Button variant="outline" onClick={() => void topUp()} disabled={busy} testId="topup">
-                  <Icon name="fuel" className="h-4 w-4" />
-                  <span className="text-[12px]">{ts("topUp")}</span>
-                </Button>
-                <Button variant="outline" onClick={() => void renew()} disabled={busy} testId="renew">
-                  <Icon name="key" className="h-4 w-4" />
-                  <span className="text-[12px]">30d</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => void revoke()}
-                  disabled={busy}
-                  testId="revoke"
-                  className="text-[var(--accent)]"
-                >
-                  <Icon name="x" className="h-4 w-4" />
-                  <span className="text-[12px]">{ts("revoke")}</span>
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm text-[var(--muted)]">{ts("none")}</span>
-              <Link
-                href="/welcome"
-                className="press rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
-              >
-                <Icon name="key" className="h-4 w-4" />
-              </Link>
-            </div>
-          )}
-        </Section>
+              </Row>
+            );
+          })}
+        </Group>
       )}
 
-      {status === "ready" && (
-        <Section icon="shield" title={t("moderation")}>
-          <ul className="space-y-1" data-testid="moderation">
-            {Object.keys(MODERATION_STACKS).map((id) => {
-              const on = moderation.includes(id) || LOCKED.has(id);
-              return (
-                <li key={id} className="flex items-center gap-3 py-1.5">
-                  <span className="flex-1 text-[15px]">{tm(id as "mod:safety")}</span>
-                  <Toggle
-                    on={on}
-                    disabled={LOCKED.has(id)}
-                    onChange={(v) => void toggleMod(id, v)}
-                    testId={`mod-${id}`}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        </Section>
-      )}
+      {/* DM: <DmSettings /> */}
 
-      {status === "ready" && (
-        <Section id="profile" icon="user" title={t("profile")}>
+      <Group label={t("app")}>
+        <Row icon="shield" label={t("labeler")} testId="settings-labeler">
+          <span className="flex shrink-0 flex-col items-end leading-tight text-[var(--muted)]">
+            <span className="text-[13px]">{t("labelerDefault")}</span>
+            {labeler && <span className="mono text-[11px]">{shortAddr(labeler)}</span>}
+          </span>
+        </Row>
+        {ready && plan && (
+          <Row icon="crown" label={t("plan")} href="/billing" testId="settings-plan">
+            <span
+              className={`mono inline-flex h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-bold tracking-[.08em] ${
+                plan === "pro" ? "bg-[var(--ink)] text-[var(--bg)]" : "bg-[var(--line)] text-[var(--ink)]"
+              }`}
+            >
+              {plan === "pro" ? "PRO" : "FREE"}
+            </span>
+          </Row>
+        )}
+        <Row icon="globe" label={t("language")}>
+          <Seg
+            label={t("language")}
+            value={lang}
+            onChange={(v) => void setLocale(v)}
+            testId="settings-lang"
+            items={[
+              {
+                key: "vi",
+                label: "Tiếng Việt",
+                content: <span className="mono text-[13px] font-bold">VI</span>,
+              },
+              {
+                key: "en",
+                label: "English",
+                content: <span className="mono text-[13px] font-bold">EN</span>,
+              },
+            ]}
+          />
+        </Row>
+        <Row tile={<AutoIcon className="h-[17px] w-[17px]" />} label={t("theme")}>
+          <Seg
+            label={t("theme")}
+            value={theme}
+            onChange={applyTheme}
+            testId="settings-theme"
+            items={[
+              { key: "light", label: t("light"), content: <Icon name="sun" className="h-[18px] w-[18px]" /> },
+              { key: "dark", label: t("dark"), content: <Icon name="moon" className="h-[18px] w-[18px]" /> },
+              { key: "system", label: t("system"), content: <AutoIcon /> },
+            ]}
+          />
+        </Row>
+        {ready && (
+          <Row icon="bars" label={t("analytics")}>
+            <Switch
+              on={!(me?.settings?.analyticsOptOut ?? false)}
+              label={t("analytics")}
+              onChange={(v) => void updateSettings({ analyticsOptOut: !v })}
+            />
+          </Row>
+        )}
+        {ready && <Row icon="download" label={tn("import")} href="/import" />}
+        <Row icon="pulse" label={tn("status")} href="/status" />
+        {me?.admin && <Row icon="shield" label={tn("admin")} href="/admin" />}
+        <Row icon="book" label={t("licenses")} onClick={() => setLicenses(true)} testId="settings-licenses" />
+      </Group>
+
+      {ready && (
+        <Group id="profile" label={t("profile")} bare>
           <div className="space-y-2">
             <input
               className="field"
               placeholder={tp("displayName")}
+              aria-label={tp("displayName")}
               value={profile.displayName}
               onChange={(e) => setProfile({ ...profile, displayName: e.target.value.slice(0, 50) })}
             />
@@ -344,82 +228,29 @@ export default function SettingsPage() {
               className="field resize-none"
               rows={3}
               placeholder={tp("bio")}
+              aria-label={tp("bio")}
               value={profile.bio}
               onChange={(e) => setProfile({ ...profile, bio: e.target.value.slice(0, 280) })}
             />
             <input
               className="field"
               placeholder={tp("avatar")}
+              aria-label={tp("avatar")}
               value={profile.avatarUrl}
               onChange={(e) => setProfile({ ...profile, avatarUrl: e.target.value.slice(0, 500) })}
               inputMode="url"
             />
-            <Button variant="solid" onClick={() => void saveProfile()} className="w-full">
+            <Button variant="solid" onClick={() => void saveProfile()} className="h-11 w-full">
               <Icon name="check" className="h-4 w-4" />
               {savedProfile ? tc("saved") : tc("save")}
             </Button>
           </div>
-        </Section>
+        </Group>
       )}
-
-      <Section icon="globe" title={t("language")}>
-        <Segmented
-          value={locale}
-          onChange={(v) => void setLocale(v)}
-          options={[
-            { id: "en", label: "English" },
-            { id: "vi", label: "Tiếng Việt" },
-          ]}
-        />
-      </Section>
-
-      <Section icon="moon" title={t("theme")}>
-        <Segmented
-          value={theme}
-          onChange={applyTheme}
-          options={[
-            { id: "system", label: <Icon name="pulse" className="h-4 w-4" /> },
-            { id: "light", label: <Icon name="sun" className="h-4 w-4" /> },
-            { id: "dark", label: <Icon name="moon" className="h-4 w-4" /> },
-          ]}
-        />
-      </Section>
-
-      {status === "ready" && (
-        <Section icon="pulse" title={t("analytics")}>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[var(--muted)]">{t("analytics")}</span>
-            <Toggle
-              on={!(me?.settings?.analyticsOptOut ?? false)}
-              onChange={(v) => void updateSettings({ analyticsOptOut: !v })}
-            />
-          </div>
-        </Section>
-      )}
-
-      <nav className="grid grid-cols-4 gap-2 px-4 py-5">
-        {(
-          [
-            { href: "/billing", icon: "coin", label: tn("billing") },
-            { href: "/import", icon: "arch", label: tn("import") },
-            { href: "/status", icon: "pulse", label: tn("status") },
-            ...(me?.admin ? [{ href: "/admin", icon: "shield", label: tn("admin") }] : []),
-          ] as { href: string; icon: IconName; label: string }[]
-        ).map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="press flex flex-col items-center gap-1.5 rounded-2xl bg-[var(--soft)] py-3 text-[11px] text-[var(--muted)]"
-          >
-            <Icon name={l.icon} className="h-5 w-5 text-[var(--ink)]" />
-            {l.label}
-          </Link>
-        ))}
-      </nav>
 
       {status !== "disconnected" && (
-        <div className="px-4 pb-8">
-          <Button variant="ghost" className="w-full text-[var(--muted)]" onClick={() => disconnect()}>
+        <div className="pt-8">
+          <Button variant="ghost" className="h-11 w-full text-[var(--muted)]" onClick={() => disconnect()}>
             <Icon name="logout" className="h-4 w-4" />
             {t("disconnect")}
           </Button>
@@ -428,6 +259,8 @@ export default function SettingsPage() {
           </p>
         </div>
       )}
+
+      <LicensesSheet open={licenses} onClose={() => setLicenses(false)} />
     </div>
   );
 }

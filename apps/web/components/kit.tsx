@@ -99,7 +99,7 @@ export function Segmented<K extends string>({
             title={i.label}
             data-testid={testId ? `${testId}-${i.key}` : undefined}
             onClick={() => onChange(i.key)}
-            className={`press relative z-10 flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-full text-[13px] font-semibold transition-colors ${
+            className={`press relative z-10 flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full text-[13px] font-semibold transition-colors before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] ${
               active ? "text-[var(--ink)]" : "text-[var(--muted)]"
             }`}
           >

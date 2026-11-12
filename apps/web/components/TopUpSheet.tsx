@@ -49,7 +49,7 @@ function TopUpBody({ reason, onClose }: { reason: Reason; onClose: () => void })
   async function fund() {
     if (!session) return;
     setStep("wallet");
-    const r = await trackTx(t("title"), async () => {
+    const r = await trackTx(`+${amount} AVAX`, async () => {
       const h = await main.sendTransaction({ to: session.address, value: parseEther(amount) });
       setStep("funding");
       return h;
@@ -138,7 +138,7 @@ function TopUpBody({ reason, onClose }: { reason: Reason; onClose: () => void })
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-2" role="group" aria-label={t("amount")}>
+            <fieldset className="m-0 grid min-w-0 grid-cols-3 gap-2 border-0 p-0" aria-label={t("amount")}>
               {TOP_UP_OPTIONS.map((a) => (
                 <button
                   key={a}
@@ -153,7 +153,7 @@ function TopUpBody({ reason, onClose }: { reason: Reason; onClose: () => void })
                   {a}
                 </button>
               ))}
-            </div>
+            </fieldset>
             {(step === "wallet" || step === "funding") && (
               <ol className="flex items-center justify-center gap-3 text-[13px]">
                 <li className="flex items-center gap-1.5">

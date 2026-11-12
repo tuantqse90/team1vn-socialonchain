@@ -1,15 +1,16 @@
 import type { ClientConfig } from "./types";
 
 /**
- * Client B: một client KHÁC trên cùng protocol (cùng identity, cùng graph).
- * Chỉ onchain (không Farcaster), mặc định chặn shill + câu tương tác, thương hiệu riêng.
+ * Client B "Phố Builder": một client KHÁC trên cùng protocol (cùng identity, cùng graph).
+ * Chỉ onchain (không Farcaster), mặc định chặn shill + câu tương tác, nền tối, accent vàng.
  */
 const config: ClientConfig = {
   id: "b",
-  appName: "Snowfield",
-  tagline: { en: "Onchain only. Signal over noise.", vi: "Chỉ onchain. Tín hiệu hơn ồn ào." },
-  logo: { mark: "F" },
-  theme: { accent: "#1F7A6D", accentInk: "#FFFFFF", radius: "10px" },
+  appName: "Phố Builder",
+  tagline: { en: "Same identity. Same graph. Onchain only.", vi: "Cùng danh tính. Cùng graph. Chỉ onchain." },
+  logo: { mark: "P" },
+  theme: { accent: "#F5B53D", accentInk: "#0B0B0C", radius: "18px" },
+  defaultTheme: "dark",
   defaultFeeds: ["default:grants-hackathons", "default:builders-shipping", "default:chronological"],
   defaultModeration: ["mod:safety", "mod:no-shill", "mod:no-bait"],
   enabledSources: ["self", "following", "replies_in_my_threads", "two_hop"],

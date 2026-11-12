@@ -68,7 +68,7 @@ export function FollowButton({
       }}
       data-testid={testId}
       aria-pressed={f.following}
-      className={`press inline-flex shrink-0 items-center gap-1.5 rounded-full font-semibold transition-colors ${h} ${
+      className={`press relative inline-flex shrink-0 items-center gap-1.5 rounded-full font-semibold transition-colors before:absolute before:-inset-y-[6px] before:inset-x-0 before:content-[''] ${h} ${
         f.following
           ? "border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)]"
           : "bg-[var(--ink)] text-[var(--bg)]"

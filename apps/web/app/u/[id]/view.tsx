@@ -1,44 +1,44 @@
 "use client";
 
-import { socialGraphAbi } from "@socialonchain/protocol";
+import { LABELS, type LabelId } from "@socialonchain/feed-sdk";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import { Avatar, Button, Empty, Sheet } from "@/components/bits";
+import { Empty, Sheet } from "@/components/bits";
 import { FeedList } from "@/components/FeedList";
+import { useFollow } from "@/components/FollowButton";
 import { Icon } from "@/components/Icon";
+import { IdCard } from "@/components/IdCard";
+import { Segmented } from "@/components/kit";
+import motion from "@/components/onboarding/onboarding.module.css";
 import { PersonRow } from "@/components/PersonRow";
 import { PostText } from "@/components/PostText";
+import { RollUp, Seal, ShareButton } from "@/components/profile/bits";
+import { ProfileFeeds, useAuthorFeeds } from "@/components/profile/ProfileFeeds";
+import { clientConfig } from "@/configs";
 import { API_URL, ApiError, api, qs } from "@/lib/api";
-import { addressUrl, contracts } from "@/lib/chain";
-import { compact, shortAddr } from "@/lib/format";
+import { addressUrl, network } from "@/lib/chain";
+import { shortAddr } from "@/lib/format";
 import { useSession } from "@/lib/session";
-import { useSessionWrite } from "@/lib/tx";
 import type { Author, Post, User } from "@/lib/types";
 
-function toAuthor(u: User): Author {
-  return {
-    address: u.address,
-    handle: u.handle,
-    displayName: u.profile.displayName,
-    avatarUrl: u.profile.avatarUrl,
-    registered: u.registered,
-    fid: u.farcaster?.fid ?? null,
-    fcUsername: u.farcaster?.username ?? null,
-    contractsDeployed: u.builder?.contractsDeployed ?? 0,
-  };
+type Tab = "posts" | "replies" | "feeds";
+const FC_ENABLED = clientConfig.enabledSources.some((x) => x.startsWith("farcaster"));
+const NET = network.name === "fuji" ? "Fuji" : "Local";
+
+/** Tên nhãn chủ đề cho thẻ (bỏ phần giải thích trong ngoặc), viết hoa. */
+function topicName(id: string, locale: "en" | "vi"): string | null {
+  const l = LABELS[id as LabelId];
+  return l ? l[locale].replace(/\s*\(.*\)\s*$/, "").toLocaleUpperCase() : null;
 }
 
 export function ProfileView({ id }: { id: string }) {
   const t = useTranslations("profile");
-  const router = useRouter();
-  const { owner, status } = useSession();
-  const write = useSessionWrite();
+  const { owner } = useSession();
   const viewer = owner?.toLowerCase();
   const [list, setList] = useState<"followers" | "following" | null>(null);
-  const [optimistic, setOptimistic] = useState<boolean | null>(null);
+  const [tab, setTab] = useState<Tab>("posts");
 
   const q = useQuery({
     queryKey: ["user", id, viewer],
@@ -48,10 +48,10 @@ export function ProfileView({ id }: { id: string }) {
 
   if (q.isPending) {
     return (
-      <div className="space-y-3 p-4">
-        <div className="skeleton h-20 w-20 rounded-full" />
-        <div className="skeleton h-4 w-1/3 rounded" />
-        <div className="skeleton h-3 w-2/3 rounded" />
+      <div className="space-y-4 px-6 pt-5">
+        <div className="skeleton mx-auto aspect-[342/216] w-full max-w-[342px] rounded-[18px]" />
+        <div className="skeleton h-12 w-full rounded-2xl" />
+        <div className="skeleton h-12 w-full rounded-full" />
       </div>
     );
   }
@@ -62,154 +62,44 @@ export function ProfileView({ id }: { id: string }) {
   }
 
   const u = q.data;
-  const author = toAuthor(u);
-  const isMe = viewer === u.address;
-  const following = optimistic ?? u.viewer?.following ?? false;
-  const followers =
-    u.counts.followers + (optimistic === null ? 0 : (optimistic ? 1 : 0) - (u.viewer?.following ? 1 : 0));
-
-  async function toggleFollow() {
-    if (status !== "ready" || !contracts || !owner) {
-      router.push("/welcome");
-      return;
-    }
-    const next = !following;
-    setOptimistic(next);
-    const ok = await write(next ? t("follow") : t("following"), {
-      address: contracts.SocialGraph,
-      abi: socialGraphAbi,
-      functionName: next ? "follow" : "unfollow",
-      args: [owner, u.address as `0x${string}`],
-    });
-    if (!ok) setOptimistic(!next);
-  }
-
-  const builder = u.builder && u.builder.contractsDeployed > 0 ? u.builder : null;
-  const explorer = addressUrl(u.address);
-
   return (
     <div>
-      <section className="px-4 pt-5 pb-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="truncate text-[24px] font-bold leading-tight tracking-tight">
-              {u.profile.displayName || (u.handle ? u.handle : shortAddr(u.address))}
-            </h1>
-            <div className="mt-0.5 flex items-center gap-2 text-[15px]">
-              {u.handle && <span>@{u.handle}</span>}
-              <button
-                type="button"
-                className="mono rounded-full bg-[var(--soft)] px-2 py-0.5 text-[11px] text-[var(--muted)]"
-                onClick={() => void navigator.clipboard?.writeText(u.address)}
-                title={u.address}
-              >
-                {shortAddr(u.address)}
-              </button>
-            </div>
-          </div>
-          <Avatar author={author} size={72} />
-        </div>
+      <Hero u={u} viewer={viewer} onList={setList} />
 
-        {u.profile.bio && <PostText text={u.profile.bio} className="mt-3" />}
-
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {builder && (
-            <span
-              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)]/10 px-3 py-1 text-[13px] font-medium text-[var(--accent)]"
-              title={Object.entries(builder.chains)
-                .map(([c, n]) => `chain ${c}: ${n}`)
-                .join(" · ")}
-              data-testid="builder-badge"
-            >
-              <Icon name="verified" className="h-4 w-4" />
-              {t("contracts", { n: builder.contractsDeployed })}
-            </span>
-          )}
-          {u.farcaster && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--soft)] px-3 py-1 text-[13px]">
-              <Icon name="arch" className="h-4 w-4 text-[#8a63d2]" />@{u.farcaster.username}
-            </span>
-          )}
-          {!u.registered && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--soft)] px-3 py-1 text-[13px] text-[var(--muted)]">
-              {t("notRegistered")}
-            </span>
-          )}
-          {u.viewer?.followedBy && (
-            <span className="rounded-full bg-[var(--soft)] px-3 py-1 text-[13px] text-[var(--muted)]">
-              {t("followsYou")}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-3 flex items-center gap-4 text-[14px] text-[var(--muted)]">
-          <button
-            type="button"
-            className="hover:underline"
-            onClick={() => setList("followers")}
-            data-testid="followers-count"
-          >
-            <span className="font-semibold text-[var(--ink)]">{compact(followers)}</span> {t("followers")}
-          </button>
-          <button type="button" className="hover:underline" onClick={() => setList("following")}>
-            <span className="font-semibold text-[var(--ink)]">{compact(u.counts.following)}</span>{" "}
-            {t("followingCount")}
-          </button>
-          <span className="flex-1" />
-          {explorer && (
-            <a
-              href={explorer}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="explorer"
-              className="hover:text-[var(--ink)]"
-            >
-              <Icon name="external" className="h-4 w-4" />
-            </a>
-          )}
-          <a
-            href={`${API_URL}/users/${u.address}`}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="API"
-            title="API"
-            className="hover:text-[var(--ink)]"
-          >
-            <Icon name="cube" className="h-4 w-4" />
-          </a>
-        </div>
-
-        <div className="mt-4 flex gap-2">
-          {isMe ? (
-            <Link
-              href="/settings#profile"
-              className="press flex h-10 flex-1 items-center justify-center rounded-full border border-[var(--line)] text-sm font-semibold"
-            >
-              {t("edit")}
-            </Link>
-          ) : (
-            <Button
-              variant={following ? "outline" : "solid"}
-              className="flex-1"
-              onClick={() => void toggleFollow()}
-              testId="follow"
-            >
-              {following ? t("following") : t("follow")}
-            </Button>
-          )}
-        </div>
-      </section>
-
-      <div className="border-t border-[var(--line)]">
-        <FeedList
-          queryKey={["user-posts", u.address, viewer]}
-          fetchPage={async (cursor) => {
-            const r = await api<{ items: Post[]; nextCursor: number | null }>(
-              `/users/${u.address}/posts${qs({ cursor, limit: 20, viewer })}`,
-            );
-            return { rows: r.items.map((post) => ({ post })), nextCursor: r.nextCursor };
-          }}
+      <div className="px-4 pb-2">
+        <Segmented<Tab>
+          iconOnly
+          value={tab}
+          onChange={setTab}
+          testId="profile-tabs"
+          items={[
+            { key: "posts", icon: "reply", label: t("tabPosts") },
+            { key: "replies", icon: "chat", label: t("tabReplies") },
+            { key: "feeds", icon: "layers", label: t("tabFeeds") },
+          ]}
         />
+      </div>
+
+      <div
+        key={tab}
+        role="tabpanel"
+        aria-label={tab === "posts" ? t("tabPosts") : tab === "replies" ? t("tabReplies") : t("tabFeeds")}
+        className="anim-drop border-t border-[var(--line)]"
+      >
+        {tab === "feeds" ? (
+          <ProfileFeeds address={u.address} />
+        ) : (
+          <FeedList
+            queryKey={["user-posts", u.address, viewer, tab]}
+            emptyText={tab === "replies" ? t("noReplies") : t("noPosts")}
+            fetchPage={async (cursor) => {
+              const r = await api<{ items: Post[]; nextCursor: number | null }>(
+                `/users/${u.address}/posts${qs({ cursor, limit: 20, viewer, kind: tab })}`,
+              );
+              return { rows: r.items.map((post) => ({ post })), nextCursor: r.nextCursor };
+            }}
+          />
+        )}
       </div>
 
       {list && (
@@ -221,6 +111,248 @@ export function ProfileView({ id }: { id: string }) {
         />
       )}
     </div>
+  );
+}
+
+function Hero({
+  u,
+  viewer,
+  onList,
+}: {
+  u: User;
+  viewer: string | undefined;
+  onList: (l: "followers" | "following") => void;
+}) {
+  const t = useTranslations("profile");
+  const tc = useTranslations("idcard");
+  const locale = useLocale() as "en" | "vi";
+  const isMe = viewer === u.address;
+  const initial = u.viewer?.following ?? false;
+  const f = useFollow(u.address, initial);
+  const feeds = useAuthorFeeds(u.address);
+  const n = u.builder?.contractsDeployed ?? 0;
+  const followers = u.counts.followers + (f.following ? 1 : 0) - (initial ? 1 : 0);
+  const explorer = addressUrl(u.address);
+  const focus = (u.topTopics ?? [])
+    .map((x) => topicName(x, locale))
+    .filter((x): x is string => Boolean(x))
+    .slice(0, 2)
+    .join(" · ");
+  const name = u.profile.displayName || (u.handle ? `@${u.handle}` : shortAddr(u.address));
+  const path = `/u/${u.handle ?? u.address}`;
+  const verifiedLabel = explorer ? t("verifiedAria", { n }) : t("verifiedAriaLocal", { n });
+
+  return (
+    <section className="px-6 pt-4 pb-4">
+      {isMe && (
+        <div className="-mx-2 mb-2 flex items-center">
+          <span className="mono flex h-[30px] items-center gap-1.5 rounded-full bg-[var(--soft)] px-3 text-[12px] font-semibold">
+            <span className="h-[7px] w-[7px] rounded-full bg-[var(--accent)]" />
+            {NET}
+          </span>
+          <span className="flex-1" />
+          {FC_ENABLED && (
+            <Link
+              href="/import"
+              aria-label={t("importF")}
+              title={t("importF")}
+              className="press flex h-11 w-11 items-center justify-center rounded-full"
+              data-testid="profile-import"
+            >
+              <Icon name="download" className="h-[22px] w-[22px]" strokeWidth={2} />
+            </Link>
+          )}
+        </div>
+      )}
+
+      <div className={`${motion.rise} mx-auto w-full max-w-[342px]`}>
+        <IdCard
+          variant={n > 0 ? "builder" : "reader"}
+          handle={u.handle}
+          address={u.address}
+          minted={u.registered}
+          block={u.registeredBlock}
+          verified={n > 0 ? "" : null}
+          stampDelay={350}
+          shine="once"
+          fields={[
+            { k: tc("chain"), v: NET.toUpperCase() },
+            { k: tc("focus"), v: focus || "—" },
+            { k: tc("feed"), v: feeds.data ? String(feeds.data.length) : "—" },
+          ]}
+        />
+      </div>
+
+      {(u.profile.displayName || u.profile.bio) && (
+        <div className="mt-4">
+          {u.profile.displayName && (
+            <h1 className="text-[20px] font-extrabold leading-tight tracking-[-0.02em]">
+              {u.profile.displayName}
+            </h1>
+          )}
+          {u.profile.bio && <PostText text={u.profile.bio} className="mt-1 text-[15px]" />}
+        </div>
+      )}
+      {!u.profile.displayName && <h1 className="sr-only">{name}</h1>}
+
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {n > 0 ? (
+          explorer ? (
+            <a
+              href={explorer}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={verifiedLabel}
+              title={verifiedLabel}
+              className="press flex min-h-[52px] flex-col justify-center gap-0.5"
+              data-testid="builder-badge"
+            >
+              <VerifiedStat n={n} link />
+            </a>
+          ) : (
+            <span
+              role="img"
+              aria-label={verifiedLabel}
+              title={verifiedLabel}
+              className="flex min-h-[52px] flex-col justify-center gap-0.5"
+              data-testid="builder-badge"
+            >
+              <VerifiedStat n={n} />
+            </span>
+          )
+        ) : (
+          <span className="flex min-h-[52px] flex-col justify-center gap-0.5">
+            <RollUp
+              value={u.counts.posts}
+              className="text-[24px] font-extrabold leading-7 tracking-[-0.03em]"
+            />
+            <span className="text-[12px] text-[var(--muted)]">{t("postsCount")}</span>
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => onList("followers")}
+          className="press flex min-h-[52px] flex-col items-start justify-center gap-0.5 text-left"
+          data-testid="followers-count"
+        >
+          <RollUp value={followers} className="text-[24px] font-extrabold leading-7 tracking-[-0.03em]" />
+          <span className="text-[12px] text-[var(--muted)]">{t("statFollowers")}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onList("following")}
+          className="press flex min-h-[52px] flex-col items-start justify-center gap-0.5 text-left"
+        >
+          <RollUp
+            value={u.counts.following}
+            className="text-[24px] font-extrabold leading-7 tracking-[-0.03em]"
+          />
+          <span className="text-[12px] text-[var(--muted)]">{t("statFollowing")}</span>
+        </button>
+      </div>
+
+      <div className="mt-3 flex gap-2">
+        {isMe ? (
+          <>
+            <Link
+              href="/settings#profile"
+              className="press flex h-12 flex-1 items-center justify-center rounded-full border-[1.5px] border-[var(--line)] text-[15px] font-bold"
+            >
+              {t("edit")}
+            </Link>
+            <ShareButton title={name} path={path} wide />
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => void f.toggle()}
+              aria-pressed={f.following}
+              className={`press flex h-12 flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] text-[16px] font-bold transition-colors ${
+                f.following
+                  ? "border-[var(--line)] bg-[var(--bg)] text-[var(--ink)]"
+                  : "border-[var(--ink)] bg-[var(--ink)] text-[var(--bg)]"
+              }`}
+              data-testid="follow"
+            >
+              {f.following ? (
+                <span key="on" className={f.changed ? "anim-pop flex" : "flex"}>
+                  <Icon name="check" className="h-[18px] w-[18px] text-[var(--accent)]" strokeWidth={2.8} />
+                </span>
+              ) : (
+                <Icon name="plus" className="h-[18px] w-[18px]" strokeWidth={2.6} />
+              )}
+              {f.following ? t("following") : u.viewer?.followedBy ? t("followBack") : t("follow")}
+            </button>
+            {/* DM: <MessageButton address={u.address} /> */}
+            <ShareButton title={name} path={path} />
+          </>
+        )}
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-1 text-[13px]">
+        {u.farcaster && (
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[var(--soft)] px-3">
+            <Icon name="arch" className="h-4 w-4 text-[#8a63d2]" />@{u.farcaster.username}
+          </span>
+        )}
+        {u.viewer?.followedBy && !isMe && (
+          <span className="inline-flex h-8 items-center rounded-full bg-[var(--soft)] px-3 text-[var(--muted)]">
+            {t("followsYou")}
+          </span>
+        )}
+        <span className="flex-1" />
+        <button
+          type="button"
+          onClick={() => void navigator.clipboard?.writeText(u.address).catch(() => undefined)}
+          aria-label={t("copyAddr")}
+          title={u.address}
+          className="press flex h-11 w-11 items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--ink)]"
+        >
+          <Icon name="copy" className="h-[18px] w-[18px]" />
+        </button>
+        {explorer && (
+          <a
+            href={explorer}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={t("explorer")}
+            title={t("explorer")}
+            className="press flex h-11 w-11 items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--ink)]"
+          >
+            <Icon name="external" className="h-[18px] w-[18px]" />
+          </a>
+        )}
+        <a
+          href={`${API_URL}/users/${u.address}`}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="API"
+          title="API"
+          className="press flex h-11 w-11 items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--ink)]"
+        >
+          <Icon name="code" className="h-[18px] w-[18px]" />
+        </a>
+      </div>
+    </section>
+  );
+}
+
+function VerifiedStat({ n, link = false }: { n: number; link?: boolean }) {
+  const t = useTranslations("profile");
+  return (
+    <>
+      <span className="flex items-center gap-1.5">
+        <span className="anim-pop flex" style={{ animationDelay: "700ms" }}>
+          <Seal />
+        </span>
+        <RollUp value={n} className="text-[24px] font-extrabold leading-7 tracking-[-0.03em]" />
+      </span>
+      <span className="text-[12px] font-semibold text-[var(--red-ink)]">
+        {t("contract", { n })}
+        {link ? " ↗" : ""}
+      </span>
+    </>
   );
 }
 

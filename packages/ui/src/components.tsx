@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Icon, type IconName } from "./Icon";
 
@@ -96,19 +96,30 @@ export function Sheet({
   onClose,
   children,
   title,
+  label,
 }: {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
   title?: string;
+  /** Nhãn cho trình đọc màn hình khi không hiện tiêu đề. */
+  label?: string;
 }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
   if (!open || typeof document === "undefined") return null;
   return createPortal(
     <div
       className="fixed inset-0 z-40 flex items-end justify-center md:items-center"
       role="dialog"
       aria-modal
-      aria-label={title}
+      aria-label={title ?? label}
     >
       <button
         type="button"

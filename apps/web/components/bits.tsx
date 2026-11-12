@@ -7,6 +7,28 @@ import type { Author } from "@/lib/types";
 
 export { Button, Chip, Empty, Ring, Sheet, Spinner } from "@socialonchain/ui";
 
+/** Nền avatar chữ: 4 bảng màu theo token (ink, mist, đỏ, blush), tự đổi theo dark mode. */
+const AVATAR_TONES = [
+  "bg-[var(--ink)] text-[var(--bg)]",
+  "bg-[var(--soft)] text-[var(--ink)]",
+  "bg-[var(--accent)] text-[var(--accent-ink)]",
+  "bg-[var(--blush)] text-[var(--red-ink)]",
+];
+
+/** 1–2 chữ cái đầu: "linh_builds" → "LB", "Gia Bảo" → "GB", địa chỉ → 2 ký tự hex đầu. */
+function initials(a: Pick<Author, "displayName" | "handle" | "fcUsername" | "address">): string {
+  const name = a.displayName || a.handle || a.fcUsername;
+  if (!name) return a.address ? a.address.slice(2, 4).toUpperCase() : "?";
+  const words = name.split(/[\s_.-]+/u).filter(Boolean);
+  const first = [...(words[0] ?? name)][0] ?? "?";
+  const second = words.length > 1 ? ([...(words[1] ?? "")][0] ?? "") : "";
+  return (first + second).toUpperCase();
+}
+
+/**
+ * Avatar tròn: ảnh nếu có, không thì chữ cái đầu trên nền token. Không gắn badge:
+ * dấu Verified builder đặt cạnh tên (`Verified` trong kit.tsx).
+ */
 export function Avatar({
   author,
   size = 40,
@@ -18,8 +40,7 @@ export function Avatar({
   size?: number;
 }) {
   const seed = author.address ?? author.fcUsername ?? String(author.fid ?? "?");
-  const letter = (author.displayName || author.handle || author.fcUsername || "?").slice(0, 1).toUpperCase();
-  const verified = author.contractsDeployed > 0;
+  const tone = AVATAR_TONES[avatarHue(seed) % AVATAR_TONES.length];
   return (
     <span className="relative inline-flex shrink-0" style={{ width: size, height: size }}>
       {author.avatarUrl ? (
@@ -27,18 +48,11 @@ export function Avatar({
         <img src={author.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
       ) : (
         <span
-          className="flex h-full w-full items-center justify-center rounded-full font-semibold text-white"
-          style={{ background: `hsl(${avatarHue(seed)} 55% 52%)`, fontSize: size * 0.42 }}
+          className={`flex h-full w-full items-center justify-center rounded-full font-bold tracking-tight ${tone}`}
+          style={{ fontSize: Math.max(9, Math.round(size * 0.36)) }}
+          aria-hidden
         >
-          {letter}
-        </span>
-      )}
-      {verified && (
-        <span
-          className="absolute -bottom-0.5 -right-0.5 rounded-full bg-[var(--bg)] p-[1px] text-[var(--accent)]"
-          title="Verified builder"
-        >
-          <Icon name="verified" className="h-3.5 w-3.5" filled />
+          {initials(author)}
         </span>
       )}
     </span>

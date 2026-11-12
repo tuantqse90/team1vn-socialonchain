@@ -6,19 +6,18 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { clientConfig } from "@/configs";
 import { api } from "@/lib/api";
 import { network } from "@/lib/chain";
-import { formatAvax } from "@/lib/format";
-import { LOW_GAS_WEI, useSession } from "@/lib/session";
-import { Avatar, Ring } from "./bits";
+import { gasLevel, useSession } from "@/lib/session";
 import { useCompose } from "./Compose";
 import { Icon, type IconName } from "./Icon";
 import { Logo } from "./Logo";
 import { NetworkGuard } from "./NetworkGuard";
+import { useTopUp } from "./TopUpSheet";
 
-type NavItem = { href: string; icon: IconName; key: string; match: (p: string) => boolean };
+type NavItem = { href: string; icon: IconName; key: string; label: string; match: (p: string) => boolean };
 
 function useUnread() {
   const { token } = useSession();
@@ -30,28 +29,104 @@ function useUnread() {
   });
 }
 
-/** Vòng gas của session key: bấm vào để mở settings. */
-export function SessionBadge() {
-  const t = useTranslations("session");
+const RING = 62.83; // 2π × 10
+
+/**
+ * Chip gas của session key: vòng (số dư / 0.05 AVAX) + icon key + số dư 4 chữ số.
+ * Thấp/hết gas: nền blush, vòng đỏ có quầng, dấu "+", bấm là mở sheet nạp. Nảy nhẹ sau mỗi tx tiêu gas.
+ */
+export function SessionChip({ className = "" }: { className?: string }) {
+  const t = useTranslations("chip");
   const { status, sessionBalance } = useSession();
+  const topUp = useTopUp();
+  const prev = useRef<bigint | undefined>(undefined);
+  const [bump, setBump] = useState(0);
+  useEffect(() => {
+    if (sessionBalance !== undefined && prev.current !== undefined && sessionBalance < prev.current)
+      setBump((b) => b + 1);
+    prev.current = sessionBalance;
+  }, [sessionBalance]);
+
   if (status !== "ready" || sessionBalance === undefined) return null;
-  const low = sessionBalance < LOW_GAS_WEI;
-  return (
-    <Link
-      href="/settings#session"
-      className="press flex items-center gap-1.5 rounded-full px-1.5 py-1 text-[var(--muted)] hover:text-[var(--ink)]"
-      title={`${t("balance")}: ${formatAvax(sessionBalance)} AVAX`}
-      data-testid="session-badge"
+  const level = gasLevel(sessionBalance);
+  const low = level !== "ok";
+  const frac = Math.min(1, Number(sessionBalance) / Number(DEFAULT_SESSION_FUNDING_WEI));
+  const val = (Number(sessionBalance) / 1e18).toFixed(4);
+  const aria = `${level === "empty" ? t("keyEmpty") : low ? t("keyLow") : t("key")}: ${val} AVAX`;
+
+  const pill = (
+    <span
+      key={bump}
+      className={`flex h-8 items-center gap-1.5 rounded-full pr-2.5 pl-1 transition-colors duration-300 ${bump ? "anim-bump" : ""} ${
+        low ? "bg-[var(--blush)] text-[var(--red-ink)]" : "bg-[var(--soft)] text-[var(--ink)]"
+      }`}
     >
-      <Ring value={Number(sessionBalance) / Number(DEFAULT_SESSION_FUNDING_WEI)} danger={low} size={20} />
-      <Icon name="fuel" className={`h-4 w-4 ${low ? "text-[var(--accent)]" : ""}`} />
+      <span className={`relative h-6 w-6 shrink-0 rounded-full ${low ? "anim-halo" : ""}`}>
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden className="block">
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            fill="none"
+            strokeWidth="2.4"
+            style={{ stroke: low ? "color-mix(in srgb, var(--accent) 28%, transparent)" : "var(--line)" }}
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            fill="none"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeDasharray={RING}
+            strokeDashoffset={(RING * (1 - frac)).toFixed(2)}
+            transform="rotate(-90 12 12)"
+            style={{
+              stroke: low ? "var(--accent)" : "var(--ink)",
+              transition: "stroke-dashoffset .6s var(--spring), stroke .3s",
+            }}
+          />
+          <path
+            d="M7.2 14.6a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0-4.8 0M11.3 12.9L16 8.2M14.4 9.8l1.6 1.6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
+      </span>
+      <span className="mono text-[13px] font-semibold tabular-nums">{val}</span>
+      <span className={`mono text-[10px] font-semibold ${low ? "" : "text-[var(--muted)]"}`}>AVAX</span>
+      {low && <Icon name="plus" className="h-3 w-3" strokeWidth={3} />}
+    </span>
+  );
+  const cls = `press flex h-11 shrink-0 items-center ${className}`;
+  return low ? (
+    <button
+      type="button"
+      onClick={() => topUp.open(level)}
+      aria-label={aria}
+      title={aria}
+      data-testid="session-badge"
+      className={cls}
+    >
+      {pill}
+    </button>
+  ) : (
+    <Link href="/settings#session" aria-label={aria} title={aria} data-testid="session-badge" className={cls}>
+      {pill}
     </Link>
   );
 }
 
+/** Tên cũ, giữ cho code khác còn import. */
+export const SessionBadge = SessionChip;
+
+/** Kết nối ví / tham gia (đăng ký, bật thiết bị). Khi đã sẵn sàng thì không hiện (hồ sơ nằm ở tab bar). */
 function AccountButton() {
   const tc = useTranslations("common");
-  const { status, owner, me } = useSession();
+  const t = useTranslations("tabbar");
+  const { status } = useSession();
   const { openConnectModal } = useConnectModal();
   if (status === "disconnected") {
     return (
@@ -70,6 +145,8 @@ function AccountButton() {
     return (
       <Link
         href="/welcome"
+        aria-label={t("join")}
+        title={t("join")}
         className="press flex h-9 items-center gap-2 rounded-full bg-[var(--accent)] px-3.5 text-sm font-semibold text-[var(--accent-ink)]"
         data-testid="join"
       >
@@ -77,19 +154,52 @@ function AccountButton() {
       </Link>
     );
   }
-  if (!owner) return null;
+  return null;
+}
+
+/** Một tab chỉ icon: đang chọn thì icon đặc + vạch đỏ 16×4 bung từ 0.25 → 1; bấm thu 0.84. */
+function Tab({
+  item,
+  active,
+  live,
+  dot = false,
+  ariaLabel,
+  size,
+}: {
+  item: NavItem;
+  active: boolean;
+  live: boolean;
+  dot?: boolean;
+  ariaLabel?: string;
+  size: string;
+}) {
+  const fill = active && item.icon !== "search" && item.icon !== "layers" && item.icon !== "gear";
   return (
-    <Link href={`/u/${owner.toLowerCase()}`} className="press" aria-label="Profile">
-      <Avatar
-        size={32}
-        author={{
-          address: owner.toLowerCase(),
-          handle: null,
-          displayName: me?.profile?.displayName ?? null,
-          avatarUrl: me?.profile?.avatarUrl ?? null,
-          fid: null,
-          fcUsername: null,
-          contractsDeployed: 0,
+    <Link
+      href={item.href}
+      aria-label={ariaLabel ?? item.label}
+      aria-current={active ? "page" : undefined}
+      title={item.label}
+      data-testid={`nav-${item.key}`}
+      className={`group flex flex-col items-center justify-center gap-[5px] ${size} ${
+        active ? "text-[var(--ink)]" : "text-[var(--muted)] hover:text-[var(--ink)]"
+      }`}
+    >
+      <span
+        className="relative flex transition-transform duration-[550ms] ease-[var(--bouncy)] group-active:scale-[.84] group-active:duration-[140ms] group-active:ease-[var(--press)]"
+        style={{ transform: active && !live ? "translateY(4px) scale(.7)" : undefined }}
+      >
+        <Icon name={item.icon} filled={fill} strokeWidth={active ? 2.2 : 1.8} className="h-[26px] w-[26px]" />
+        {dot && (
+          <span className="anim-pop absolute top-px right-0 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg)] bg-[var(--accent)]" />
+        )}
+      </span>
+      <span
+        aria-hidden
+        className={`h-1 w-4 rounded-[2px] ${active ? "bg-[var(--accent)]" : "bg-transparent"}`}
+        style={{
+          transform: `scaleX(${active && live ? 1 : 0.25})`,
+          transition: "transform .55s var(--bouncy), background-color .2s",
         }}
       />
     </Link>
@@ -97,119 +207,133 @@ function AccountButton() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const t = useTranslations("nav");
-  const tc = useTranslations("common");
+  const t = useTranslations("tabbar");
   const pathname = usePathname() || "/";
   const { status, owner } = useSession();
   const compose = useCompose();
   const unread = useUnread();
+  const [live, setLive] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setLive(true), 60);
+    return () => clearTimeout(id);
+  }, []);
   const profileHref = owner ? `/u/${owner.toLowerCase()}` : "/welcome";
 
-  const items: NavItem[] = [
-    { href: "/", icon: "home", key: "home", match: (p) => p === "/" },
-    { href: "/search", icon: "search", key: "search", match: (p) => p.startsWith("/search") },
-    { href: "/feeds", icon: "layers", key: "feeds", match: (p) => p.startsWith("/feeds") },
-    {
-      href: "/notifications",
-      icon: "bell",
-      key: "notifications",
-      match: (p) => p.startsWith("/notifications"),
-    },
-    { href: profileHref, icon: "user", key: "profile", match: (p) => Boolean(owner) && p === profileHref },
-  ];
-  const mobile = items.filter((i) => i.key !== "search");
-  const bare = pathname.startsWith("/welcome");
-
-  const navLink = (i: NavItem, size: string) => {
-    const active = i.match(pathname);
-    const badge = i.key === "notifications" && (unread.data ?? 0) > 0;
-    return (
-      <Link
-        key={i.key}
-        href={i.href}
-        aria-label={t(i.key)}
-        title={t(i.key)}
-        data-testid={`nav-${i.key}`}
-        className={`press relative flex items-center justify-center rounded-2xl ${size} ${
-          active ? "text-[var(--ink)]" : "text-[var(--muted)] hover:text-[var(--ink)]"
-        }`}
-      >
-        <Icon
-          name={i.icon}
-          className="h-[26px] w-[26px]"
-          filled={active && i.key !== "search" && i.key !== "layers"}
-        />
-        {badge && <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[var(--accent)]" />}
-      </Link>
-    );
+  const home: NavItem = { href: "/", icon: "home", key: "home", label: t("home"), match: (p) => p === "/" };
+  const explore: NavItem = {
+    href: "/search",
+    icon: "search",
+    key: "search",
+    label: t("explore"),
+    match: (p) => p.startsWith("/search"),
   };
+  const feeds: NavItem = {
+    href: "/feeds",
+    icon: "layers",
+    key: "feeds",
+    label: t("feeds"),
+    match: (p) => p.startsWith("/feeds"),
+  };
+  const notifs: NavItem = {
+    href: "/notifications",
+    icon: "bell",
+    key: "notifications",
+    label: t("notifs"),
+    match: (p) => p.startsWith("/notifications"),
+  };
+  const profile: NavItem = {
+    href: profileHref,
+    icon: "user",
+    key: "profile",
+    label: t("profile"),
+    match: (p) => Boolean(owner) && p === profileHref,
+  };
+  const settings: NavItem = {
+    href: "/settings",
+    icon: "gear",
+    key: "settings",
+    label: t("settings"),
+    match: (p) => p.startsWith("/settings"),
+  };
+
+  const bare = pathname.startsWith("/welcome");
+  // Trang thread có header riêng (quay lại + tiêu đề) và thanh trả lời dính đáy: ẩn header + tab bar trên mobile.
+  const thread = pathname.startsWith("/p/");
+  const dot = (unread.data ?? 0) > 0 && !notifs.match(pathname);
+  const tab = (i: NavItem, size: string) => (
+    <Tab
+      key={i.key}
+      item={i}
+      active={i.match(pathname)}
+      live={live}
+      size={size}
+      dot={i.key === "notifications" && dot}
+      ariaLabel={i.key === "notifications" && dot ? t("notifsUnread") : undefined}
+    />
+  );
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[1080px]">
       {/* Rail dọc trên desktop */}
       {!bare && (
-        <nav className="sticky top-0 hidden h-dvh w-[76px] shrink-0 flex-col items-center gap-2 py-5 md:flex">
+        <nav
+          aria-label={t("nav")}
+          className="sticky top-0 hidden h-dvh w-[76px] shrink-0 flex-col items-center gap-1 py-5 md:flex"
+        >
           <Link href="/" className="press mb-4" aria-label={clientConfig.appName}>
             <Logo size={34} />
           </Link>
-          {items.map((i) => navLink(i, "h-14 w-14"))}
+          {[home, explore, feeds, notifs, profile].map((i) => tab(i, "h-14 w-14"))}
           <button
             type="button"
             onClick={() => compose.open()}
-            aria-label={t("home")}
-            className="press mt-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--soft)] text-[var(--ink)] hover:bg-[var(--line)]"
+            aria-label={t("compose")}
+            title={t("compose")}
+            className="press mt-2 flex h-[38px] w-[54px] items-center justify-center rounded-xl bg-[var(--soft)] text-[var(--ink)] hover:bg-[var(--line)]"
             data-testid="compose-rail"
           >
-            <Icon name="plus" className="h-6 w-6" />
+            <Icon name="plus" className="h-[22px] w-[22px]" strokeWidth={2.3} />
           </button>
           <div className="flex-1" />
-          <Link
-            href="/settings"
-            aria-label={t("settings")}
-            className="press flex h-12 w-12 items-center justify-center text-[var(--muted)] hover:text-[var(--ink)]"
-          >
-            <Icon name="gear" className="h-6 w-6" />
-          </Link>
+          {tab(settings, "h-14 w-14")}
         </nav>
       )}
 
       <div className="flex min-w-0 flex-1 justify-center">
         <div
-          className={`w-full ${bare ? "max-w-[520px]" : "max-w-[620px] md:border-x md:border-[var(--line)]"} min-h-dvh pb-24 md:pb-8`}
+          className={`w-full ${bare ? "max-w-[520px]" : "max-w-[620px] md:border-x md:border-[var(--line)]"} min-h-dvh ${
+            thread ? "md:pb-0" : "pb-24 md:pb-8"
+          }`}
         >
           {!bare && (
-            <header className="glass sticky top-0 z-30 flex h-14 items-center gap-2 px-4">
-              <Link href="/" className="press md:hidden" aria-label={clientConfig.appName}>
-                <Logo size={28} />
-              </Link>
-              {network.name !== "fuji" ? (
-                <span className="mono rounded-full bg-[var(--soft)] px-2 py-0.5 text-[10px] uppercase text-[var(--muted)]">
-                  {tc("local")}
-                </span>
-              ) : (
-                <span className="mono rounded-full bg-[var(--soft)] px-2 py-0.5 text-[10px] uppercase text-[var(--muted)]">
-                  Fuji
-                </span>
-              )}
-              <div className="flex-1" />
+            <header
+              className={`glass sticky top-0 z-30 flex h-14 items-center gap-1.5 px-2.5 md:px-4 ${thread ? "max-md:hidden" : ""}`}
+            >
               <Link
-                href="/search"
-                aria-label={t("search")}
-                className="press flex h-9 w-9 items-center justify-center text-[var(--muted)] hover:text-[var(--ink)] md:hidden"
+                href="/"
+                className="press absolute left-1/2 -translate-x-1/2 md:hidden"
+                aria-label={clientConfig.appName}
               >
-                <Icon name="search" className="h-[22px] w-[22px]" />
+                <Logo size={30} />
               </Link>
+              <span className="mono hidden rounded-full bg-[var(--soft)] px-2 py-0.5 text-[10px] text-[var(--muted)] uppercase md:inline">
+                {network.name === "fuji" ? "Fuji" : "Local"}
+              </span>
+              <div className="flex-1" />
               <NetworkGuard />
               {/* DM: <InboxButton /> (nhánh phase-15-dm thêm vào đây khi merge) */}
-              <SessionBadge />
-              <Link
-                href="/settings"
-                aria-label={t("settings")}
-                className="press flex h-9 w-9 items-center justify-center text-[var(--muted)] hover:text-[var(--ink)] md:hidden"
-                data-testid="nav-settings"
-              >
-                <Icon name="gear" className="h-[22px] w-[22px]" />
-              </Link>
+              <SessionChip className="max-md:order-first" />
+              {status !== "ready" && (
+                <Link
+                  href="/settings"
+                  aria-label={t("settings")}
+                  title={t("settings")}
+                  className="press flex h-11 w-11 items-center justify-center text-[var(--muted)] hover:text-[var(--ink)] md:hidden"
+                  data-testid="nav-settings"
+                >
+                  <Icon name="gear" className="h-[22px] w-[22px]" />
+                </Link>
+              )}
               <AccountButton />
             </header>
           )}
@@ -217,22 +341,30 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      {/* Tab bar kiểu iOS trên mobile: chỉ icon */}
-      {!bare && (
-        <nav className="glass pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-[var(--line)] md:hidden">
-          <div className="mx-auto flex h-[58px] max-w-[520px] items-center justify-around px-2">
-            {mobile.slice(0, 2).map((i) => navLink(i, "h-12 w-14"))}
+      {/* Tab bar mobile: chỉ icon */}
+      {!bare && !thread && (
+        <nav
+          aria-label={t("nav")}
+          className="glass pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-[var(--line)] md:hidden"
+        >
+          <div className="mx-auto grid h-[50px] max-w-[520px] grid-cols-5 px-2">
+            {tab(home, "h-[50px]")}
+            {tab(explore, "h-[50px]")}
             <button
               type="button"
               onClick={() => compose.open()}
-              aria-label="+"
+              aria-label={t("compose")}
+              title={t("compose")}
               disabled={status === "disconnected"}
-              className="press flex h-11 w-14 items-center justify-center rounded-2xl bg-[var(--soft)] text-[var(--ink)] disabled:opacity-40"
+              className="group flex h-[50px] items-center justify-center disabled:opacity-40"
               data-testid="compose-tab"
             >
-              <Icon name="plus" className="h-6 w-6" />
+              <span className="flex h-[38px] w-[54px] items-center justify-center rounded-xl bg-[var(--soft)] text-[var(--ink)] transition-transform duration-[550ms] ease-[var(--bouncy)] group-active:scale-[.84] group-active:duration-[140ms] group-active:ease-[var(--press)]">
+                <Icon name="plus" className="h-[22px] w-[22px]" strokeWidth={2.3} />
+              </span>
             </button>
-            {mobile.slice(2).map((i) => navLink(i, "h-12 w-14"))}
+            {tab(notifs, "h-[50px]")}
+            {tab(profile, "h-[50px]")}
           </div>
         </nav>
       )}

@@ -10,13 +10,15 @@ import { Button, Empty } from "./bits";
 import { Icon } from "./Icon";
 import { PostCard } from "./PostCard";
 
-export type Row = { post: Post; reasons?: Reason[] };
-export type RowPage = { rows: Row[]; nextCursor: number | null; hidden?: number };
+/** `score`/`origins` chỉ có ở feed xếp hạng (GET /feed): dùng cho sheet "vì sao". */
+export type Row = { post: Post; reasons?: Reason[]; score?: number; origins?: string[] };
+export type RowPage = { rows: Row[]; nextCursor: number | null; hidden?: number; total?: number };
+export type FeedMeta = { hidden: number | null; total: number | null };
 
 export function PostSkeleton() {
   return (
     <div className="flex gap-3 px-4 py-3">
-      <div className="skeleton h-[38px] w-[38px] shrink-0 rounded-full" />
+      <div className="skeleton h-9 w-9 shrink-0 rounded-full" />
       <div className="flex-1 space-y-2 pt-1">
         <div className="skeleton h-3 w-1/3 rounded" />
         <div className="skeleton h-3 w-full rounded" />
@@ -32,11 +34,14 @@ export function FeedList({
   fetchPage,
   emptyText,
   header,
+  onMeta,
 }: {
   queryKey: readonly unknown[];
   fetchPage: (cursor: number | null) => Promise<RowPage>;
   emptyText?: string;
   header?: React.ReactNode;
+  /** Báo số bài bị ẩn + tổng số bài của trang đầu (badge "−N" ở dải feed). */
+  onMeta?: (m: FeedMeta) => void;
 }) {
   const t = useTranslations("common");
   const q = useInfiniteQuery({
@@ -46,6 +51,13 @@ export function FeedList({
     getNextPageParam: (last) => last.nextCursor,
   });
   const rows = q.data?.pages.flatMap((p) => p.rows) ?? [];
+  const first = q.data?.pages[0];
+  const total = first?.total;
+  const metaHidden = first?.hidden ?? null;
+  const metaTotal = total ?? null;
+  useEffect(() => {
+    onMeta?.({ hidden: metaHidden, total: metaTotal });
+  }, [onMeta, metaHidden, metaTotal]);
   const listRef = useRef<HTMLDivElement>(null);
   const [margin, setMargin] = useState(0);
   // Vị trí danh sách trong trang (header phía trên có thể đổi chiều cao).
@@ -102,7 +114,14 @@ export function FeedList({
               className="absolute left-0 top-0 w-full border-b border-[var(--line)]"
               style={{ transform: `translateY(${it.start - v.options.scrollMargin}px)` }}
             >
-              <PostCard post={row.post} reasons={row.reasons} />
+              <PostCard
+                post={row.post}
+                reasons={row.reasons}
+                score={row.score}
+                origins={row.origins}
+                rank={row.score !== undefined ? it.index + 1 : undefined}
+                total={row.score !== undefined ? total : undefined}
+              />
             </div>
           );
         })}

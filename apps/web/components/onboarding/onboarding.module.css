@@ -1,0 +1,494 @@
+/* Motion riêng của onboarding. Chỉ animate transform/màu; nội dung không bắt đầu ở opacity 0. */
+
+/* Lớp phủ toàn màn hình (AppShell để /welcome trần, không nav). */
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--soft);
+  color: var(--ink);
+}
+.column {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 440px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: max(env(safe-area-inset-top), 12px) 24px max(env(safe-area-inset-bottom), 24px);
+  box-sizing: border-box;
+}
+
+/* Bước mới trượt vào */
+.enter {
+  animation: enter 0.5s var(--spring) both;
+}
+@keyframes enter {
+  from {
+    transform: translateX(28px);
+  }
+}
+.rise {
+  animation: rise 0.55s cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
+}
+@keyframes rise {
+  from {
+    transform: translateY(24px);
+  }
+}
+
+/* ---------- Splash ---------- */
+.splash {
+  --fixed-ink: #0b0b0c;
+  --fixed-paper: #ffffff;
+  background: var(--accent);
+  color: var(--fixed-ink);
+}
+.bgRings {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.bgRot {
+  transform-box: view-box;
+  transform-origin: 195px 360px;
+  animation: rot 160s linear infinite;
+}
+@keyframes rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.fanBox {
+  position: relative;
+  width: min(342px, 100%);
+  aspect-ratio: 342 / 216;
+  margin: 118px auto 0;
+}
+.fanSlot {
+  position: absolute;
+  inset: 0;
+}
+.fan {
+  animation: fan 1.1s cubic-bezier(0.2, 0.9, 0.25, 1.12) both;
+}
+@keyframes fan {
+  from {
+    transform: rotate(-3deg) scale(0.84);
+  }
+}
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+.headline {
+  margin: 0;
+  font-size: clamp(34px, 10.3vw, 44px);
+  line-height: 1.04;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  display: flex;
+  flex-direction: column;
+}
+.headLast {
+  color: var(--accent-ink);
+}
+.startBtn {
+  height: 64px;
+  border-radius: 32px;
+  background: var(--fixed-ink);
+  color: var(--fixed-paper);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 26px;
+  transition: transform 0.2s var(--press);
+}
+.startBtn:active {
+  transform: scale(0.95);
+}
+.startDot {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.skipOnRed {
+  color: var(--fixed-ink);
+}
+.nudge {
+  animation: nudge 2.2s ease-in-out infinite;
+}
+@keyframes nudge {
+  0%,
+  70%,
+  100% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(5px);
+  }
+}
+
+/* ---------- Chọn vai trò ---------- */
+.roleStage {
+  position: relative;
+  width: min(342px, 100%);
+  aspect-ratio: 342 / 216;
+  margin: 24px auto 0;
+}
+.roleSlot {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.75s cubic-bezier(0.2, 0.9, 0.25, 1.12);
+}
+.roleHit {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  cursor: pointer;
+}
+.roleHit:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* ---------- Thanh dưới: chấm tiến độ + nút tròn ---------- */
+.dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 4px;
+  background: var(--line);
+  transition:
+    width 0.4s var(--spring),
+    background-color 0.3s;
+}
+.dotDone {
+  background: var(--ink);
+}
+.dotOn {
+  width: 24px;
+  background: var(--accent);
+}
+.nextBtn {
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background: var(--ink);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s var(--press);
+}
+.nextBtn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.nextBtn:disabled {
+  background: var(--line);
+  color: var(--muted);
+}
+
+/* ---------- Builder: lưới ô ---------- */
+.cells {
+  display: grid;
+  grid-template-columns: repeat(9, 18px);
+  gap: 6px;
+}
+.cell {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1.5px solid var(--line);
+  display: flex;
+}
+.cellOn {
+  flex: 1;
+  margin: -1.5px;
+  border-radius: 4px;
+  animation: pop 0.34s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.2);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.popLate {
+  animation: popLate 0.5s var(--bouncy) 0.12s backwards;
+}
+@keyframes popLate {
+  0% {
+    transform: scale(0.45);
+  }
+  55% {
+    transform: scale(1.18);
+  }
+}
+
+/* ---------- Sinh viên: ô chọn ---------- */
+.tile {
+  height: 100px;
+  border-radius: 22px;
+  padding: 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(11, 11, 12, 0.06);
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1.3),
+    background-color 0.25s,
+    color 0.25s,
+    box-shadow 0.25s;
+}
+.tile:active {
+  transform: scale(0.93);
+}
+.tileOn {
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 0 12px 24px -10px rgba(11, 11, 12, 0.45);
+}
+
+/* ---------- Người dùng: chữ lớn gạch chân / gạch ngang ---------- */
+.word {
+  position: relative;
+  height: 46px;
+  padding: 0;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1.3),
+    color 0.25s;
+}
+.word:active {
+  transform: scale(0.92);
+}
+.underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.15);
+}
+.strike {
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: 50%;
+  height: 3px;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform 0.38s var(--press);
+}
+
+/* ---------- Ví ---------- */
+.badge {
+  position: absolute;
+  top: -22px;
+  right: -14px;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 4px var(--soft),
+    0 8px 18px -6px rgba(11, 11, 12, 0.35);
+  animation: popLate 0.5s var(--bouncy) 0.12s backwards;
+  transition:
+    background-color 0.35s,
+    color 0.35s;
+}
+.halo::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 26px;
+  border: 2px solid currentColor;
+  border-color: var(--halo);
+  animation: halo 1.6s cubic-bezier(0.2, 0.7, 0.3, 1) 0.5s infinite;
+}
+@keyframes halo {
+  to {
+    transform: scale(1.8);
+    border-color: transparent;
+  }
+}
+.shake {
+  animation: shake 0.6s var(--press);
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  12% {
+    transform: translateX(-13px) rotate(-1.6deg);
+  }
+  28% {
+    transform: translateX(11px) rotate(1.2deg);
+  }
+  44% {
+    transform: translateX(-7px) rotate(-0.6deg);
+  }
+  60% {
+    transform: translateX(5px);
+  }
+  78% {
+    transform: translateX(-2px);
+  }
+}
+.title {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
+}
+.bigBtn {
+  width: 100%;
+  height: 64px;
+  border-radius: 32px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition:
+    transform 0.2s var(--press),
+    background-color 0.25s;
+}
+.bigBtn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.bigBtn:disabled {
+  cursor: default;
+}
+.bigOff {
+  background: var(--line);
+  color: var(--muted);
+}
+.bigOk {
+  background: var(--ok);
+  color: var(--bg);
+}
+.goBtn {
+  justify-content: space-between;
+  padding: 0 10px 0 26px;
+}
+
+/* Odometer chain id */
+.odo {
+  display: flex;
+  height: 72px;
+  overflow: hidden;
+  font-size: 72px;
+  line-height: 72px;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+}
+.odoCol {
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.75s var(--bouncy),
+    color 0.4s;
+}
+
+/* Handle lớn */
+.handleRow {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-bottom: 2px solid var(--ink);
+  transition: border-color 0.3s;
+}
+.handleBad {
+  border-color: var(--err);
+}
+.handleInput {
+  flex: 1;
+  min-width: 0;
+  height: 60px;
+  border: 0;
+  padding: 0;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.chip {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow:
+    0 1px 2px rgba(11, 11, 12, 0.08),
+    0 6px 14px -8px rgba(11, 11, 12, 0.25);
+  animation: chip 0.55s var(--bouncy) backwards;
+  transition: transform 0.2s var(--press);
+}
+.chip:active {
+  transform: scale(0.95);
+}
+@keyframes chip {
+  0% {
+    transform: translateY(22px) scale(0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bgRot,
+  .float,
+  .nudge,
+  .halo::after {
+    animation: none;
+  }
+}

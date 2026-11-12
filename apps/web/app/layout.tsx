@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import type { CSSProperties, ReactNode } from "react";
 import { AppShell } from "@/components/AppShell";
+import { OnboardingFlush } from "@/components/onboarding/Flush";
 import { clientConfig } from "@/configs";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -25,18 +26,27 @@ export const metadata: Metadata = {
   icons: { icon: "/brand/icon", apple: "/brand/icon" },
 };
 
+const THEME_COLOR = { light: "#ffffff", dark: "#0b0b0c" } as const;
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0b0c" },
-  ],
+  // Client có theme mặc định (vd. client B tối) thì thanh trạng thái theo theme đó; còn lại theo hệ thống.
+  themeColor: clientConfig.defaultTheme
+    ? THEME_COLOR[clientConfig.defaultTheme]
+    : [
+        { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
+        { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
+      ],
 };
 
-/** Đặt theme trước khi vẽ để không nháy (light/dark/system lưu ở localStorage). */
-const themeScript = `(function(){try{var t=localStorage.getItem('soc:theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light'}catch(e){}})()`;
+/**
+ * Đặt theme trước khi vẽ để không nháy. Lựa chọn của người dùng (localStorage) thắng; chưa chọn thì theo
+ * `defaultTheme` của client, rồi theo hệ thống.
+ */
+const defaultTheme = JSON.stringify(clientConfig.defaultTheme ?? "system");
+const themeScript = `(function(){var t=${defaultTheme};try{t=localStorage.getItem('soc:theme')||t}catch(e){}try{var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light'}catch(e){}})()`;
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const locale = await getLocale();
@@ -50,6 +60,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html
       lang={locale}
       className={`${sans.variable} ${mono.variable}`}
+      data-theme={clientConfig.defaultTheme}
       style={style}
       suppressHydrationWarning
     >
@@ -60,6 +71,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
+            <OnboardingFlush />
             <AppShell>{children}</AppShell>
           </Providers>
         </NextIntlClientProvider>

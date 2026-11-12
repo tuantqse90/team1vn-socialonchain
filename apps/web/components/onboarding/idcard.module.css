@@ -1,0 +1,387 @@
+/*
+ * Thẻ danh tính (IdCard). Khung gốc 342×216; mọi kích thước tính theo --u = 1/342 bề rộng thẻ (container query),
+ * nên thẻ co giãn đúng tỉ lệ trên màn hẹp. Bảng màu cố định theo vai trò (như một tấm thẻ thật), không đổi theo theme.
+ */
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 342px;
+  aspect-ratio: 342 / 216;
+  container-type: inline-size;
+  perspective: 1000px;
+}
+
+.face {
+  --u: calc(100cqw / 342);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: calc(var(--u) * 18);
+  background: var(--c-bg);
+  color: var(--c-ink);
+  box-shadow:
+    var(--c-shadow),
+    inset 0 0 0 1px var(--c-edge);
+  font-family: var(--font-sans);
+}
+
+.builder {
+  --c-bg: var(--accent);
+  --c-ink: #0b0b0c;
+  --c-muted: #0b0b0c;
+  --c-pat: #0b0b0c;
+  --c-pat-op: 0.2;
+  --c-wave-op: 0.35;
+  --c-photo-bg: #0b0b0c;
+  --c-photo-fg: var(--accent);
+  --c-stamp: #0b0b0c;
+  --c-scan: #ffffff;
+  --c-edge: rgba(255, 255, 255, 0.14);
+}
+.student {
+  --c-bg: #ffffff;
+  --c-ink: #0b0b0c;
+  --c-muted: #5e5e66;
+  --c-pat: var(--accent);
+  --c-pat-op: 0.3;
+  --c-wave-op: 0.45;
+  --c-photo-bg: var(--accent);
+  --c-photo-fg: var(--accent-ink);
+  --c-stamp: #d12f31;
+  --c-scan: var(--accent);
+  --c-edge: rgba(11, 11, 12, 0.07);
+}
+.reader {
+  --c-bg: #0b0b0c;
+  --c-ink: #ffffff;
+  --c-muted: #a1a1aa;
+  --c-pat: #ffffff;
+  --c-pat-op: 0.17;
+  --c-wave-op: 0.28;
+  --c-photo-bg: #ffffff;
+  --c-photo-fg: #0b0b0c;
+  --c-stamp: #ffffff;
+  --c-scan: var(--accent);
+  --c-edge: rgba(255, 255, 255, 0.12);
+}
+:root[data-theme="dark"] .reader {
+  --c-edge: rgba(255, 255, 255, 0.2);
+}
+
+.light {
+  --c-shadow:
+    0 1px 1px rgba(11, 11, 12, 0.06), 0 10px 20px -6px rgba(11, 11, 12, 0.2),
+    0 32px 60px -20px rgba(11, 11, 12, 0.3);
+}
+.dark {
+  --c-shadow:
+    0 2px 3px rgba(40, 0, 0, 0.18), 0 18px 30px -8px rgba(40, 0, 0, 0.42),
+    0 44px 80px -24px rgba(30, 0, 0, 0.55);
+}
+.flat {
+  --c-shadow: 0 0 0 0 transparent;
+}
+
+.pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.rings {
+  transform-box: view-box;
+  transform-origin: 296px 92px;
+  animation: rot 90s linear infinite;
+}
+@keyframes rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.head {
+  position: absolute;
+  top: calc(var(--u) * 14);
+  left: calc(var(--u) * 16);
+  right: calc(var(--u) * 16);
+  height: calc(var(--u) * 20);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 7);
+}
+.mark {
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
+  flex: none;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+}
+.brand {
+  font-size: calc(var(--u) * 9.5);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.state {
+  margin-left: auto;
+  flex: none;
+  height: calc(var(--u) * 17);
+  padding: 0 calc(var(--u) * 6);
+  box-sizing: border-box;
+  border-radius: calc(var(--u) * 4);
+  border: calc(var(--u) * 1) dashed var(--c-ink);
+  display: flex;
+  align-items: center;
+  font-size: calc(var(--u) * 8.5);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.minted {
+  border-style: solid;
+  background: var(--c-ink);
+  color: var(--c-bg);
+}
+.role {
+  flex: none;
+  font-size: calc(var(--u) * 10);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.photo {
+  position: absolute;
+  left: calc(var(--u) * 16);
+  top: calc(var(--u) * 46);
+  width: calc(var(--u) * 56);
+  height: calc(var(--u) * 68);
+  border-radius: calc(var(--u) * 8);
+  background: var(--c-photo-bg);
+  color: var(--c-photo-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--u) * 32);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.who {
+  position: absolute;
+  left: calc(var(--u) * 84);
+  right: calc(var(--u) * 16);
+  top: calc(var(--u) * 46);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 3);
+  min-width: 0;
+}
+.withStamp {
+  right: calc(var(--u) * 116);
+}
+.handle {
+  font-size: calc(var(--u) * 20);
+  line-height: calc(var(--u) * 24);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.addr {
+  font-size: calc(var(--u) * 10.5);
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+
+.fields {
+  position: absolute;
+  left: calc(var(--u) * 16);
+  right: calc(var(--u) * 16);
+  top: calc(var(--u) * 126);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(var(--u) * 10);
+}
+.field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 2);
+}
+.fk {
+  font-size: calc(var(--u) * 8.5);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--c-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fv {
+  font-size: calc(var(--u) * 11.5);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s;
+}
+
+.mrz {
+  position: absolute;
+  left: calc(var(--u) * 16);
+  right: calc(var(--u) * 16);
+  bottom: calc(var(--u) * 12);
+  font-size: calc(var(--u) * 9.5);
+  line-height: calc(var(--u) * 13);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  white-space: pre;
+  overflow: hidden;
+}
+.mrz > div {
+  position: relative;
+  overflow: hidden;
+}
+/* Gõ dòng MRZ: một tấm che cùng màu thẻ trượt sang phải theo từng ký tự (chỉ transform). */
+.typing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--c-bg);
+  animation: type 1.9s steps(44) infinite;
+}
+@keyframes type {
+  0% {
+    transform: translateX(0);
+  }
+  75%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.stamp {
+  position: absolute;
+  right: calc(var(--u) * 14);
+  top: calc(var(--u) * 48);
+  padding: calc(var(--u) * 4) calc(var(--u) * 10) calc(var(--u) * 5);
+  border: calc(var(--u) * 2.5) solid var(--c-stamp);
+  border-radius: calc(var(--u) * 8);
+  color: var(--c-stamp);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 1);
+  transform: rotate(-9deg);
+  animation: stamp 0.42s cubic-bezier(0.55, 0, 0.45, 1) var(--stamp-delay, 0s) backwards;
+}
+.stampMain {
+  font-size: calc(var(--u) * 13);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+.stampSub {
+  font-size: calc(var(--u) * 8.5);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+@keyframes stamp {
+  0% {
+    transform: scale(1.9) rotate(-2deg);
+  }
+  70% {
+    transform: scale(0.94) rotate(-10deg);
+  }
+  100% {
+    transform: scale(1) rotate(-9deg);
+  }
+}
+
+.scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--c-scan);
+  box-shadow: 0 0 14px 3px var(--c-scan);
+  animation: scan 0.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+  pointer-events: none;
+}
+@keyframes scan {
+  to {
+    transform: translateY(calc(var(--u) * 212));
+  }
+}
+
+.shine {
+  position: absolute;
+  top: -40px;
+  bottom: -40px;
+  left: 0;
+  width: 26%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.42),
+    rgba(255, 255, 255, 0)
+  );
+  transform: translateX(-160%) skewX(-18deg);
+  pointer-events: none;
+}
+.shineOnce {
+  animation: shine 1.4s cubic-bezier(0.3, 0, 0.2, 1) 0.3s both;
+}
+.shineLoop {
+  animation: shineLoop 5s cubic-bezier(0.3, 0, 0.2, 1) 1.6s infinite;
+}
+@keyframes shine {
+  from {
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(520%) skewX(-18deg);
+  }
+}
+@keyframes shineLoop {
+  0% {
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  38%,
+  100% {
+    transform: translateX(520%) skewX(-18deg);
+  }
+}
+
+.tilt {
+  animation: tilt 7s ease-in-out infinite;
+}
+@keyframes tilt {
+  0%,
+  100% {
+    transform: rotateX(4deg) rotateY(-7deg);
+  }
+  50% {
+    transform: rotateX(-3deg) rotateY(7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rings,
+  .typing::after,
+  .scan,
+  .shineLoop,
+  .tilt {
+    animation: none;
+  }
+  .typing::after {
+    display: none;
+  }
+}

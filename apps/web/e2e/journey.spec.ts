@@ -65,9 +65,13 @@ test.describe("đã đăng nhập", () => {
   test("đăng bài bằng session key, thấy trên profile", async ({ page }) => {
     await page.goto("/");
     const text = `e2e post ${RUN} #team1`;
+    // Home có hàng "Có gì mới?": bấm vào mới mở composer (sheet).
+    await page.getByTestId("whats-new").click();
     await page.getByTestId("composer-input").first().fill(text);
     await page.getByTestId("composer-submit").first().click();
     await waitTxOk(page);
+    // Sheet hiện panel "đã đăng" (block, phí gas) ~1.6s rồi tự đóng.
+    await expect(page.getByTestId("composer")).toBeHidden({ timeout: 20_000 });
     // Điều hướng trong SPA: TxProvider đợi indexer bắt kịp rồi làm mới query, nên bài hiện mà không cần reload.
     await page.getByTestId("nav-profile").filter({ visible: true }).click();
     await expect(page.getByText(text)).toBeVisible({ timeout: 30_000 });

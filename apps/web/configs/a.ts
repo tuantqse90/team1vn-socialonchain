@@ -4,7 +4,10 @@ import type { ClientConfig } from "./types";
 const config: ClientConfig = {
   id: "a",
   appName: "socialonchain",
-  tagline: { en: "One identity. One graph. Your feed.", vi: "Một danh tính. Một graph. Feed của bạn." },
+  tagline: {
+    en: "One identity. One graph. Thousands of feeds.",
+    vi: "Một danh tính. Một graph. Hàng nghìn feed.",
+  },
   logo: { mark: "S" },
   theme: { accent: "#E84142", accentInk: "#FFFFFF", radius: "18px" },
   defaultFeeds: [

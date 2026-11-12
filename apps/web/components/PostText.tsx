@@ -20,7 +20,7 @@ export function PostText({ text, className = "" }: { text: string; className?: s
           href={href}
           target="_blank"
           rel="noreferrer nofollow ugc"
-          className="text-[var(--accent)] hover:underline"
+          className="text-[var(--red-ink)] hover:underline"
         >
           {href.replace(/^https?:\/\//, "").slice(0, 48)}
           {href.replace(/^https?:\/\//, "").length > 48 ? "…" : ""}
@@ -31,7 +31,7 @@ export function PostText({ text, className = "" }: { text: string; className?: s
       const pre = m[2] ?? "";
       out.push(text.slice(last, idx) + pre);
       out.push(
-        <Link key={k++} href={`/u/${m[3].toLowerCase()}`} className="text-[var(--accent)] hover:underline">
+        <Link key={k++} href={`/u/${m[3].toLowerCase()}`} className="text-[var(--red-ink)] hover:underline">
           @{m[3].startsWith("0x") ? `${m[3].slice(0, 6)}…${m[3].slice(-4)}` : m[3]}
         </Link>,
       );
@@ -43,7 +43,7 @@ export function PostText({ text, className = "" }: { text: string; className?: s
         <Link
           key={k++}
           href={`/search?q=${encodeURIComponent(`#${m[5]}`)}`}
-          className="text-[var(--accent)] hover:underline"
+          className="text-[var(--red-ink)] hover:underline"
         >
           #{m[5]}
         </Link>,

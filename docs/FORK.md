@@ -50,7 +50,7 @@ Mọi thứ mang thương hiệu nằm trong `apps/web/configs/*.ts`:
 | `enabledSources` | Nguồn bài: chỉ onchain, hay cả Farcaster |
 | `plans`, `freeLimits` | Freemium của **client** (protocol không thu phí) |
 
-Ví dụ có sẵn: `configs/b.ts` ("Snowfield": chỉ onchain, chặn shill + bait mặc định). Chạy:
+Ví dụ có sẵn: `configs/b.ts` ("Phố Builder": chỉ onchain, chặn shill + bait mặc định, nền tối, accent vàng). Chạy:
 
 ```bash
 NEXT_PUBLIC_CLIENT_CONFIG=b pnpm --filter @socialonchain/web dev

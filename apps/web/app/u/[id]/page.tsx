@@ -10,8 +10,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const u = await serverApi<User>(`/users/${encodeURIComponent(id)}`);
   if (!u) return { title: id };
   const name = u.profile.displayName || (u.handle ? `@${u.handle}` : u.address);
-  const desc = u.profile.bio ?? `${u.counts.posts} posts · ${u.counts.followers} followers`;
-  return { title: name, description: desc, openGraph: { title: name, description: desc } };
+  const builder =
+    u.builder && u.builder.contractsDeployed > 0 ? ` · ${u.builder.contractsDeployed} contracts` : "";
+  const desc = u.profile.bio ?? `${u.counts.posts} posts · ${u.counts.followers} followers${builder}`;
+  return {
+    title: name,
+    description: desc,
+    openGraph: { type: "profile", title: name, description: desc, username: u.handle ?? undefined },
+    twitter: { card: "summary", title: name, description: desc },
+  };
 }
 
 export default async function Page({ params }: Props) {

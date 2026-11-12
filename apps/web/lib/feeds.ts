@@ -8,7 +8,7 @@ import { useSession } from "./session";
 import type { SavedFeed, Settings } from "./types";
 
 export type FeedCatalog = {
-  defaults: { id: string; spec: FeedSpec }[];
+  defaults: { id: string; spec: FeedSpec; subscribers?: number }[];
   moderation: { id: string; spec: FeedSpec }[];
   public: SavedFeed[];
   mine: SavedFeed[];
