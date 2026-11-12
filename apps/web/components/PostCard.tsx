@@ -113,7 +113,11 @@ export const PostCard = memo(function PostCard({
 
   return (
     <article
-      className={`relative flex gap-3 px-4 ${big ? "pt-3.5" : "cursor-pointer pt-3 pb-1"}`}
+      className={`relative flex gap-3 px-4 ${
+        big
+          ? "pt-3.5"
+          : "cursor-pointer pt-3 pb-1 transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--soft)_60%,transparent)]"
+      }`}
       data-testid="post"
       data-post-id={post.id}
       onClick={(e) => {

@@ -13,6 +13,7 @@ import { clientConfig } from "@/configs";
 import { api } from "@/lib/api";
 import { useFeedCatalog, useMyTabs, useUpdateSettings } from "@/lib/feeds";
 import { compact } from "@/lib/format";
+import { orbBackground } from "@/lib/orb";
 import { useSession } from "@/lib/session";
 
 type Tab = "defaults" | "mine" | "public";
@@ -160,12 +161,8 @@ function FeedRow({
     await qc.invalidateQueries({ queryKey: ["me"] });
   }
 
-  const tile =
-    kind === "mine"
-      ? "bg-[var(--accent)] text-[var(--accent-ink)]"
-      : kind === "defaults"
-        ? "bg-[var(--ink)] text-[var(--bg)]"
-        : "bg-[var(--soft)] text-[var(--ink)]";
+  // Feed của mình: đỏ thương hiệu; còn lại orb gradient theo id (cùng feed, cùng màu ở mọi màn).
+  const tileStyle = kind === "mine" ? undefined : { background: orbBackground(`feed:${id}`) };
 
   return (
     <div
@@ -173,8 +170,13 @@ function FeedRow({
       data-testid="feed-card"
       data-feed-id={id}
     >
-      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${tile}`}>
-        <Icon name={feedIcon(id, spec)} className="h-6 w-6" strokeWidth={1.8} />
+      <span
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.14)] ${
+          kind === "mine" ? "compose-glow" : ""
+        }`}
+        style={tileStyle}
+      >
+        <Icon name={feedIcon(id, spec)} className="h-6 w-6" strokeWidth={2} />
       </span>
       <div className="min-w-0 flex-1">
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug">{spec.name}</h3>
@@ -191,7 +193,7 @@ function FeedRow({
               {compact(subscribers)}
             </span>
           )}
-          <span>{t("rules", { n: spec.rules.length })}</span>
+          {spec.rules.length > 0 && <span>{t("rules", { n: spec.rules.length })}</span>}
         </div>
       </div>
       {status === "ready" && (

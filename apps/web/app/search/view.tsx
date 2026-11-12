@@ -13,6 +13,7 @@ import { Icon, type IconName } from "@/components/Icon";
 import { Segmented } from "@/components/kit";
 import { PersonRow } from "@/components/PersonRow";
 import { api, qs } from "@/lib/api";
+import { orbBackground } from "@/lib/orb";
 import { useSession } from "@/lib/session";
 import type { Author, ChannelStats, FeedPage, Post, SavedFeed } from "@/lib/types";
 
@@ -223,7 +224,9 @@ export function SearchView() {
           </div>
         )}
 
-        {!active.pending && active.n === 0 && (
+        {!active.pending && active.n === 0 && seg === "people" && !hasQ && <NoBuildersYet />}
+
+        {!active.pending && active.n === 0 && !(seg === "people" && !hasQ) && (
           <div className="flex flex-col items-center gap-3.5 pt-16" data-testid="explore-empty">
             <span className="anim-pop flex h-[76px] w-[76px] items-center justify-center rounded-full bg-[var(--soft)] text-[var(--muted)]">
               <Icon name="search" className="h-8 w-8" strokeWidth={2} />
@@ -233,6 +236,36 @@ export function SearchView() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Chưa ai đăng ký onchain (chain mới): 3 orb chồng nhau + lời mời, thay cho "Không có kết quả". */
+function NoBuildersYet() {
+  const t = useTranslations("rail");
+  const { status } = useSession();
+  return (
+    <div className="flex flex-col items-center px-8 pt-12 text-center" data-testid="explore-empty">
+      <div className="stagger flex -space-x-4">
+        {["0xa11ce", "0xb0b", "0xc4r01"].map((seed) => (
+          <span
+            key={seed}
+            className="h-16 w-16 rounded-full border-[3px] border-[var(--bg)]"
+            style={{ background: orbBackground(seed) }}
+          />
+        ))}
+      </div>
+      <p className="mt-5 text-[19px] font-bold tracking-tight">{t("noBuilders")}</p>
+      <p className="mt-1.5 max-w-[300px] text-[14px] leading-relaxed text-[var(--muted)]">{t("beFirst")}</p>
+      {status !== "ready" && (
+        <Link
+          href="/welcome"
+          className="press compose-glow mt-5 flex h-11 items-center gap-2 rounded-full px-5 text-[15px] font-bold"
+        >
+          <Icon name="userplus" className="h-[18px] w-[18px]" strokeWidth={2.2} />
+          {t("join")}
+        </Link>
+      )}
     </div>
   );
 }

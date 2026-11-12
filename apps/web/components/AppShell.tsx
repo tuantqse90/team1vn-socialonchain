@@ -16,6 +16,7 @@ import { InboxButton } from "./dm/InboxButton";
 import { Icon, type IconName } from "./Icon";
 import { Logo } from "./Logo";
 import { NetworkGuard } from "./NetworkGuard";
+import { RightRail } from "./RightRail";
 import { useTopUp } from "./TopUpSheet";
 
 type NavItem = { href: string; icon: IconName; key: string; label: string; match: (p: string) => boolean };
@@ -274,7 +275,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[1080px]">
+    <div className="relative isolate mx-auto flex min-h-dvh w-full max-w-[1080px] xl:max-w-[1220px]">
+      {/* Nền ambient (quầng đỏ + lưới chấm) chỉ trên desktop; cột nội dung vẫn nền đặc. */}
+      {!bare && (
+        <div aria-hidden className="ambient pointer-events-none fixed inset-0 -z-10 hidden md:block" />
+      )}
       {/* Rail dọc trên desktop */}
       {!bare && (
         <nav
@@ -291,7 +296,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={() => compose.open()}
             aria-label={t("compose")}
             title={t("compose")}
-            className="press mt-2 flex h-[38px] w-[54px] items-center justify-center rounded-xl bg-[var(--soft)] text-[var(--ink)] hover:bg-[var(--line)]"
+            className="press compose-glow mt-2 flex h-[42px] w-[54px] items-center justify-center rounded-2xl"
             data-testid="compose-rail"
           >
             <Icon name="plus" className="h-[22px] w-[22px]" strokeWidth={2.3} />
@@ -303,7 +308,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 justify-center">
         <div
-          className={`w-full ${bare ? "max-w-[520px]" : "max-w-[620px] md:border-x md:border-[var(--line)]"} min-h-dvh ${
+          className={`w-full ${bare ? "max-w-[520px]" : "max-w-[620px] md:border-x md:border-[var(--line)] md:bg-[var(--bg)]"} min-h-dvh ${
             thread ? "md:pb-0" : "pb-24 md:pb-8"
           }`}
         >
@@ -318,7 +323,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 <Logo size={30} />
               </Link>
-              <span className="mono hidden rounded-full bg-[var(--soft)] px-2 py-0.5 text-[10px] text-[var(--muted)] uppercase md:inline">
+              <span className="mono hidden items-center gap-1.5 rounded-full bg-[var(--soft)] px-2.5 py-1 text-[10px] font-semibold text-[var(--muted)] uppercase md:inline-flex xl:hidden">
+                <span className="live-dot" style={{ width: 6, height: 6 }} aria-hidden />
                 {network.name === "fuji" ? "Fuji" : "Local"}
               </span>
               <div className="flex-1" />
@@ -343,6 +349,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
 
+      {!bare && <RightRail />}
+
       {/* Tab bar mobile: chỉ icon */}
       {!bare && !thread && (
         <nav
@@ -361,7 +369,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               className="group flex h-[50px] items-center justify-center disabled:opacity-40"
               data-testid="compose-tab"
             >
-              <span className="flex h-[38px] w-[54px] items-center justify-center rounded-xl bg-[var(--soft)] text-[var(--ink)] transition-transform duration-[550ms] ease-[var(--bouncy)] group-active:scale-[.84] group-active:duration-[140ms] group-active:ease-[var(--press)]">
+              <span className="compose-glow flex h-[38px] w-[54px] items-center justify-center rounded-2xl transition-transform duration-[550ms] ease-[var(--bouncy)] group-active:scale-[.84] group-active:duration-[140ms] group-active:ease-[var(--press)]">
                 <Icon name="plus" className="h-[22px] w-[22px]" strokeWidth={2.3} />
               </span>
             </button>

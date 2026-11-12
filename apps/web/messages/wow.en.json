@@ -1,0 +1,20 @@
+{
+  "rail": {
+    "aside": "Live on chain",
+    "live": "live",
+    "localChain": "Local chain",
+    "block": "Block",
+    "perBlock": "Per block",
+    "verified": "Core contracts, source verified on Snowtrace",
+    "trending": "Trending",
+    "builders": "Onchain builders",
+    "contracts": "{n, plural, one {# contract deployed} other {# contracts deployed}}",
+    "footer": "Built on Avalanche. Identity, graph and posts live onchain.",
+    "noBuilders": "No builders here yet",
+    "beFirst": "Register onchain and be the first one people find.",
+    "join": "Join"
+  },
+  "fx": {
+    "confirmedIn": "Onchain in {s}s"
+  }
+}

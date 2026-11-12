@@ -1,0 +1,20 @@
+{
+  "rail": {
+    "aside": "Đang chạy trên chain",
+    "live": "live",
+    "localChain": "Chain local",
+    "block": "Block",
+    "perBlock": "Mỗi block",
+    "verified": "Contract lõi, đã verify source trên Snowtrace",
+    "trending": "Đang nổi",
+    "builders": "Builder onchain",
+    "contracts": "{n} contract đã deploy",
+    "footer": "Chạy trên Avalanche. Danh tính, graph và bài viết nằm onchain.",
+    "noBuilders": "Chưa có builder nào ở đây",
+    "beFirst": "Đăng ký onchain để là người đầu tiên được tìm thấy.",
+    "join": "Tham gia"
+  },
+  "fx": {
+    "confirmedIn": "Lên chain sau {s}s"
+  }
+}
