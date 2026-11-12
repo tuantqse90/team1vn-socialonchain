@@ -403,3 +403,21 @@ export const dmThreads = app.table(
     index("dm_threads_owner_idx").on(t.owner, t.lastMessageId),
   ],
 );
+
+/**
+ * Tài khoản trong app (ví nhúng: tên + mật khẩu, không cần ví ngoài). Server KHÔNG giải mã được ví:
+ * chỉ giữ keystore đã mã hoá ở client + sha256(authKey). Quên mật khẩu = mất tài khoản.
+ * `address`, `handle` lưu chữ thường. `drip_tx`: tx tặng gas lần đầu (null nếu không tặng).
+ */
+export const accounts = app.table("accounts", {
+  address: text("address").primaryKey(),
+  handle: text("handle").notNull().unique(),
+  kdf: jsonb("kdf")
+    .$type<{ name: "scrypt"; N: number; r: number; p: number; dkLen: 64; salt: string }>()
+    .notNull(),
+  authHash: text("auth_hash").notNull(),
+  keystore: jsonb("keystore").$type<{ v: 1; iv: string; ct: string }>().notNull(),
+  dripTx: text("drip_tx"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

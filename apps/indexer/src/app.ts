@@ -2,6 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { type AppVars, authMiddleware } from "./auth";
 import type { AppContext } from "./context";
+import { accountRoutes } from "./routes/accounts";
 import { dmRoutes } from "./routes/dm";
 import { readRoutes } from "./routes/read";
 import { HttpError, writeRoutes } from "./routes/write";
@@ -25,6 +26,7 @@ export function createApp(ctx: AppContext) {
   app.route("/", readRoutes(ctx));
   app.route("/", writeRoutes(ctx));
   app.route("/", dmRoutes(ctx));
+  app.route("/", accountRoutes(ctx));
   app.doc("/openapi.json", {
     openapi: "3.0.0",
     info: {

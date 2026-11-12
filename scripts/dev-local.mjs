@@ -78,6 +78,9 @@ process.env.NETWORK = "local";
 process.env.NEXT_PUBLIC_NETWORK = "local";
 RPC = process.env.ANVIL_RPC_URL || RPC;
 process.env.NEXT_PUBLIC_RPC_URL ||= RPC;
+// Vòi gas cho tài khoản trong app (ví nhúng): Anvil account #8 (0x2361…1E8f), key CÔNG KHAI của Anvil,
+// chỉ dùng ở local. Không dùng chung với #0 (deploy/seed), #1–#3 (test, e2e, ví B), #9 (labeler) để nonce không đụng nhau.
+process.env.FAUCET_PRIVATE_KEY ||= "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97";
 const anvilPort = new URL(RPC).port || "8545";
 
 // Postgres đã nghe ở cổng của DATABASE_URL (vd. container của worktree khác) thì dùng luôn, không `compose up`.

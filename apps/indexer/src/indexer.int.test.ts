@@ -1,11 +1,16 @@
 import { type ChildProcess, execFileSync, spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createDb } from "@socialonchain/db";
+import { accounts, createDb } from "@socialonchain/db";
 import { prepareTestDb } from "@socialonchain/db/testing";
 import { FixtureFarcaster } from "@socialonchain/farcaster";
 import {
+  accountMessage,
+  authKeyHash,
   channelHash,
+  createAccountSecrets,
+  decryptKeystore,
+  deriveAccountKeys,
   dmBindMessage,
   dmDecrypt,
   dmDeriveMessage,
@@ -14,6 +19,8 @@ import {
   dmSharedKey,
   getDeployment,
   identityRegistryAbi,
+  type KdfParams,
+  type Keystore,
   type LabelBatch,
   onchainPostId,
   planPaymentsAbi,
@@ -25,6 +32,7 @@ import {
   verifyLabelBatch,
   ZERO_BYTES32,
 } from "@socialonchain/protocol";
+import { eq } from "drizzle-orm";
 import pino from "pino";
 import {
   createPublicClient,
@@ -67,6 +75,7 @@ const KEYS = {
   bob: "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
   carol: "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
   labeler: "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
+  faucet: "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97", // Anvil #8, như dev-local
 } as const;
 
 describe.skipIf(!canRun)("indexer + API (integration)", () => {
@@ -133,13 +142,14 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     const created = createDb(testDb);
     pool = created.pool;
     await created.db.execute(
-      "truncate chain.users, chain.delegates, chain.follows, chain.posts, chain.reactions, chain.payments, chain.indexer_state, app.notifications, app.labels, app.author_labels, app.label_batches, app.usage, app.compile_cache, app.saved_feeds, app.events, app.user_settings, app.reports, app.blocklist, app.dm_keys, app.dm_messages, app.dm_threads" as never,
+      "truncate chain.users, chain.delegates, chain.follows, chain.posts, chain.reactions, chain.payments, chain.indexer_state, app.notifications, app.labels, app.author_labels, app.label_batches, app.usage, app.compile_cache, app.saved_feeds, app.events, app.user_settings, app.reports, app.blocklist, app.dm_keys, app.dm_messages, app.dm_threads, app.accounts" as never,
     );
     const env = loadEnv({
       DATABASE_URL: testDb,
       NETWORK: "local",
       FREE_COMPILES_PER_DAY: "2",
       ANVIL_RPC_URL: RPC,
+      FAUCET_PRIVATE_KEY: KEYS.faucet,
     });
     indexer = new ChainIndexer(created.db, pub, d, pino({ level: "silent" }));
     app = createApp({
@@ -663,5 +673,135 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     expect(daveSend.status).toBe(403);
     // Không đăng nhập thì không đọc được hộp thư.
     expect((await app.request("/dm/threads")).status).toBe(401);
+  });
+  it("embedded account: signup + gas drip, kdf, login, conflicts; server never holds the key", async () => {
+    const post = async (path: string, json: unknown, headers: Record<string, string> = {}) => {
+      const res = await app.request(path, {
+        method: "POST",
+        headers: { "content-type": "application/json", ...headers },
+        body: JSON.stringify(json),
+      });
+      return { status: res.status, body: (await res.json()) as Record<string, unknown> };
+    };
+    const sign = (acc: ReturnType<typeof privateKeyToAccount>, handle: string) =>
+      acc.signMessage({ message: accountMessage({ handle, address: acc.address, chainId: 31337 }) });
+    const FAST = { N: 2 ** 15, r: 8, p: 1 }; // mức tối thiểu server chấp nhận
+    const password = "mật khẩu đủ dài 123";
+    const ownerKey = generatePrivateKey();
+    const eve = privateKeyToAccount(ownerKey);
+    const handle = "eve_builder";
+    const secrets = await createAccountSecrets(password, ownerKey, eve.address, FAST);
+
+    // Tạo tài khoản → 201 + được tặng đúng GAS_DRIP_WEI (local 0.1).
+    const before = await pub.getBalance({ address: eve.address });
+    const signup = await post("/accounts", {
+      handle,
+      address: eve.address,
+      ...secrets,
+      signature: await sign(eve, handle),
+    });
+    expect(signup.status).toBe(201);
+    expect(signup.body).toMatchObject({ handle, address: eve.address.toLowerCase() });
+    expect(signup.body.dripSkipped).toBeUndefined();
+    const dripHash = (signup.body.drip as { hash: string }).hash;
+    expect(dripHash).toMatch(/^0x[0-9a-f]{64}$/);
+    expect(await pub.getBalance({ address: eve.address })).toBe(before + parseEther("0.1"));
+
+    // Tham số KDF công khai (tên không phân biệt hoa thường).
+    const kdfRes = await app.request("/accounts/kdf/Eve_Builder");
+    expect(kdfRes.status).toBe(200);
+    expect(await kdfRes.json()).toEqual({ handle, kdf: secrets.kdf });
+    expect((await app.request("/accounts/kdf/nobody_here")).status).toBe(404);
+
+    // Đăng nhập: authKey đúng → keystore giải mã ra đúng private key.
+    const login = await post("/accounts/login", { handle, authKey: secrets.authKey });
+    expect(login.status).toBe(200);
+    expect(login.body.address).toBe(eve.address.toLowerCase());
+    const { encKey, authKey } = await deriveAccountKeys(password, login.body.kdf as KdfParams);
+    expect(authKey).toBe(secrets.authKey);
+    expect(decryptKeystore(encKey, login.body.keystore as Keystore, eve.address)).toBe(ownerKey);
+    // Sai mật khẩu và tên không tồn tại: cùng một lỗi.
+    const wrong = await deriveAccountKeys("sai mật khẩu rồi", secrets.kdf);
+    const bad = await post("/accounts/login", { handle, authKey: wrong.authKey });
+    expect(bad).toEqual({ status: 401, body: { error: "bad_credentials" } });
+    const ghost = await post("/accounts/login", { handle: "nobody_here", authKey: secrets.authKey });
+    expect(ghost).toEqual({ status: 401, body: { error: "bad_credentials" } });
+
+    // Trùng tên / trùng địa chỉ / tên đã đăng ký onchain bởi người khác → 409.
+    const mallory = privateKeyToAccount(generatePrivateKey());
+    const m = { address: mallory.address, ...secrets };
+    const dupHandle = await post("/accounts", { ...m, handle, signature: await sign(mallory, handle) });
+    expect(dupHandle).toEqual({ status: 409, body: { error: "handle_taken" } });
+    const onchainTaken = await post("/accounts", {
+      ...m,
+      handle: "alice",
+      signature: await sign(mallory, "alice"),
+    });
+    expect(onchainTaken).toEqual({ status: 409, body: { error: "handle_taken" } });
+    const dupAddr = await post("/accounts", {
+      address: eve.address,
+      ...secrets,
+      handle: "eve_two",
+      signature: await sign(eve, "eve_two"),
+    });
+    expect(dupAddr).toEqual({ status: 409, body: { error: "address_exists" } });
+    // Chữ ký không phải của `address` (hoặc ký tên khác) → 401; KDF quá yếu → 400.
+    const forged = await post("/accounts", {
+      ...m,
+      handle: "mallory",
+      signature: await sign(eve, "mallory"),
+    });
+    expect(forged).toEqual({ status: 401, body: { error: "bad_signature" } });
+    const wrongMsg = await post("/accounts", {
+      ...m,
+      handle: "mallory",
+      signature: await sign(mallory, "other"),
+    });
+    expect(wrongMsg.status).toBe(401);
+    const weak = await post("/accounts", {
+      ...m,
+      handle: "mallory",
+      kdf: { ...secrets.kdf, N: 2 ** 14 },
+      signature: await sign(mallory, "mallory"),
+    });
+    expect(weak.status).toBe(400);
+
+    // Ví đã có gas (bob, cùng địa chỉ với tên onchain "bob") → tạo được, không tặng thêm.
+    const bobSignup = await post("/accounts", {
+      handle: "bob",
+      address: bob.address,
+      ...secrets,
+      signature: await sign(bob, "bob"),
+    });
+    expect(bobSignup).toEqual({
+      status: 201,
+      body: { handle: "bob", address: bob.address.toLowerCase(), drip: null, dripSkipped: "funded" },
+    });
+
+    // DB chỉ có ciphertext + sha256(authKey): không có private key, không có authKey.
+    const { db, pool: p } = createDb(testDb);
+    try {
+      const [row] = await db.select().from(accounts).where(eq(accounts.handle, handle));
+      expect(row?.authHash).toBe(authKeyHash(secrets.authKey));
+      expect(row?.dripTx).toBe(dripHash);
+      const dump = JSON.stringify(row).toLowerCase();
+      expect(dump).not.toContain(ownerKey.slice(2).toLowerCase());
+      expect(dump).not.toContain(secrets.authKey.slice(2).toLowerCase());
+    } finally {
+      await p.end();
+    }
+
+    // Đoán mật khẩu: tối đa 10 lần/phút mỗi tên (kể cả đổi IP qua x-forwarded-for).
+    const statuses: number[] = [];
+    for (let i = 0; i < 10; i++) {
+      const r = await post(
+        "/accounts/login",
+        { handle, authKey: wrong.authKey },
+        { "x-forwarded-for": `198.51.100.${i}, 10.0.0.1` },
+      );
+      statuses.push(r.status);
+    }
+    // Trước đó đã thử 2 lần với tên này: 8 lần nữa là đủ 10, sau đó 429.
+    expect(statuses).toEqual([...Array(8).fill(401), 429, 429]);
   });
 });

@@ -43,6 +43,13 @@
       "when": 1794478935147,
       "tag": "0005_channels",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794496110123,
+      "tag": "0006_accounts",
+      "breakpoints": true
     }
   ]
 }

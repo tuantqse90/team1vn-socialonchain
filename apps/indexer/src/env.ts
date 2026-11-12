@@ -11,6 +11,9 @@ const csv = z
       .filter(Boolean),
   );
 
+/** Biến để trống trong .env ("X=") coi như không đặt, để dùng giá trị mặc định. */
+const blankToUndef = (v: unknown) => (v === "" ? undefined : v);
+
 const EnvSchema = z.object({
   NETWORK: z.enum(["local", "fuji"]).default("local"),
   DATABASE_URL: z.string().min(1),
@@ -38,9 +41,29 @@ const EnvSchema = z.object({
   PRO_PLAN_ID: z.coerce.number().default(1),
   ANALYTICS_SALT: z.string().default("socialonchain-dev-salt"),
   INDEXER_DISABLED: z.string().optional(),
+  // ---- Tài khoản trong app (ví nhúng) + vòi gas ----
+  /** Ví tặng gas cho tài khoản mới. Không đặt → không tặng (dripSkipped: "faucet_off"). */
+  FAUCET_PRIVATE_KEY: z.preprocess(
+    blankToUndef,
+    z
+      .string()
+      .regex(/^0x[0-9a-fA-F]{64}$/, "FAUCET_PRIVATE_KEY must be 0x + 64 hex")
+      .optional(),
+  ),
+  /**
+   * Mặc định: local 0.1, fuji 0.001 (AVAX, đơn vị wei; người dùng chốt 0.001 ngày 2026-11-12).
+   * Phải ≥ MIN_OWNER_WEI của web (`apps/web/lib/gas.ts`: nạp session key + phí), không thì kẹt ở bước nạp AVAX.
+   */
+  GAS_DRIP_WEI: z.preprocess(blankToUndef, z.coerce.bigint().positive().optional()),
+  /** Số lần tặng gas tối đa mỗi ngày (UTC). */
+  GAS_DRIP_DAILY_CAP: z.preprocess(blankToUndef, z.coerce.number().int().min(0).default(200)),
+  /** Mặc định: fuji 5, local 50. */
+  SIGNUPS_PER_IP_PER_HOUR: z.preprocess(blankToUndef, z.coerce.number().int().positive().optional()),
 });
 
-export type Env = z.infer<typeof EnvSchema> & {
+export type Env = Omit<z.infer<typeof EnvSchema>, "GAS_DRIP_WEI" | "SIGNUPS_PER_IP_PER_HOUR"> & {
+  GAS_DRIP_WEI: bigint;
+  SIGNUPS_PER_IP_PER_HOUR: number;
   rpcUrl: string;
   chainId: number;
   labelers: Set<string>;
@@ -56,8 +79,11 @@ export function loadEnv(raw: Record<string, string | undefined> = process.env): 
   const labelers = new Set(env.TRUSTED_LABELERS);
   if (env.LABELER_ADDRESS) labelers.add(env.LABELER_ADDRESS.toLowerCase());
   if (env.NETWORK === "local") labelers.add(DEV_LABELER_ADDRESS);
+  const fuji = env.NETWORK === "fuji";
   return {
     ...env,
+    GAS_DRIP_WEI: env.GAS_DRIP_WEI ?? (fuji ? 1_000_000_000_000_000n : 100_000_000_000_000_000n),
+    SIGNUPS_PER_IP_PER_HOUR: env.SIGNUPS_PER_IP_PER_HOUR ?? (fuji ? 5 : 50),
     rpcUrl: env.NETWORK === "fuji" ? env.FUJI_RPC_URL : env.ANVIL_RPC_URL,
     chainId: network.chain.id,
     labelers,
