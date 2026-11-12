@@ -6,7 +6,7 @@
 > - Sub-task chi tiết của từng phase nằm trong PLAN.md.
 
 **Cập nhật:** 2026-11-12
-**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local, đã ff vào `main` và push (người dùng đồng ý 2026-11-12). Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
+**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local, đã ff vào `main` và push (người dùng đồng ý 2026-11-12). **P18 (tài khoản mật khẩu + ví nhúng, không popup)** xong + verify local trên nhánh `phase-18-embedded-wallet`, chưa merge. Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
 
 ## Bước tiếp theo
 
@@ -41,10 +41,11 @@
 | P14 | Client B + đo lường | 🟡 client B build + chạy local ✅; Vercel ⛔; bấm giờ fork cần người ngoài ⛔ |
 | P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; đã merge `main` |
 | P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối cả client A + B, intro onboarding khi chưa kết nối ví: đủ 3 vai trò, sửa tràn màn thấp); client B trên máy thật chưa thử; đã merge `main` |
+| P18 | Tài khoản mật khẩu + ví nhúng + app tặng gas | 🟡 local ✅ (lint, typecheck, Vitest: protocol 15, indexer 11; e2e 11/11 gồm tạo tài khoản → tự lên chain → xuất khoá → đăng xuất → máy khác đăng nhập; chụp sáng/tối); Fuji ⛔ cần ví vòi `FAUCET_PRIVATE_KEY`; nhánh `phase-18-embedded-wallet` chưa merge |
 
 ## Blockers / câu hỏi mở
 
-- **Cần từ người dùng:** ví deployer có test AVAX (Fuji), tài khoản Railway + Vercel, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`, WalletConnect project id (`NEXT_PUBLIC_WC_PROJECT_ID`), `LABELER_PRIVATE_KEY` (ví riêng).
+- **Cần từ người dùng:** ví deployer có test AVAX (Fuji), tài khoản Railway + Vercel, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`, `LABELER_PRIVATE_KEY` (ví riêng), `FAUCET_PRIVATE_KEY` (ví vòi riêng có ít AVAX test, cho P18 trên Fuji).
 - **Tên sản phẩm / npm scope:** đang dùng `socialonchain` / `@socialonchain/*`.
 - CSP có nonce đã bật (`apps/web/proxy.ts` + `lib/csp.ts`); chưa bấm thử với ví extension thật (MetaMask/Core) khi có CSP.
 
@@ -52,6 +53,12 @@
 
 | Ngày | Quyết định | Lý do |
 |---|---|---|
+| 2026-11-12 | **Bỏ ví ngoài (RainbowKit/Core/MetaMask), dùng ví nhúng: tên + mật khẩu**; owner ký ngầm, không popup | Người dùng chốt: PWA mobile không có popup ví |
+| 2026-11-12 | App tặng gas 1 lần khi tạo tài khoản (Fuji 0.001 AVAX, local 0.1); quên mật khẩu = mất tài khoản + nút Xuất khoá | Người dùng chốt (0.001 qua session `-4f`); local 0.1 vì đăng ký cần 0.06 (0.05 session key + phí) |
+| 2026-11-12 | KDF scrypt N=2^16 r=8 p=1 → encKey (không rời máy) + authKey (server lưu sha256); keystore AES-256-GCM (@noble/ciphers), AAD gắn địa chỉ; mật khẩu ≥ 8 ký tự, NFKC | ~1 s trên điện thoại; chạy được ở trang http LAN (không cần WebCrypto); server không giải mã được |
+| 2026-11-12 | Ví owner đã mở khoá nằm trong `localStorage` (`soc:wallet:<chainId>`), như session key | Không popup; đổi lại XSS lấy được ví chính (ghi ở LIMITATIONS) |
+| 2026-11-12 | Mức gas theo mạng ở `apps/web/lib/gas.ts` (Fuji: session key 0.0005, chừa phí 0.0001, low 0.0002, empty 0.00002) | Fuji ~160 wei/gas; 0.001 tặng phải đủ cho đăng ký + vài thiết bị |
+| 2026-11-12 | Vòi local = Anvil #8; e2e tự mở khoá ví nhúng bằng key công khai Anvil #2 (`NEXT_PUBLIC_E2E_PRIVATE_KEY`), tắt bằng `soc:e2e-off` | #0–#3, #9 đã có việc; test cần cả máy "trắng" |
 | 2026-11-11 | `CLAUDE.md` (luật) + `PROGRESS.md` (trạng thái) + `PLAN.md` (kế hoạch) | Tách luật ổn định, kế hoạch, trạng thái hằng ngày |
 | 2026-11-11 | Sản phẩm thật (spec v6), builder Avalanche (Team1), EN/VI, Fuji, user tự trả gas qua session key, đọc Farcaster, freemium + tUSD | Người dùng chốt |
 | 2026-11-11 | **Indexer tự viết bằng viem `getLogs` thay Ponder** | Chung DB + transaction với schema `app` (thông báo sinh cùng tx), OpenAPI qua zod-openapi, Avalanche finality tức thì nên không cần xử lý reorg. Replay có test |
@@ -92,6 +99,14 @@
 | 2026-11-11 | Sentry web nạp động trong `instrumentation-client.ts` khi có DSN; `@sentry/browser` 11.11.0 | Không tốn byte khi không có DSN; 11.12.0 vi phạm `minimumReleaseAge` của pnpm |
 
 ## Session log (mới nhất ở trên)
+
+### 2026-11-12 (session 7: P18 tài khoản mật khẩu + ví nhúng)
+- Worktree `../team1vn-socialonchain-wallet`, nhánh `phase-18-embedded-wallet` (từ `main` 424f052). Stack riêng: Anvil 8587, API 42087, DB `socialonchain_wallet`, web e2e 3187.
+- Server (agent nền): `app.accounts` + migration `0006_accounts`, `/accounts` (tạo + tặng gas tuần tự, trần/ngày, giới hạn IP), `/accounts/kdf/{handle}`, `/accounts/login` (sai tên/sai mật khẩu cùng 401, 10 lần/phút theo IP và tên).
+- Web: `lib/embedded.ts`, `useMainWallet` ký ngầm, wagmi chỉ đọc, bỏ RainbowKit + WalletConnect khỏi CSP; onboarding tên + mật khẩu (tự `registerWithDelegate`, máy mới tự `addDelegate`); Cài đặt › Xuất khoá + Đăng xuất (trả gas session key về ví, xoá ví/session key/khoá DM khỏi máy); gia hạn key: rút gas key cũ trước rồi mới nạp key mới.
+- Sửa thêm: event đo lường `onboarding_started`/`registered` vốn bị server từ chối (400) → `onboarding_step`.
+- **Đã verify thật (local):** lint + typecheck sạch; `pnpm test` (forge 58, protocol 15, feed-sdk 29, worker 7, farcaster 2, indexer 11); e2e **11/11** trên production build (permit tUSD + DM chạy bằng ví nhúng); form tài khoản vừa 1 màn iPhone 15 (overflow 0), chụp sáng/tối.
+- **Chưa verify:** Fuji (cần ví vòi có AVAX); máy thật (iOS Safari: tốc độ scrypt, trình quản lý mật khẩu); tài khoản cũ đăng ký bằng Core (vd. `tuantq`) chưa có đường nhập khoá.
 
 ### 2026-11-12 (session 5: P15b đồng bộ UI theo design canvas + gộp DM)
 - Worktree riêng `../team1vn-socialonchain-ui`, nhánh `phase-15-ui-design-sync`, stack cô lập (Anvil 8555, API 42079, DB `socialonchain_ui`, web 3010, e2e 3110). 5 agent làm song song theo màn, rồi gộp i18n vào `en.json`/`vi.json` (556 key, EN/VI khớp).

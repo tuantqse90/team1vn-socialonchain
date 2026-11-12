@@ -7,8 +7,14 @@ Viết thẳng để người dùng và dev bên ngoài biết họ đang dựa 
 | Giới hạn | Hệ quả | Giảm thiểu hiện tại |
 |---|---|---|
 | Identity = `address`. Mất ví chính là mất identity | Không có recovery, không đổi được owner | Không có. Đây là lựa chọn có chủ đích của v1 (đơn giản, không admin) |
+| Ví nhúng: quên mật khẩu = mất tài khoản | Server chỉ giữ keystore mã hoá, không reset mật khẩu được | Cài đặt › Xuất khoá; màn tạo tài khoản ghi rõ "không có reset" |
+| Ví nhúng: lộ DB `app.accounts` thì kẻ tấn công đoán mật khẩu offline được | Mật khẩu yếu bị dò ra → lộ private key owner | scrypt N=2^16 (~1 s/lần trên điện thoại), mật khẩu tối thiểu 8 ký tự, salt riêng. Chưa có kiểm tra độ mạnh / danh sách mật khẩu lộ; nên thêm trước mainnet |
+| Ví nhúng: private key owner nằm trong `localStorage` sau khi đăng nhập | XSS hoặc extension độc đọc được là lấy luôn ví chính (không chỉ session key) | CSP có nonce; đăng xuất xoá khỏi máy; tài sản trên Fuji là test. Trước mainnet cần khoá lại bằng mật khẩu/passkey sau một thời gian |
+| Tên đăng nhập giữ trong `app.accounts` không giữ chỗ onchain | Người khác có thể đăng ký handle đó onchain trước khi chủ tài khoản kịp lên chain | Client tự đăng ký ngay sau khi tạo tài khoản (vài giây); bị lấy thì chọn tên khác |
+| Ví nhúng là địa chỉ mới | Tín hiệu `onchain_builder` (đếm contract do địa chỉ deploy) của tài khoản mới luôn là 0, kể cả builder thật | Chưa có. Backlog: liên kết ví deployer bằng chữ ký (chứng minh sở hữu) để tính contract của ví đó |
+| Vòi tặng gas có thể bị rút cạn | Tạo nhiều tài khoản để hút AVAX test | Mỗi tài khoản 1 lần, trần mỗi ngày, giới hạn theo IP/giờ (đọc `x-forwarded-for` nên giả IP được). Chỉ nạp vòi ít AVAX test |
 | Session key nằm trong `localStorage` của trình duyệt | Ai đọc được localStorage của máy (extension độc, XSS) là đăng bài thay được tới khi key hết hạn | Key chỉ làm được việc xã hội (post/react/follow/setProfile), không chạm tới tiền, handle, delegate. Hết hạn sau 30 ngày. Thu hồi bằng `removeDelegate` (Settings → Revoke); gas còn lại được trả về ví chính trước khi thu hồi |
-| Mỗi thiết bị một session key | Đăng nhập máy mới cần 1 tx `addDelegate` | Nút "Enable this device · 1 tx" |
+| Mỗi thiết bị một session key | Đăng nhập máy mới cần 1 tx `addDelegate` (ví nhúng tự gửi, owner trả phí từ phần gas còn lại) | Hết gas thì màn đăng nhập chỉ faucet + địa chỉ để chép |
 | Delegate không bị giới hạn số lượng | Một owner có thể cấp rất nhiều key | Chấp nhận: owner tự chịu |
 | JWT sống tối đa 7 ngày (không quá hạn của session key) | Mỗi request có JWT đều kiểm tra lại delegate trong DB đã index: key bị thu hồi/hết hạn bị coi như ẩn danh ngay. JWT phát cho chính ví owner thì không thu hồi được, chỉ hết hạn | JWT chỉ mở dữ liệu offchain (thông báo, quota, feed đã lưu); mọi thao tác onchain vẫn cần chữ ký hợp lệ trên chain |
 

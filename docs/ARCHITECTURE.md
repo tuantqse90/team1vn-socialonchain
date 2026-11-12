@@ -77,10 +77,10 @@ flowchart LR
 
 | Chủ thể | Làm được | Ký bằng |
 |---|---|---|
-| Ví chính (owner) | Đăng ký, quản lý session key, thanh toán, mọi việc delegate làm được | Ví người dùng (có popup) |
+| Ví chính (owner) | Đăng ký, quản lý session key, thanh toán, mọi việc delegate làm được | Ví nhúng trong trình duyệt (mở khoá bằng mật khẩu, ký ngầm, không popup), xem §12 |
 | Session key (delegate) | `post`, `react`, `unreact`, `deletePost`, `follow`, `unfollow`, `followMany`, `setProfile` | Key trong trình duyệt (không popup, tự trả gas) |
 | JWT | Đọc dữ liệu riêng tư (thông báo, quota, feed cá nhân, hộp thư) | Server cấp sau khi session key ký message |
-| Khoá nhắn tin (X25519) | Mã hoá/giải mã DM | Sinh từ 1 chữ ký ví owner, chỉ nằm trong trình duyệt (không popup sau lần đầu) |
+| Khoá nhắn tin (X25519) | Mã hoá/giải mã DM | Sinh từ 1 chữ ký ví owner (ký ngầm, tất định nên máy nào cũng ra cùng khoá), chỉ nằm trong trình duyệt |
 
 ```mermaid
 sequenceDiagram
@@ -89,10 +89,11 @@ sequenceDiagram
   participant O as Ví chính
   participant C as IdentityRegistry
   participant I as indexer
-  U->>W: Kết nối ví
-  W->>W: Tạo session key, lưu trong trình duyệt
-  W->>O: Xin ký tx registerWithDelegate(handle, profileURI, key, expiresAt) kèm 0.05 AVAX
-  O->>C: Gửi tx (user trả gas)
+  U->>W: Tên + mật khẩu
+  W->>W: Sinh ví owner + session key trong trình duyệt
+  W->>I: POST /accounts (keystore mã hoá, sha256(authKey)) → vòi tặng gas cho owner
+  W->>O: Ký ngầm tx registerWithDelegate(handle, profileURI, key, expiresAt) kèm phần gas cho session key
+  O->>C: Gửi tx (gas từ lần tặng)
   C->>C: Đăng ký + cấp delegate + chuyển AVAX sang session key
   C-->>I: Registered, DelegateAdded
   W->>I: POST /auth/session (session key ký message)
@@ -233,3 +234,22 @@ sequenceDiagram
 ```
 
 Không có gọi thoại/video (người dùng chốt bỏ). Giới hạn: xem `LIMITATIONS.md` › Tin nhắn riêng.
+
+## 12. Tài khoản và ví nhúng (P18)
+
+Người dùng không cần ví ngoài: chỉ có **tên + mật khẩu**. Mọi tx/chữ ký của owner ký ngầm trong trình duyệt, không popup (PWA trên mobile không có popup ví). Người dùng chốt ngày 2026-11-12.
+
+| Bước | Ở đâu | Chi tiết |
+|---|---|---|
+| Sinh ví | Trình duyệt | `generatePrivateKey()` (viem). Private key không bao giờ rời máy ở dạng rõ |
+| Dẫn xuất khoá | Trình duyệt | scrypt(mật khẩu NFKC, salt 16 byte; N=2^16, r=8, p=1) → 64 byte: 32 byte đầu là `encKey` (không rời máy), 32 byte sau là `authKey` |
+| Mã hoá | Trình duyệt | AES-256-GCM (@noble/ciphers, chạy cả trang http LAN), AAD = `socialonchain-keystore-v1:<address>` |
+| Lưu | `app.accounts` | `handle`, `address`, `kdf`, `keystore`, `auth_hash = sha256(authKey)`, `drip_tx`. Server không giải mã được |
+| Tạo tài khoản | `POST /accounts` | Kèm chữ ký owner trên `accountMessage({handle, address, chainId})`. Server từ chối N < 2^15, tên đã có tài khoản hoặc đã có chủ onchain. Giới hạn theo IP/giờ |
+| Tặng gas | Vòi `FAUCET_PRIVATE_KEY` | 1 lần/tài khoản (`GAS_DRIP_WEI`: Fuji 0.001, local 0.05), gửi tuần tự, trần `GAS_DRIP_DAILY_CAP`/ngày; địa chỉ đã có gas thì bỏ qua |
+| Đăng nhập | `GET /accounts/kdf/{handle}` → `POST /accounts/login` | Client dẫn xuất lại `authKey`; khớp thì nhận keystore, tự giải mã. Sai tên và sai mật khẩu trả cùng lỗi 401; giới hạn 10 lần/phút theo IP và theo tên |
+| Dùng | `localStorage` `soc:wallet:<chainId>` | Ví đã mở khoá nằm trong máy như session key; đăng xuất là trả gas thừa của session key về owner rồi xoá ví, session key, khoá DM khỏi máy |
+| Thiết bị mới | Trình duyệt | Đăng nhập xong thì ví tự gửi `addDelegate` cho session key mới (owner chừa phí, nạp phần còn lại tối đa mức chuẩn) |
+| Xuất khoá | Cài đặt › Tài khoản | Hỏi lại mật khẩu (kiểm qua server), hiện private key để người dùng tự cất |
+
+Ví vẫn là EOA bình thường, nên hợp đồng không đổi gì: `registerWithDelegate`, `addDelegate`, permit tUSD, chữ ký DM đều như cũ. wagmi chỉ còn dùng để đọc chain (không connector). Giới hạn: xem `LIMITATIONS.md` › Danh tính và ví.

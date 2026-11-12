@@ -31,7 +31,8 @@ Câu hỏi trước mọi quyết định: *việc này có làm người dùng 
 |---|---|
 | Đội | 1 người + Claude Code |
 | Chain | Avalanche Fuji (chainId 43113) cho cả dev lẫn bản chạy thật |
-| Gas | User tự trả, qua session key do chính họ nạp. Không relayer, không meta-tx |
+| Gas | App tặng 1 lần lúc tạo tài khoản (vòi `FAUCET_PRIVATE_KEY`, Fuji 0.001 AVAX; user chốt 2026-11-12), sau đó user tự trả qua session key. Không relayer, không meta-tx |
+| Ví | Ví nhúng: tên + mật khẩu, private key sinh trong máy, server chỉ giữ keystore mã hoá (scrypt + AES-GCM). Không ví ngoài, không popup. Quên mật khẩu = mất tài khoản; có "Xuất khoá" (user chốt 2026-11-12) |
 | Thanh toán | tUSD: TestUSD tự deploy, 6 decimals, có permit. Khi lên mainnet thì thay bằng USDC thật |
 | Thu phí | Freemium ở client. Protocol không thu phí. Spec feed luôn miễn phí |
 | Ngôn ngữ | TypeScript end-to-end + Solidity |
@@ -51,13 +52,13 @@ Postgres dùng chung, chia 2 schema:
 
 Chưa dùng Redis.
 
-**Stack:** Node LTS, pnpm, Turborepo, Biome · Foundry, OpenZeppelin v5, Slither · `scripts/gen-abis.mjs` sinh ABI · indexer viem tự viết · Drizzle · pg-boss · `@anthropic-ai/sdk` · Next.js App Router, Tailwind, shadcn/ui, wagmi, viem, RainbowKit (có Core Wallet), TanStack Query/Virtual, next-intl · Vitest, Playwright · Sentry, pino · Neynar · Avalanche Data API.
+**Stack:** Node LTS, pnpm, Turborepo, Biome · Foundry, OpenZeppelin v5, Slither · `scripts/gen-abis.mjs` sinh ABI · indexer viem tự viết · Drizzle · pg-boss · `@anthropic-ai/sdk` · Next.js App Router, Tailwind, shadcn/ui, wagmi (chỉ đọc chain), viem, @noble/ciphers + @noble/hashes (keystore), TanStack Query/Virtual, next-intl · Vitest, Playwright · Sentry, pino · Neynar · Avalanche Data API.
 
 ## Luật kiến trúc
 
 **Contract**
 - Contract lõi **không có admin, không thu phí, không upgrade được**. Muốn thay đổi thì deploy version mới chạy song song. Schema event đóng băng từ P8. Trước P8, contract trên Fuji được phép deploy lại.
-- Identity chính là `address`. Mất ví là mất identity; đây là giới hạn đã biết.
+- Identity chính là `address` (ví nhúng của tài khoản). Mất ví (quên mật khẩu, không xuất khoá) là mất identity; đây là giới hạn đã biết.
 - **Session key:**
   - Owner cấp quyền một lần qua `registerWithDelegate` (payable), đồng thời nạp gas cho key.
   - Mọi hàm ghi đều nhận tham số `as` và kiểm tra `isAuthorized(as, msg.sender)`.
@@ -129,7 +130,7 @@ pnpm db:backup                         # pg_dump schema `app` (dữ liệu offch
 
 ## Chưa làm
 
-Token, DAO/governance, proxy upgradeable, gọi thoại/video, app native (đã chốt PWA), relayer/tài trợ gas, đưa media lên chain. Phạm vi Giai đoạn 2–3 xem ở INIT_PROMPT.md §3.
+Token, DAO/governance, proxy upgradeable, gọi thoại/video, app native (đã chốt PWA), relayer/meta-tx (ngoài lần tặng gas lúc tạo tài khoản), ví ngoài (Core/MetaMask/WalletConnect), đưa media lên chain. Phạm vi Giai đoạn 2–3 xem ở INIT_PROMPT.md §3.
 
 ## Trạng thái hiện tại
 

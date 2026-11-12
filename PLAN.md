@@ -26,6 +26,7 @@
 | P14 | Client B + đo lường | 1 ngày | |
 | P15 | Tin nhắn riêng (DM), thêm ngày 2026-11-12 | 1.5 ngày | |
 | P15b | Đồng bộ UI theo design canvas nâng cấp, thêm ngày 2026-11-12 | 1 ngày | |
+| P18 | Tài khoản mật khẩu + ví nhúng + app tặng gas, thêm ngày 2026-11-12 | 1 ngày | |
 | **Giai đoạn 1** | | **khoảng 9–10 ngày** | |
 
 ## Điều kiện tiên quyết
@@ -219,6 +220,15 @@
 - [ ] Soát màn intro onboarding khi chưa kết nối ví và client B trên máy thật — _intro ✅ (chụp 3 vai trò sáng/tối, sửa tràn màn thấp); client B trên máy thật chưa_
 - **Xong khi:** lint + typecheck sạch; Vitest + e2e xanh trên stack local; chụp màn sáng/tối khớp design; người dùng duyệt rồi mới merge vào `main`.
 
+### P18. Tài khoản mật khẩu + ví nhúng · 1 ngày
+> Người dùng yêu cầu ngày 2026-11-12: "bỏ toàn bộ việc kết nối wallet dùng account password tự tạo wallet bên trong… ko muốn hiện popup". Chốt: app tặng gas (Fuji 0.001 AVAX), quên mật khẩu = mất tài khoản + nút xuất khoá. Nhánh `phase-18-embedded-wallet`.
+- [x] `packages/protocol/account.ts`: scrypt → encKey/authKey, keystore AES-256-GCM, `accountMessage` + unit test
+- [x] Migration `0006_accounts`, API `/accounts` (tạo + tặng gas), `/accounts/kdf/{handle}`, `/accounts/login`, giới hạn theo IP/tên + integration test
+- [x] Web: `lib/embedded.ts` (ví nhúng), `useMainWallet` ký ngầm, bỏ RainbowKit/connector, onboarding tên + mật khẩu (tự lên chain, tự bật thiết bị), Cài đặt › Xuất khoá + Đăng xuất, mức gas theo mạng (`lib/gas.ts`)
+- [x] e2e: tạo tài khoản → tự đăng ký → xuất khoá → đăng xuất → máy khác đăng nhập (sai mật khẩu bị từ chối) → tự bật thiết bị
+- [ ] Fuji: ví vòi riêng có AVAX test (`FAUCET_PRIVATE_KEY`), tạo tài khoản thật trên `pnpm dev:fuji`
+- **Xong khi:** lint + typecheck + Vitest + e2e xanh ở local; trên Fuji tạo tài khoản, đăng bài, đăng nhập máy khác mà không có popup nào.
+
 ---
 
 ## Rủi ro
@@ -229,7 +239,7 @@
 | Ponder và Drizzle (schema `app`) xung đột trong cùng một DB | P2 | Tách schema rõ ràng; thử replay ngay từ P2 |
 | Neynar giới hạn hoặc tính phí theo lượng đọc | P5 | Có chế độ fixture; chỉ ingest following và vài channel; có cache |
 | Không có endpoint "contract đã deploy" | P7 | Đã có 3 phương án dự phòng trong P7 |
-| Faucet Fuji gây ma sát lúc onboarding | Alpha | Hướng dẫn rõ trong app; có thể gửi sẵn ít test AVAX cho alpha tester được mời |
+| Faucet Fuji gây ma sát lúc onboarding | Alpha | App tặng gas lúc tạo tài khoản (P18); vòi cạn thì màn đăng ký chỉ faucet + địa chỉ để chép |
 | Next.js + wagmi lỗi hydration | P3 | Chỉ SSR trang công khai; phần app là client component |
 | Session key trong trình duyệt bị lộ (XSS) | Bảo mật | Quyền hẹp, hết hạn sau 30 ngày, số dư nhỏ, CSP chặt, thu hồi được |
 | Nhãn tiếng Việt không chính xác | Chất lượng feed | Golden set + eval chạy trong CI |
@@ -249,4 +259,5 @@ Giai đoạn 2–3 theo INIT_PROMPT §3:
 - cross-post;
 - quyết định có lên mainnet không.
 - Tin nhắn: push notification (Web Push), báo cáo tin nhắn, forward secrecy (double ratchet), ảnh đính kèm.
+- Ví nhúng: liên kết ví deployer (chữ ký chứng minh sở hữu) để tính `onchain_builder`; nhập tài khoản cũ đã đăng ký bằng ví ngoài (nhập private key); kiểm độ mạnh mật khẩu; khoá lại ví sau một thời gian; passkey.
 - Phần design canvas chưa làm (P15b): mini app (Game/Agent/Dapp, phạm vi chưa chốt trong spec), xuất bản feed onchain + feed trả phí (cần FeedRegistry), upload ảnh, animation xếp hạng lại feed, avatar mini trong thread, quét contract theo yêu cầu (hiện worker quét định kỳ), avatar thành viên kênh (cần API).
