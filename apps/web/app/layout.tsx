@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import type { CSSProperties, ReactNode } from "react";
@@ -49,6 +50,8 @@ const defaultTheme = JSON.stringify(clientConfig.defaultTheme ?? "system");
 const themeScript = `(function(){var t=${defaultTheme};try{t=localStorage.getItem('soc:theme')||t}catch(e){}try{var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light'}catch(e){}})()`;
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Nonce CSP do proxy.ts tạo; đọc header cũng làm mọi trang render động (bắt buộc khi dùng nonce).
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const locale = await getLocale();
   const messages = await getMessages();
   const style = {
@@ -74,7 +77,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     >
       <head>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: script tĩnh, không có dữ liệu người dùng */}
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>

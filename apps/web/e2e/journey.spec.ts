@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { test as base, expect, type Page } from "@playwright/test";
 import {
   dmDecrypt,
   dmDeriveMessage,
@@ -26,6 +26,21 @@ const RPC = process.env.ANVIL_RPC_URL ?? "http://127.0.0.1:8545";
 const WALLET_B = "0x90f79bf6eb2c4f870365e785982e1f101e93b906";
 /** Deployer = Anvil account #0, owner của TestUSD ở local. */
 const DEPLOYER = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
+
+/** Mọi test: trình duyệt báo vi phạm CSP (script/fetch/ảnh bị chặn) thì fail. */
+const test = base.extend<{ cspGuard: undefined }>({
+  cspGuard: [
+    async ({ page }, use) => {
+      const violations: string[] = [];
+      page.on("console", (m) => {
+        if (/Content Security Policy/i.test(m.text())) violations.push(m.text());
+      });
+      await use();
+      expect(violations, "CSP violations").toEqual([]);
+    },
+    { auto: true },
+  ],
+});
 
 async function rpc(method: string, params: unknown[]) {
   const r = await fetch(RPC, {
@@ -109,7 +124,17 @@ test.describe("đã đăng nhập", () => {
   });
 
   test("trang profile + bài công khai được SSR, có OG tags", async ({ request }) => {
-    const profile = await (await request.get(`/u/${ACCOUNT}`)).text();
+    const res = await request.get(`/u/${ACCOUNT}`);
+    // CSP có nonce theo từng request, script của trang mang đúng nonce đó.
+    const csp = res.headers()["content-security-policy"] ?? "";
+    const nonce = /'nonce-([^']+)'/.exec(csp)?.[1];
+    expect(nonce).toBeTruthy();
+    expect(csp).toContain("'strict-dynamic'");
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).not.toContain("'unsafe-eval'");
+    expect(res.headers()["x-content-type-options"]).toBe("nosniff");
+    const profile = await res.text();
+    expect(profile).toContain(`nonce="${nonce}"`);
     expect(profile).toContain('property="og:title"');
     expect(profile).toContain("E2E Tester");
     const posts = (await (await request.get(`${API}/users/${ACCOUNT}/posts`)).json()) as {
