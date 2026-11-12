@@ -110,6 +110,7 @@ docs/                   ARCHITECTURE.md, COSTS.md, LIMITATIONS.md, MODERATION.md
 
 ```bash
 pnpm i && pnpm dev:local --seed        # Postgres (Docker) + Anvil + deploy + migrate + seed + indexer + worker + web, không cần key
+pnpm dev:fuji                          # indexer + worker + web ở localhost với contract trên Fuji (DB riêng socialonchain_fuji)
 pnpm test                              # Vitest; test integration cần TEST_DATABASE_URL (xem .env.example)
 pnpm lint && pnpm typecheck            # Biome + tsc
 cd contracts && forge test --gas-report
