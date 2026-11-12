@@ -64,7 +64,7 @@ export function blankFields(role: Role, t: T): IdField[] {
 }
 
 function CardStage({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto mt-3 w-full max-w-[342px]">{children}</div>;
+  return <div className={`mx-auto mt-3 w-full max-w-[342px] ${s.stage}`}>{children}</div>;
 }
 
 /** Đếm từ 0 tới `target` theo từng nhịp (ô lưới bật theo). */

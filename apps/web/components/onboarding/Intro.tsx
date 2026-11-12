@@ -102,7 +102,7 @@ export function Splash({ onStart }: { onStart: () => void }) {
         </span>
       </TopBar>
 
-      <div className="flex flex-1 flex-col justify-center py-6" aria-hidden>
+      <div className={`flex flex-1 flex-col justify-center ${s.fanWrap}`} aria-hidden>
         <div className={s.fanBox}>
           {fans.map((f) => (
             <div key={f.role} className={`${s.fanSlot} ${f.role === "builder" ? "" : s.fan}`} style={f.style}>

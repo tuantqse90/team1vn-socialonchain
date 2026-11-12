@@ -492,3 +492,55 @@
     animation: none;
   }
 }
+
+/* ---------- Màn thấp (iPhone có thanh Safari, máy nhỏ) ----------
+ * Thu nhỏ phần hình (fan thẻ, thẻ của bước) bằng zoom để nút chính nằm trong màn hình, không phải cuộn.
+ * Nút "Tiếp tục" dính đáy: máy quá thấp vẫn cuộn được nội dung mà nút luôn bấm được. */
+.fanWrap {
+  padding: 24px 0;
+}
+.stepBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  /* Nút 64px cao hơn h-16 trừ pt-6: để thanh cao theo nút, tự giữ khoảng đáy (safe area) thay cho padding của cột. */
+  height: auto;
+  padding-top: 12px;
+  padding-bottom: max(env(safe-area-inset-bottom), 24px);
+  margin-bottom: calc(-1 * max(env(safe-area-inset-bottom), 24px));
+  background: linear-gradient(to top, var(--soft) 72%, transparent);
+}
+@media (max-height: 760px) {
+  .fanWrap {
+    padding: 8px 0;
+  }
+  .fanBox {
+    zoom: 0.8;
+  }
+}
+@media (max-height: 700px) {
+  .stage {
+    zoom: 0.78;
+  }
+  .stage + .title {
+    margin-top: 20px;
+  }
+}
+@media (max-height: 620px) {
+  .fanBox {
+    zoom: 0.6;
+  }
+  .headline {
+    font-size: 34px;
+  }
+  .stage {
+    zoom: 0.56;
+  }
+  .word {
+    zoom: 0.88;
+  }
+  .stage + .title {
+    margin-top: 12px;
+    font-size: 30px;
+  }
+}

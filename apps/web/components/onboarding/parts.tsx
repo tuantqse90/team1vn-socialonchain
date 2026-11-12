@@ -76,7 +76,7 @@ export function StepBar({
 }) {
   const t = useTranslations("onboarding");
   return (
-    <div className="mt-auto flex h-16 items-center justify-between pt-6">
+    <div className={`mt-auto flex h-16 items-center justify-between pt-6 ${s.stepBar}`}>
       <Dots at={at} />
       <button
         type="button"
