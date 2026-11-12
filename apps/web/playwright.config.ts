@@ -5,7 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
  * Chạy trước: `pnpm dev:local --seed --no-web`. Web là bản production build (tất định hơn `next dev`)
  * ở cổng 3100, với connector giả (Anvil account #2).
  */
-const PORT = 3100;
+const PORT = Number(process.env.E2E_PORT || 3100);
 export const E2E_ACCOUNT = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc";
 
 export default defineConfig({
@@ -32,6 +32,7 @@ export default defineConfig({
       NEXT_PUBLIC_E2E_ACCOUNT: E2E_ACCOUNT,
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:42069",
       NEXT_PUBLIC_NETWORK: "local",
+      NEXT_PUBLIC_RPC_URL: process.env.ANVIL_RPC_URL ?? "http://127.0.0.1:8545",
       NEXT_DIST_DIR: ".next-e2e",
     },
   },

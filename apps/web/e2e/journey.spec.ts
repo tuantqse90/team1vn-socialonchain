@@ -12,7 +12,7 @@ const ACCOUNT = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc";
 const STATE = "e2e/.auth/state.json";
 const RUN = Date.now().toString(36);
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:42069";
-const RPC = "http://127.0.0.1:8545";
+const RPC = process.env.ANVIL_RPC_URL ?? "http://127.0.0.1:8545";
 /** Ví B: Anvil account #3 (unlocked), gửi tx trực tiếp qua RPC, không qua UI. */
 const WALLET_B = "0x90f79bf6eb2c4f870365e785982e1f101e93b906";
 /** Deployer = Anvil account #0, owner của TestUSD ở local. */
