@@ -8,8 +8,8 @@
   /* Foundations (design canvas): chữ đạt tương phản ≥ 4.5:1 */
   --accent: #e84142; /* Avalanche: nền, viền, icon */
   --accent-ink: #ffffff;
-  --red-ink: #d12f31; /* chữ đỏ trên nền sáng */
-  --blush: #fdecec;
+  --red-ink: var(--brand-text-light, #d12f31); /* chữ màu thương hiệu trên nền sáng (client B: vàng đậm) */
+  --blush: var(--brand-tint-light, #fdecec);
   --ink: #0b0b0c;
   --bg: #ffffff;
   --soft: #f2f2f3; /* Mist */
@@ -42,8 +42,8 @@
   --line: #26262b;
   --graphite: #c7c7cc;
   --muted: #a1a1aa;
-  --red-ink: #ff6b6b;
-  --blush: #341d20;
+  --red-ink: var(--brand-text-dark, #ff6b6b);
+  --blush: var(--brand-tint-dark, #341d20);
   --err-ink: #ff6b6b;
   --err-tint: #341d20;
   --warn-ink: #f5a524;

@@ -41,7 +41,7 @@
 | P13 | Thanh toán tUSD **[REVIEW]** | 🟡 e2e local ✅ (faucet + permit); Fuji ⛔; **chờ duyệt contract** |
 | P14 | Client B + đo lường | 🟡 client B build + chạy local ✅; Vercel ⛔; bấm giờ fork cần người ngoài ⛔ |
 | P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; đã gộp vào nhánh design sync, chưa merge `main` |
-| P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối); intro onboarding chưa kết nối ví + client B chưa chụp; nhánh chưa merge |
+| P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối cả client A + B, splash intro khi chưa kết nối ví); các bước intro sau splash chưa bấm thử; nhánh chưa merge |
 
 ## Blockers / câu hỏi mở
 
@@ -86,6 +86,8 @@
 | 2026-11-12 | Theo design nhưng giữ: quota Pro 200/50 (code), `mod:safety` khoá; bỏ trường "trường học" ở onboarding; quét builder chỉ cho chính owner | Không đổi giá/quyền đã chốt; không thu thông tin cá nhân |
 | 2026-11-12 | Client B đổi tên "Snowfield" → "Phố Builder" (vàng #F5B53D, mặc định tối) | Theo design canvas; chỉ đổi `configs/b.ts` |
 | 2026-11-12 | DM gắn vào shell mới: chat full-screen trên mobile như thread; credit Twemoji chuyển vào sheet Giấy phép | Thống nhất với design mới; giữ đúng CC-BY |
+| 2026-11-12 | Config client có `theme.text` / `theme.tint` (sáng/tối) → `--red-ink`/`--blush`; B dùng vàng đậm #8A5A00 (5.9:1) | Chữ thương hiệu của B không còn đỏ Avalanche |
+| 2026-11-12 | Job `onchain-builder` quét user đã đăng ký trước, rồi tác giả onchain, rồi Farcaster | Gợi ý builder + badge hồ sơ có sớm hơn (50 địa chỉ/lượt) |
 | 2026-11-12 | Playwright xoá `.next-e2e/cache/fetch-cache` trước khi build | Reset chain local làm id bài lặp lại → SSR trả bài cũ từ cache |
 | 2026-11-11 | Sentry web nạp động trong `instrumentation-client.ts` khi có DSN; `@sentry/browser` 11.11.0 | Không tốn byte khi không có DSN; 11.12.0 vi phạm `minimumReleaseAge` của pnpm |
 
@@ -96,7 +98,8 @@
 - Commit: `10836d1` API, `8f81bf5`+`ac4c39b` foundations, `a675b35` dev tooling, `df13e04` màn hình, `cffedd3` gộp `phase-15-dm` + gắn DM.
 - **Đã verify thật (local):** `pnpm lint` + `pnpm typecheck` sạch; `pnpm test`: forge 58, feed-sdk 29, protocol 11, farcaster 2, worker 7, indexer integration 10 (gồm test API design sync + DM); `drizzle-kit check` OK; Playwright e2e **10/10** trên production build; chụp màn sáng/tối của mọi màn chính + DM trong shell mới.
 - Sự cố: 1 lần `pnpm test` fail ở test DM ngay sau khi tạo lại DB, 5 lần chạy sau đều pass, chưa tái hiện. DB test cũ của worktree đã chạy `0005` trước `0004` nên phải tạo lại (DB khác không bị).
-- **Chưa verify:** intro onboarding khi chưa kết nối ví (e2e tự kết nối); client B; Fuji; ví thật.
+- Client B build production + chụp sáng/tối (home, explore, splash intro). Sửa thêm: màu chữ thương hiệu theo client, nút quay lại ở các trạng thái chat trước khi bật khoá, ưu tiên quét builder.
+- **Chưa verify:** các bước intro sau splash (role, các bước theo vai trò) khi chưa kết nối ví; Fuji; ví thật (MetaMask/Core).
 
 ### 2026-11-12 (session 4: P15 tin nhắn riêng)
 - Người dùng chốt: PWA, không gọi điện, làm DM ngay. Thêm P15 vào PLAN; CLAUDE.md/INIT_PROMPT "Chưa làm" đổi DM → gọi thoại/video.

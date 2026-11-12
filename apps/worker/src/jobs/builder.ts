@@ -85,13 +85,15 @@ export async function runBuilder(
 ): Promise<{ checked: number; builders: number }> {
   const r = await db.execute<{ address: string }>(sql`
     with authors as (
-      select address from chain.users
-      union select distinct author from chain.posts
-      union select distinct author_address from app.fc_posts where author_address is not null
-    )
-    select a.address from authors a
+      select address, 0 as pri from chain.users
+      union all select distinct author, 1 from chain.posts
+      union all select distinct author_address, 2 from app.fc_posts where author_address is not null
+    ), uniq as (select address, min(pri) as pri from authors group by address)
+    select a.address from uniq a
     left join app.builder_stats b on b.address = a.address
     where b.address is null or b.checked_at < now() - interval '24 hours'
+    -- Ưu tiên user đã đăng ký (gợi ý builder, badge trên hồ sơ), rồi tác giả onchain, rồi Farcaster; chưa quét trước.
+    order by a.pri, b.checked_at nulls first
     limit ${limit}`);
   let builders = 0;
   for (const { address } of r.rows) {

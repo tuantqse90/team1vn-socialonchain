@@ -5,7 +5,14 @@ export type ClientConfig = {
   tagline: { en: string; vi: string };
   /** Chữ cái/ký hiệu logo (SVG inline trong components/Logo). */
   logo: { mark: string };
-  theme: { accent: string; accentInk: string; radius: string };
+  theme: {
+    accent: string;
+    accentInk: string;
+    radius: string;
+    /** Chữ màu thương hiệu (≥ 4.5:1 trên nền) và nền tint, theo sáng/tối. Không đặt thì dùng đỏ Avalanche. */
+    text?: { light: string; dark: string };
+    tint?: { light: string; dark: string };
+  };
   /** Theme khi người dùng chưa tự chọn (Settings). Bỏ trống = theo hệ thống. */
   defaultTheme?: "light" | "dark";
   defaultFeeds: string[];

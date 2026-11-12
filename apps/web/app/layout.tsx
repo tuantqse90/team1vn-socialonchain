@@ -55,6 +55,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     "--accent": clientConfig.theme.accent,
     "--accent-ink": clientConfig.theme.accentInk,
     "--radius": clientConfig.theme.radius,
+    ...(clientConfig.theme.text && {
+      "--brand-text-light": clientConfig.theme.text.light,
+      "--brand-text-dark": clientConfig.theme.text.dark,
+    }),
+    ...(clientConfig.theme.tint && {
+      "--brand-tint-light": clientConfig.theme.tint.light,
+      "--brand-tint-dark": clientConfig.theme.tint.dark,
+    }),
   } as CSSProperties;
   return (
     <html
