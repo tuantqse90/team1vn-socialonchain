@@ -5,8 +5,8 @@
 > - Session log chỉ giữ ~5 entry gần nhất, cũ hơn thì xoá (git history vẫn giữ lại).
 > - Sub-task chi tiết của từng phase nằm trong PLAN.md.
 
-**Cập nhật:** 2026-11-11
-**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
+**Cập nhật:** 2026-11-12
+**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM)** xong + verify local trên nhánh `phase-15-dm`, chưa merge vào `main`. Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
 
 ## Bước tiếp theo
 
@@ -39,11 +39,12 @@
 | P12 | Thông báo + tìm kiếm | ✅ |
 | P13 | Thanh toán tUSD **[REVIEW]** | 🟡 e2e local ✅ (faucet + permit); Fuji ⛔; **chờ duyệt contract** |
 | P14 | Client B + đo lường | 🟡 client B build + chạy local ✅; Vercel ⛔; bấm giờ fork cần người ngoài ⛔ |
+| P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; nhánh chưa merge |
 
 ## Blockers / câu hỏi mở
 
 - **Cần từ người dùng:** ví deployer có test AVAX (Fuji), tài khoản Railway + Vercel, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`, WalletConnect project id (`NEXT_PUBLIC_WC_PROJECT_ID`), `LABELER_PRIVATE_KEY` (ví riêng).
-- **PWA hay SwiftUI?** Auto-memory ghi hướng "iPhone-only (SwiftUI)" từ một session khác, còn CLAUDE.md/spec ghi "Next.js PWA, không app native". Đã làm PWA theo spec, giữ hướng visual đã duyệt (Threads-like, icon-first, đỏ Avalanche). Cần chốt.
+- **Merge 2 nhánh song song:** session UI đang làm `phase-15-ui-design-sync` (worktree riêng) và viết lại AppShell/settings/profile. Khi merge: chèn lại `<InboxButton />` (header, đã để sẵn slot) + `<InboxButton variant="rail" />`, `<MessageButton />` cạnh nút Follow, `<DmSettings />` trong Cài đặt; migration của họ là `0005_channels`, sau `0004_dm` (sửa journal nếu cần).
 - **Tên sản phẩm / npm scope:** đang dùng `socialonchain` / `@socialonchain/*`.
 - Chưa có CSP header (rủi ro XSS với session key trong localStorage); nên làm trước Alpha.
 
@@ -70,9 +71,23 @@
 | 2026-11-11 | Seed tắt automine, tự mine từng tx | Anvil automine ~400 ms/tx khi đồng hồ chain ở quá khứ; tự mine ~4 ms/tx |
 | 2026-11-11 | Labeler chỉ gán nhãn bài trong cửa sổ candidate (14 ngày) | Bài cũ không lên feed xếp hạng, đỡ tốn lượt LLM |
 | 2026-11-11 | Embed Farcaster: chỉ URL http(s), tối đa 4; ảnh lazy + `no-referrer` | Embed cơ bản theo P5; quote-cast để sau |
+| 2026-11-12 | Chốt **PWA** (không app native), **bỏ gọi thoại/video**, **làm DM ngay** (P15) | Người dùng chốt |
+| 2026-11-12 | DM tự làm: X25519 + HKDF + AES-256-GCM ở client, ciphertext lưu `app.dm_*` qua indexer API; không dùng XMTP | Không thêm dịch vụ ngoài/key; dùng chung DB + JWT; hộp Yêu cầu dựa trên graph onchain đã index. Đánh đổi: không forward secrecy (`docs/LIMITATIONS.md`) |
+| 2026-11-12 | Khoá nhắn tin sinh tất định từ chữ ký owner; owner ký xác nhận khoá công khai; client tự kiểm | Nhiều thiết bị không cần đồng bộ khoá; không phải tin server về khoá |
+| 2026-11-12 | Người lạ: tối đa 3 tin tới khi được chấp nhận, 20 người lạ mới/ngày, 30 tin/phút, phải đăng ký onchain | Chống spam khi server không đọc được nội dung |
+| 2026-11-12 | Twemoji v17.0.3: đóng gói 56 SVG trong `apps/web/public/emoji` (không CDN); credit CC-BY ở Cài đặt › Giấy phép | Không lộ IP/emoji người dùng cho CDN; đúng giấy phép |
+| 2026-11-12 | Chuỗi i18n của DM ở `messages/dm.<locale>.json`; icon DM inline trong `components/dm` | Tránh xung đột với nhánh UI đang sửa `en.json`/`vi.json` và `packages/ui` |
 | 2026-11-11 | Sentry web nạp động trong `instrumentation-client.ts` khi có DSN; `@sentry/browser` 11.11.0 | Không tốn byte khi không có DSN; 11.12.0 vi phạm `minimumReleaseAge` của pnpm |
 
 ## Session log (mới nhất ở trên)
+
+### 2026-11-12 (session 4: P15 tin nhắn riêng)
+- Người dùng chốt: PWA, không gọi điện, làm DM ngay. Thêm P15 vào PLAN; CLAUDE.md/INIT_PROMPT "Chưa làm" đổi DM → gọi thoại/video.
+- Nhánh `phase-15-dm`: crypto trong `packages/protocol/dm.ts`, migration `0004_dm`, API `/dm/*`, web `/messages` + chat + Twemoji, seed 5 builder có khoá, docs (ARCHITECTURE §11, LIMITATIONS, MODERATION).
+- **Đã verify thật (local):** `pnpm lint` + `pnpm typecheck` sạch; `pnpm test`: protocol 11, indexer integration 9, feed-sdk 29, worker 7, farcaster 2, forge 58; Playwright e2e **10/10** trên production build (gồm test DM: bật khoá bằng chữ ký ví → người lạ nhắn từ Node → Yêu cầu → chấp nhận → thả ❤️ → trả lời có Twemoji → người kia giải mã được, server không chứa plaintext). Chụp màn hình hộp thư/chat/khay emoji để tự kiểm.
+- Sửa e2e cũ: test feed builder fail khi chạy lại sau reset chain (gói Pro mất, feed E2E cũ vượt quota Free) → test tự dọn feed E2E cũ.
+- **Chưa verify:** DM trên Fuji; ví thật ngoài connector giả (MetaMask/Core: chữ ký có tất định không); ví hợp đồng (ERC-1271).
+- Canvas design: bỏ màn Gọi, nút gọi trong Chat, làn GỌI trong sơ đồ (Version 45).
 
 ### 2026-11-11 (session 3: chạy hết P0–P14 không hỏi lại)
 - Làm P0–P14 ở local. Commit theo nhánh `phase-N-*`, merge ff vào `main`.

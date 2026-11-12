@@ -51,3 +51,13 @@ Bài onchain không xoá được khỏi chain. Quy trình của client này:
 3. Ghi lại trong log báo cáo (bảng `app.reports`, trạng thái `actioned`).
 
 Vì text nằm trong event log, ai chạy node/indexer riêng vẫn đọc được. Đây là giới hạn của mọi hệ thống onchain; onboarding nói rõ "Posts live onchain forever".
+
+## 6. Tin nhắn riêng
+
+Tin nhắn mã hoá đầu cuối: server và admin **không đọc được** nội dung. Lớp bảo vệ nằm ở metadata và graph:
+
+- Người mình chưa follow nhắn tới thì vào hộp **Yêu cầu**, không vào **Chính**, không bật badge đỏ.
+- Mỗi người lạ gửi được tối đa 3 tin cho tới khi được chấp nhận; tối đa 20 người lạ mới mỗi ngày; 30 tin/phút.
+- Phải đăng ký danh tính onchain mới gửi được. Tác giả trong blocklist của client không gửi được.
+- **Từ chối** ẩn cuộc trò chuyện im lặng: người gửi không được báo.
+- Chưa có báo cáo tin nhắn (sẽ cần người nhận tự gửi kèm plaintext).

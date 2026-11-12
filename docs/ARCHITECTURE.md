@@ -69,6 +69,7 @@ flowchart LR
 | Bài và user Farcaster | Postgres, schema `app` | Có, ingest lại từ Neynar |
 | Nhãn bài và nhãn tác giả | Postgres, schema `app` | Có, lấy lại từ labeler (batch có chữ ký) |
 | Feed cá nhân, quota, thông báo, báo cáo, danh sách chặn, `pending_follows`, `events` | Postgres, schema `app` | **Không**, nên phải backup |
+| Tin nhắn riêng: **chỉ ciphertext**, khoá công khai nhắn tin (có chữ ký owner), trạng thái hộp thư | Postgres, `app.dm_keys`, `app.dm_messages`, `app.dm_threads` | Không (backup cùng schema `app`). Plaintext chỉ có trong trình duyệt hai người |
 | Thông tin profile (tên, bio, avatar) | `app.profiles`, phục vụ ở `GET /profiles/{address}`; `profileURI` onchain trỏ tới đó | Không (backup cùng schema `app`) |
 | Bản sao công khai của graph và bài onchain | `pnpm snapshot:export` (JSON) | Phòng trường hợp Fuji gặp sự cố |
 
@@ -78,7 +79,8 @@ flowchart LR
 |---|---|---|
 | Ví chính (owner) | Đăng ký, quản lý session key, thanh toán, mọi việc delegate làm được | Ví người dùng (có popup) |
 | Session key (delegate) | `post`, `react`, `unreact`, `deletePost`, `follow`, `unfollow`, `followMany`, `setProfile` | Key trong trình duyệt (không popup, tự trả gas) |
-| JWT | Đọc dữ liệu riêng tư (thông báo, quota, feed cá nhân) | Server cấp sau khi session key ký message |
+| JWT | Đọc dữ liệu riêng tư (thông báo, quota, feed cá nhân, hộp thư) | Server cấp sau khi session key ký message |
+| Khoá nhắn tin (X25519) | Mã hoá/giải mã DM | Sinh từ 1 chữ ký ví owner, chỉ nằm trong trình duyệt (không popup sau lần đầu) |
 
 ```mermaid
 sequenceDiagram
@@ -198,3 +200,36 @@ sources ──► moderation stack ──► rules của feed ──► diversit
 - **Node 26:** Next 16, Hono, pg-boss, Foundry chạy được trên Node 26.7 (build + test pass). `.nvmrc` ghim 26.
 - **Liệt kê contract đã deploy:** Avalanche Data API (Glacier) `GET /v1/chains/{chainId}/contracts/{address}/deployments` (`apps/worker/src/jobs/builder.ts`), cần `GLACIER_API_KEY` ở môi trường thật; local dùng fixture.
 - **Channel Farcaster:** cấu hình qua `FC_CHANNELS` (mặc định `avalanche,avax-builders`); chưa kiểm với Neynar thật (thiếu key).
+
+## 11. Tin nhắn riêng (P15)
+
+DM mã hoá đầu cuối ở client, **không lên chain**, không dùng contract. Code: `packages/protocol/src/dm.ts` (crypto), `apps/indexer/src/routes/dm.ts` (API), `apps/web/lib/dm.ts` + `app/messages/` (UI).
+
+**Khoá**
+- Owner ký `dmDeriveMessage(owner)` 1 lần mỗi thiết bị (không gas) → HKDF-SHA256 → khoá X25519. Ví ký tất định (RFC 6979, hầu hết EOA) thì thiết bị nào cũng ra cùng khoá, đọc được tin cũ.
+- Lần đầu owner ký thêm `dmBindMessage(owner, publicKey)` → `PUT /dm/key`. Server kiểm chữ ký (EOA + ERC-1271 qua `publicClient.verifyMessage`); **client cũng tự kiểm** từng khoá của người kia, không tin server.
+- `app.dm_keys` giữ lịch sử khoá; mỗi tin lưu cả `senderKey` và `recipientKey` đã dùng.
+
+**Mã hoá:** ECDH X25519 → HKDF-SHA256 (info gồm cặp địa chỉ) → AES-256-GCM, nonce ngẫu nhiên 12 byte, AAD = `sender>recipient` (server không đảo chiều tin được). Payload JSON: `{v:1,t:"text",text}` hoặc `{v:1,t:"react",to,emoji}`: reaction cũng được mã hoá, server không phân biệt được.
+
+**Hộp thư (người nhận R, người gửi P)**
+- **Chính:** R follow P onchain (`chain.follows`), hoặc R đã chấp nhận / đã nhắn P.
+- **Yêu cầu:** còn lại. Xếp theo số bạn chung (người R follow mà cũng follow P), rồi số contract P đã deploy (`onchain_builder`), rồi mới nhất.
+- Chống spam ở server: người gửi phải đã đăng ký onchain và không nằm trong blocklist của client; tối đa 3 tin tới người chưa chấp nhận; 20 người lạ mới/ngày; 30 tin/phút; ciphertext ≤ 6000 ký tự. Từ chối = ẩn im lặng (người gửi không biết).
+
+```mermaid
+sequenceDiagram
+  participant A as Trình duyệt A
+  participant I as indexer API
+  participant B as Trình duyệt B
+  A->>A: ký dmDeriveMessage (1 lần) → khoá X25519
+  A->>I: PUT /dm/key (publicKey + chữ ký owner)
+  A->>I: GET /dm/keys/B → tự kiểm chữ ký owner của B
+  A->>A: ECDH + HKDF → AES-GCM(payload)
+  A->>I: POST /dm/messages (nonce, ciphertext, senderKey, recipientKey)
+  I->>I: kiểm spam + xếp Chính/Yêu cầu theo graph onchain
+  B->>I: GET /dm/threads?box=… (polling)
+  B->>B: giải mã trong trình duyệt
+```
+
+Không có gọi thoại/video (người dùng chốt bỏ). Giới hạn: xem `LIMITATIONS.md` › Tin nhắn riêng.

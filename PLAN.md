@@ -24,6 +24,7 @@
 | P12 | Thông báo + tìm kiếm | 1.5 ngày | |
 | P13 | Thanh toán tUSD | 1.5 ngày | ✔ contract thanh toán |
 | P14 | Client B + đo lường | 1 ngày | |
+| P15 | Tin nhắn riêng (DM), thêm ngày 2026-11-12 | 1.5 ngày | |
 | **Giai đoạn 1** | | **khoảng 9–10 ngày** | |
 
 ## Điều kiện tiên quyết
@@ -197,6 +198,16 @@
 - [x] Trang số liệu nội bộ: D1/D7, % user chỉnh feed, % user chạm quota — _`/admin` → Metrics_
 - **Xong khi:** client B chạy trên cùng identity và graph; có số đo "fork trong X phút"; đủ số liệu để đánh giá tiêu chí thoát Alpha.
 
+### P15. Tin nhắn riêng (DM) · 1.5 ngày
+> Người dùng chốt ngày 2026-11-12: làm DM ngay, **không** làm gọi thoại/video, giữ PWA (không app native).
+- [x] `packages/protocol/dm.ts`: khoá X25519 sinh từ 1 chữ ký owner, owner ký xác nhận khoá công khai, ECDH → HKDF → AES-256-GCM (AAD theo chiều gửi) + unit test
+- [x] Migration `0004_dm`: `app.dm_keys` (có lịch sử), `app.dm_messages` (chỉ ciphertext), `app.dm_threads` (trạng thái theo từng người)
+- [x] API `/dm/*`: khoá, hộp thư Chính/Yêu cầu theo graph onchain (xếp theo bạn chung + `onchain_builder`), gửi, đã đọc, chấp nhận/từ chối; chống spam (3 tin chờ, 20 người lạ/ngày, 30 tin/phút, phải đăng ký, blocklist) + integration test
+- [x] Web: `/messages` (2 tab, chấp nhận/từ chối), `/messages/[handle|address]` (bong bóng, thả cảm xúc, khay emoji, "Đã xem"), nút phong bì ở header + rail, nút nhắn tin trên hồ sơ, mục Tin nhắn + Giấy phép trong Cài đặt
+- [x] Twemoji v17.0.3 (56 SVG, CC-BY 4.0) trong `apps/web/public/emoji/`, credit ở Cài đặt › Giấy phép
+- [x] Seed: 5 builder có khoá nhắn tin; e2e: bật khoá → người lạ nhắn → Yêu cầu → chấp nhận → thả ❤️ → trả lời có Twemoji → người kia giải mã được
+- **Xong khi:** hai ví nhắn qua lại được trên Fuji, server chỉ thấy ciphertext; người lạ vào Yêu cầu, người mình follow vào Chính.
+
 ---
 
 ## Rủi ro
@@ -215,7 +226,7 @@
 | Làm một mình, dễ phình phạm vi | Tiến độ | Bám sát phase; "Xong khi" là cổng chặn; việc ngoài phạm vi thì đưa vào Backlog |
 | RPC công khai của Fuji bị rate limit | P3 trở đi | Chuyển sang RPC riêng trước Alpha |
 
-## Backlog (ngoài P0–P14)
+## Backlog (ngoài P0–P15)
 
 Giai đoạn 2–3 theo INIT_PROMPT §3:
 - chợ plugin và FeedRegistry;
@@ -226,3 +237,4 @@ Giai đoạn 2–3 theo INIT_PROMPT §3:
 - importer X và importer ví;
 - cross-post;
 - quyết định có lên mainnet không.
+- Tin nhắn: push notification (Web Push), báo cáo tin nhắn, forward secrecy (double ratchet), ảnh đính kèm.

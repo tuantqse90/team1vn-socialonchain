@@ -76,6 +76,7 @@ Chưa dùng Redis.
 - Labeler coi nội dung bài là dữ liệu không đáng tin (chống prompt injection). Indexer không tự gán nhãn; nhãn đến từ labeler, có chữ ký.
 
 **Chung**
+- **Tin nhắn riêng (DM):** mã hoá đầu cuối ở client, không lên chain; server chỉ giữ ciphertext + metadata. Chi tiết ở `docs/ARCHITECTURE.md` §11.
 - Mọi thứ mang thương hiệu nằm trong `apps/web/configs/*.ts`.
 - **Interface công khai** (ABI, schema event, FeedSpec, REST API): muốn đổi thì hỏi trước.
 
@@ -123,12 +124,12 @@ pnpm db:backup                         # pg_dump schema `app` (dữ liệu offch
 
 - Chỉ nằm trong `.env` (đã gitignore), mẫu ở `.env.example`. Khi deploy thì để trong secret manager của Railway/Vercel.
 - Các biến: `DEPLOYER_PRIVATE_KEY`, `LABELER_PRIVATE_KEY`, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `FUJI_RPC_URL`, `JWT_SECRET`, `SENTRY_DSN`.
-- **Không bao giờ** in key ra log/output hay commit key, kể cả private key của session key.
+- **Không bao giờ** in key ra log/output hay commit key, kể cả private key của session key và khoá nhắn tin (DM).
 - Không đụng tới mainnet hay tiền thật khi chưa có xác nhận.
 
 ## Chưa làm
 
-Token, DAO/governance, proxy upgradeable, DM, app native (dùng PWA), relayer/tài trợ gas, đưa media lên chain. Phạm vi Giai đoạn 2–3 xem ở INIT_PROMPT.md §3.
+Token, DAO/governance, proxy upgradeable, gọi thoại/video, app native (đã chốt PWA), relayer/tài trợ gas, đưa media lên chain. Phạm vi Giai đoạn 2–3 xem ở INIT_PROMPT.md §3.
 
 ## Trạng thái hiện tại
 
