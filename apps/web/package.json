@@ -11,7 +11,6 @@
     "e2e": "playwright test"
   },
   "dependencies": {
-    "@rainbow-me/rainbowkit": "^2.2.11",
     "@sentry/browser": "11.11.0",
     "@socialonchain/feed-sdk": "workspace:*",
     "@socialonchain/protocol": "workspace:*",

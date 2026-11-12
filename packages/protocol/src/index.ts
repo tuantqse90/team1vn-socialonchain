@@ -1,4 +1,5 @@
 export * from "./abis";
+export * from "./account";
 export * from "./chains";
 export * from "./deployments";
 export * from "./dev";
