@@ -65,6 +65,24 @@ async function rpc(method: string, params: unknown[]) {
   return j.result;
 }
 
+/** Session key đang nằm trong máy có được owner uỷ quyền onchain chưa (màn "xong" không được hiện trước khi tx xác nhận). */
+async function sessionKeyAuthorized(page: Page, owner: string): Promise<boolean> {
+  const key = await page.evaluate((o) => {
+    const k = Object.keys(localStorage).find(
+      (x) => x.startsWith("soc:session:") && x.endsWith(o.toLowerCase()),
+    );
+    return k ? (JSON.parse(localStorage.getItem(k) ?? "null") as { address: string } | null)?.address : null;
+  }, owner);
+  if (!key) return false;
+  const net = (await (await fetch(`${API}/network`)).json()) as { contracts: { IdentityRegistry: Address } };
+  const data = encodeFunctionData({
+    abi: parseAbi(["function isAuthorized(address owner, address signer) view returns (bool)"]),
+    args: [owner as Address, key as Address],
+  });
+  const r = (await rpc("eth_call", [{ to: net.contracts.IdentityRegistry, data }, "latest"])) as string;
+  return BigInt(r) === 1n;
+}
+
 async function waitTxOk(page: Page) {
   await expect(page.getByTestId("tx-ok").last()).toBeVisible({ timeout: 45_000 });
 }
@@ -89,6 +107,7 @@ test("onboarding: đăng ký 1 tx kèm session key (hoặc bật thiết bị m�
   }
   // Account đã đăng ký từ lần chạy trước = "thiết bị mới": ví nhúng tự gửi 1 tx addDelegate, không cần bấm.
   await expect(done).toBeVisible({ timeout: 60_000 });
+  expect(await sessionKeyAuthorized(page, ACCOUNT)).toBe(true);
   await page.context().storageState({ path: STATE });
 });
 
@@ -420,6 +439,8 @@ test("tài khoản mật khẩu: tạo (app tặng gas, tự lên chain) → xu�
     return k ? (JSON.parse(localStorage.getItem(k) ?? "{}") as { address: string }).address : null;
   });
   expect(bAddr?.toLowerCase()).toBe(address);
+  // "Xong" nghĩa là addDelegate đã lên chain, không chỉ là key đã tạo trong máy.
+  expect(await sessionKeyAuthorized(b, address)).toBe(true);
   await ctx.close();
 });
 
@@ -483,6 +504,7 @@ test("nhập khoá ví cũ (đã đăng ký bằng ví ngoài) → mật khẩu 
   });
   expect(stored?.address.toLowerCase()).toBe(old.address.toLowerCase());
   expect(stored?.handle).toBe(handle);
+  expect(await sessionKeyAuthorized(page, old.address)).toBe(true);
   const kdf = await (await fetch(`${API}/accounts/kdf/${handle}`)).json();
   expect(kdf.kdf.name).toBe("scrypt");
 

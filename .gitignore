@@ -46,9 +46,8 @@ pgdata/
 snapshots/
 
 # Playwright
-apps/web/.next-e2e/
-apps/web/.next-b/
-apps/web/.next-fuji/
+# Build cache riêng theo stack (.next-e2e, .next-b, .next-fuji, .next-fuji-<tên> của dev:fuji chạy song song…)
+apps/web/.next-*/
 apps/web/test-results/
 apps/web/playwright-report/
 apps/web/e2e/.auth/

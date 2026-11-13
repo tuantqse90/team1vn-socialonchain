@@ -5,13 +5,15 @@
 > - Session log chỉ giữ ~5 entry gần nhất, cũ hơn thì xoá (git history vẫn giữ lại).
 > - Sub-task chi tiết của từng phase nằm trong PLAN.md.
 
-**Cập nhật:** 2026-11-12
-**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local, đã ff vào `main` và push (người dùng đồng ý 2026-11-12). **Contract v1 đã lên Fuji** (2026-11-12, xem `packages/protocol/deployments/43113.json`); chạy app với Fuji ở localhost bằng `pnpm dev:fuji` (người dùng chốt: chưa cần Railway/Vercel, quay clip demo trên localhost). **P18 (tài khoản mật khẩu + ví nhúng, không popup)** xong + verify local. Phần còn lại cần key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
+**Cập nhật:** 2026-11-13
+**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local, đã ff vào `main` và push (người dùng đồng ý 2026-11-12). **Contract v1 đã lên Fuji** (2026-11-12, xem `packages/protocol/deployments/43113.json`); chạy app với Fuji ở localhost bằng `pnpm dev:fuji` (người dùng chốt: chưa cần Railway/Vercel, quay clip demo trên localhost). **P18 (tài khoản mật khẩu + ví nhúng, không popup)** xong, verify local + **Fuji thật** (2026-11-13), đã ff vào `main`. Phần còn lại cần key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
 
 ## Bước tiếp theo
 
 1. **Người dùng duyệt** (P1, P8, P13 là [REVIEW]): schema event + quyền delegate (`docs/ARCHITECTURE.md` §6), contract thanh toán (`contracts/src/TestUSD.sol`, `PlanPayments.sol`).
-2. Quay clip demo: `pnpm dev:fuji` → tạo tài khoản bằng tên + mật khẩu (app tặng gas, không popup) → đăng bài, follow, feed, DM trên Fuji.
+2. Quay clip demo: dừng stack `:3000` cũ → `git pull` `main` → `pnpm i && pnpm dev:fuji` (migration 0006/0007 tự chạy) → tạo tài khoản bằng tên + mật khẩu (app tặng 0.001 AVAX, không popup) → đăng bài, follow, feed, DM.
+   - Tài khoản cũ `tuantq` (đăng ký bằng Core): xuất private key trong Core → màn Đăng nhập › "Nhập khoá" → handle tự điền → đặt mật khẩu.
+   - Ví deployer của builder: Cài đặt › Ví builder → ký tin nhắn bằng ví đó (Core/`cast wallet sign`) → dán chữ ký.
 3. (Khi cần URL public) Railway + Vercel, đặt secrets → chạy lại e2e trên URL public.
 4. Thêm `ANTHROPIC_API_KEY` → `pnpm eval:labeler` bản LLM (heuristic chưa đạt ngưỡng 0.8 của P6).
 5. Thêm `NEYNAR_API_KEY` → xác nhận `FC_CHANNELS`, import 1 tài khoản Farcaster thật (P11).
@@ -26,7 +28,7 @@
 | P0 | Khung dự án | ✅ (CI GitHub xanh: contracts + ts, có integration test) |
 | P1 | Contract lõi **[REVIEW]** | 🟡 forge 58 test ✅, Slither 0 high ✅; **chờ người dùng duyệt** |
 | P2 | Indexer + API cơ bản | ✅ (indexer viem, không Ponder) |
-| P3 | Walking skeleton online | 🟡 e2e local 10/10 ✅; contract trên Fuji ✅ (5 contract, source verify trên Snowtrace); `pnpm dev:fuji` chạy ✅ (indexer lag 0); luồng ví thật trên Fuji chưa bấm thử; Railway/Vercel ➖ tạm chưa làm |
+| P3 | Walking skeleton online | 🟡 e2e local 10/10 ✅; contract trên Fuji ✅ (5 contract, source verify trên Snowtrace); `pnpm dev:fuji` chạy ✅ (indexer lag 0); luồng thật trên Fuji bằng ví nhúng ✅ (P18: tạo tài khoản, đăng bài, đăng nhập máy khác, nhập khoá); Railway/Vercel ➖ tạm chưa làm |
 | P4 | Feed engine (chưa LLM) | ✅ |
 | P5 | Đọc Farcaster | 🟡 fixture ✅; Neynar thật ⛔ (thiếu key) |
 | P6 | Labeler LLM + eval | 🟡 heuristic F1 0.776 (chưa đạt ≥ 0.8/nhãn); LLM ⛔ (thiếu key) |
@@ -41,12 +43,12 @@
 | P14 | Client B + đo lường | 🟡 client B build + chạy local ✅; Vercel ⛔; bấm giờ fork cần người ngoài ⛔ |
 | P15 | Tin nhắn riêng (DM) | 🟡 local ✅ (unit 5, integration 1, e2e 1); Fuji ⛔ như các phase khác; đã merge `main` |
 | P15b | Đồng bộ UI theo design canvas | 🟡 local ✅ (lint, typecheck, Vitest, e2e 10/10, chụp màn sáng/tối cả client A + B, intro onboarding khi chưa kết nối ví: đủ 3 vai trò, sửa tràn màn thấp); client B trên máy thật chưa thử; đã merge `main` |
-| P18 | Tài khoản mật khẩu + ví nhúng + app tặng gas | 🟡 local ✅ (lint, typecheck, Vitest: protocol 15, indexer 11; e2e 11/11 gồm tạo tài khoản → tự lên chain → xuất khoá → đăng xuất → máy khác đăng nhập; chụp sáng/tối); Fuji ⛔ cần ví vòi `FAUCET_PRIVATE_KEY`; nhánh `phase-18-embedded-wallet` chưa merge |
+| P18 | Tài khoản mật khẩu + ví nhúng + app tặng gas | ✅ local (e2e 12/12, Vitest protocol 16, indexer 15, worker 8) + Fuji (Chromium headless: tạo tài khoản 12–15 s, đăng bài 5.7 s, máy khác đăng nhập 7.9 s, nhập khoá 13 s, liên kết ví deployer; 0 lỗi console, 0 popup). Máy thật iOS chưa thử. Đã merge `main` |
 
 ## Blockers / câu hỏi mở
 
 - **Cần từ người dùng:** `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`; tài khoản Railway + Vercel khi cần URL public.
-- **Ví deployer** `0x6d1A…4a12` (key trong `.env` local, cũng là owner TestUSD/PlanPayments + treasury): người dùng tự backup `.env`. Labeler `0xAc42…F38B` cũng do Claude tạo, chỉ ký nhãn offchain. Ví vòi tặng gas `0xe88B…42ef` (`FAUCET_PRIVATE_KEY` trong `.env`, chỉ giữ ít AVAX test).
+- **Ví deployer** `0x6d1A…4a12` (key trong `.env` local, cũng là owner TestUSD/PlanPayments + treasury): người dùng tự backup `.env`. Labeler `0xAc42…F38B` cũng do Claude tạo, chỉ ký nhãn offchain. Ví vòi tặng gas `0xe88B…42ef` (`FAUCET_PRIVATE_KEY` trong `.env`): còn ~0.017 AVAX ≈ 17 tài khoản mới, cạn thì nạp thêm từ faucet Fuji.
 - **Tên sản phẩm / npm scope:** đang dùng `socialonchain` / `@socialonchain/*`.
 - CSP có nonce đã bật (`apps/web/proxy.ts` + `lib/csp.ts`); không còn ví extension (P18) nên không còn rủi ro CSP chặn ví.
 
@@ -54,6 +56,12 @@
 
 | Ngày | Quyết định | Lý do |
 |---|---|---|
+| 2026-11-13 | "Nhập khoá": ví đã đăng ký bằng ví ngoài dán private key → đi đúng đường tạo tài khoản (keystore mã hoá), handle tự điền theo onchain | Cho `tuantq` và builder đã đăng ký bằng Core chuyển sang mật khẩu mà không mất handle/graph |
+| 2026-11-13 | Liên kết ví builder: chữ ký `linkWalletMessage` của chính ví đó, tối đa 5 ví, chữ ký hợp lệ cho owner mới thì ví chuyển owner; session key được phép liên kết/gỡ (vẫn cần chữ ký của ví) | Ví nhúng là địa chỉ mới nên `onchain_builder` = 0; chỉ thêm field/endpoint, không đổi API cũ |
+| 2026-11-13 | Chặn mật khẩu yếu ở client (`lib/password.ts`) | Server không thấy mật khẩu; lộ DB thì dò offline |
+| 2026-11-13 | Key vừa tạo chỉ "ready" khi chain trả `isAuthorized = true` (poll 2 s tới khi xác nhận) | Bug thật thấy trên Fuji: màn "xong" hiện trước khi gửi `addDelegate`, đóng tab là tx không đi |
+| 2026-11-13 | Indexer: rate limit (429/Cloudflare 1015) thì không thu chunk, chờ lũy thừa tới 60 s; chạy ổn thì nới chunk lại | RPC Fuji công khai chặn IP khi bắt kịp từ đầu; chunk thu về 10 block thì kẹt |
+| 2026-11-13 | `dev:fuji` chạy song song được (`FUJI_DATABASE_URL`, `API_PORT`, `WEB_PORT`, `NEXT_DIST_DIR`); verify Fuji bằng bản sao schema `chain` thay vì quét lại | Không đụng stack demo `:3000`, không đốt rate limit RPC công khai |
 | 2026-11-12 | **Bỏ ví ngoài (RainbowKit/Core/MetaMask), dùng ví nhúng: tên + mật khẩu**; owner ký ngầm, không popup | Người dùng chốt: PWA mobile không có popup ví |
 | 2026-11-12 | App tặng gas 1 lần khi tạo tài khoản (Fuji 0.001 AVAX, local 0.1); quên mật khẩu = mất tài khoản + nút Xuất khoá | Người dùng chốt (0.001 qua session `-4f`); local 0.1 vì đăng ký cần 0.06 (0.05 session key + phí) |
 | 2026-11-12 | KDF scrypt N=2^16 r=8 p=1 → encKey (không rời máy) + authKey (server lưu sha256); keystore AES-256-GCM (@noble/ciphers), AAD gắn địa chỉ; mật khẩu ≥ 8 ký tự, NFKC | ~1 s trên điện thoại; chạy được ở trang http LAN (không cần WebCrypto); server không giải mã được |
@@ -104,6 +112,14 @@
 
 ## Session log (mới nhất ở trên)
 
+### 2026-11-13 (session 8: nhập khoá, ví builder, P18 trên Fuji, merge main)
+- Người dùng: "Làm hết đi bro". Nhánh `phase-18-embedded-wallet`: nhập khoá + chặn mật khẩu yếu (web), `/me/wallets` + migration `0007_linked_wallets` + worker cộng contract ví liên kết (agent nền), sheet Cài đặt › Ví builder, event `import_done`/`reply` vào allowlist, indexer backoff khi bị rate limit, `dev:fuji` chạy song song.
+- Vòi `0xe88B…42ef` nạp 0.02 AVAX từ deployer (đúng địa chỉ session `-4f` báo, không tạo key mới).
+- **Bug tìm thấy nhờ chạy Fuji:** đăng nhập máy mới hiện "xong" trước khi `addDelegate` được gửi (nonce owner vẫn 1). Sửa trong `lib/session.tsx`, e2e thêm assert `isAuthorized` onchain; chạy lại Fuji: nonce 2, key máy mới được uỷ quyền.
+- **Đã verify thật:** lint + typecheck sạch; `pnpm test` (forge 58, protocol 16, feed-sdk 29, worker 8, farcaster 2, indexer 15); e2e **12/12** trên production build. Fuji (stack riêng `:3197/:42097`, DB `socialonchain_fuji_wallet`): `soc_fuji_zohb` tạo tài khoản + tặng gas + `registerWithDelegate` 15 s, đăng bài 5.7 s ([tx](https://testnet.snowtrace.io/tx/0x5bb04af16b6a14e0caf51a3bac3b54d37206c27dbdf36eeab8b8e30a06b541e0)), liên kết ví deployer, đăng xuất xoá ví; `soc_imp_zohb` nhập khoá 13 s; `soc_dev_3vc4` đăng nhập máy khác 7.9 s (tx thật). 0 lỗi console, 0 dialog.
+- **Chưa verify:** iPhone/Android thật (tốc độ scrypt, trình quản lý mật khẩu); ký liên kết ví bằng Core thật (đã thử bằng key deployer trong script); worker đếm contract thật của ví liên kết (`BUILDER_MODE=fixture`, chưa có `GLACIER_API_KEY`); stack `:3000` của người dùng vẫn chạy bản cũ tới khi khởi động lại.
+- 3 handle test (`soc_fuji_zohb`, `soc_imp_zohb`, `soc_dev_3vc4`) và 1 bài test nằm vĩnh viễn trên Fuji v1.
+
 ### 2026-11-12 (session 7: P18 tài khoản mật khẩu + ví nhúng)
 - Worktree `../team1vn-socialonchain-wallet`, nhánh `phase-18-embedded-wallet` (từ `main` 424f052). Stack riêng: Anvil 8587, API 42087, DB `socialonchain_wallet`, web e2e 3187.
 - Server (agent nền): `app.accounts` + migration `0006_accounts`, `/accounts` (tạo + tặng gas tuần tự, trần/ngày, giới hạn IP), `/accounts/kdf/{handle}`, `/accounts/login` (sai tên/sai mật khẩu cùng 401, 10 lần/phút theo IP và tên).
@@ -134,10 +150,3 @@
 - Sửa e2e cũ: test feed builder fail khi chạy lại sau reset chain (gói Pro mất, feed E2E cũ vượt quota Free) → test tự dọn feed E2E cũ.
 - **Chưa verify:** DM trên Fuji; ví thật ngoài connector giả (MetaMask/Core: chữ ký có tất định không); ví hợp đồng (ERC-1271).
 - Canvas design: bỏ màn Gọi, nút gọi trong Chat, làn GỌI trong sơ đồ (Version 45).
-
-### 2026-11-11 (session 3: chạy hết P0–P14 không hỏi lại)
-- Làm P0–P14 ở local. Commit theo nhánh `phase-N-*`, merge ff vào `main`.
-- **Đã verify thật:** `forge test` 58/58; Slither 0 high/medium trong `src/`; `pnpm lint` + `pnpm typecheck` sạch; Vitest: feed-sdk 29, protocol 6, farcaster 2, indexer integration 8, worker 7 (integration cần `TEST_DATABASE_URL`); `pnpm eval:labeler` macro F1 0.776; Playwright e2e 9/9 trên production build + chain/indexer/worker thật ở local; `next build` client A và B; `pnpm dev:local --seed` (40 persona, ~550 bài, ~410 follow, 120 cast Farcaster fixture); `snapshot:export`; `db:backup`; tìm kiếm có dấu/không dấu.
-- CI GitHub run `43051151040` xanh (sau khi sửa: job `ts` từng gọi `forge` mà không cài Foundry).
-- **Chưa verify:** mọi thứ trên Fuji/Railway/Vercel; labeler + compiler bản LLM; Neynar và Avalanche Data API thật; Sentry thật.
-

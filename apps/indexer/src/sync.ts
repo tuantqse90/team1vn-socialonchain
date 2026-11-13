@@ -13,12 +13,30 @@ import { applyEvent } from "./handlers";
 
 const ABI = [...identityRegistryAbi, ...socialGraphAbi, ...postsAbi, ...planPaymentsAbi] as Abi;
 
+/** RPC công khai (Cloudflare 1015, HTTP 429) từ chối vì gọi quá nhanh, không phải vì range quá lớn. */
+export function isRateLimited(err: unknown): boolean {
+  let e = err as { status?: number; message?: string; details?: string; cause?: unknown } | undefined;
+  for (let i = 0; e && i < 5; i++) {
+    if (e.status === 429) return true;
+    if (/\b(429|1015)\b|rate.?limit|too many requests/i.test(`${e.message ?? ""} ${e.details ?? ""}`))
+      return true;
+    e = e.cause as typeof e;
+  }
+  return false;
+}
+
+/** Chờ sau lỗi liên tiếp thứ n (1, 2, …): poll × 2^(n-1), tối đa 60 s. */
+export function backoffMs(pollMs: number, failures: number): number {
+  return Math.min(60_000, pollMs * 2 ** Math.max(0, failures - 1));
+}
+
 /**
  * Indexer tự viết trên viem `getLogs` (không dùng Ponder, xem Decision log):
  * Avalanche có finality tức thì nên không cần xử lý reorg; mỗi chunk được áp trong 1 transaction.
  */
 export class ChainIndexer {
   private chunk: number;
+  private readonly maxChunk: number;
   readonly stateId: string;
   lastError: string | null = null;
 
@@ -30,6 +48,7 @@ export class ChainIndexer {
     chunk?: number,
   ) {
     this.chunk = chunk ?? (deployment.chainId === 31337 ? 5000 : 2000);
+    this.maxChunk = this.chunk;
     this.stateId = `${deployment.chainId}:${deployment.version}`;
   }
 
@@ -64,9 +83,12 @@ export class ChainIndexer {
       });
     } catch (err) {
       // RPC công khai giới hạn range/kết quả: chia đôi chunk rồi thử lại ở vòng sau.
-      if (this.chunk > 10) this.chunk = Math.max(10, Math.floor(this.chunk / 2));
+      // Bị rate limit thì giữ chunk (chia nhỏ chỉ làm gọi nhiều hơn); vòng `run` tự chờ lâu dần.
+      if (!isRateLimited(err) && this.chunk > 10) this.chunk = Math.max(10, Math.floor(this.chunk / 2));
       throw err;
     }
+    // Thành công thì nới chunk dần về mức ban đầu (lỗi tạm thời không kéo chậm cả quá trình bắt kịp).
+    if (this.chunk < this.maxChunk) this.chunk = Math.min(this.maxChunk, this.chunk * 2);
 
     const blockNumbers = [...new Set(logs.map((l) => Number(l.blockNumber)))];
     const timestamps = new Map<number, number>();
@@ -127,16 +149,22 @@ export class ChainIndexer {
   }
 
   async run(pollMs: number, signal: AbortSignal): Promise<void> {
+    let failures = 0;
     while (!signal.aborted) {
       try {
         const r = await this.step();
         this.lastError = null;
+        failures = 0;
         if (r.behind > 0) continue;
       } catch (err) {
+        failures++;
         this.lastError = (err as Error).message.slice(0, 300);
-        this.log.warn({ err: this.lastError }, "indexer step failed");
+        this.log.warn(
+          { err: this.lastError, failures, chunk: this.chunk, rateLimited: isRateLimited(err) },
+          "indexer step failed",
+        );
       }
-      await new Promise((res) => setTimeout(res, pollMs));
+      await new Promise((res) => setTimeout(res, failures ? backoffMs(pollMs, failures) : pollMs));
     }
   }
 }

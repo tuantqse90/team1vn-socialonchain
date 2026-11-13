@@ -65,6 +65,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const [session, setSession] = useState<StoredSession | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  /**
+   * Key vừa tạo trong phiên này, tx addDelegate/registerWithDelegate chưa xác nhận: chỉ "ready" khi chain trả
+   * isAuthorized = true. Key có sẵn từ trước (tải lại trang) thì vẫn coi là ready trong lúc đang đọc, tránh nháy.
+   */
+  const [fresh, setFresh] = useState<string | null>(null);
 
   useEffect(() => {
     if (!owner) {
@@ -92,7 +97,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     abi: identityRegistryAbi,
     functionName: "isAuthorized",
     args: owner && session ? [owner, session.address] : undefined,
-    query: { enabled: Boolean(owner && session && contracts), refetchInterval: 60_000 },
+    query: {
+      enabled: Boolean(owner && session && contracts),
+      // Key mới: hỏi lại nhanh tới khi chain xác nhận (RPC đọc ngay sau khi ghi có thể còn trả giá trị cũ).
+      refetchInterval: (q) =>
+        session && fresh === session.address && q.state.data !== true ? 2_000 : 60_000,
+    },
   });
   const balance = useBalance({
     address: session?.address,
@@ -148,6 +158,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       };
       writeJson(sKey(owner), s);
       writeJson(tKey(owner), null);
+      setFresh(s.address);
       setSession(s);
       setToken(null);
       setApiToken(null);
@@ -160,6 +171,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (!owner) return;
     writeJson(sKey(owner), null);
     writeJson(tKey(owner), null);
+    setFresh(null);
     setSession(null);
     setToken(null);
     setApiToken(null);
@@ -176,7 +188,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   if (hydrated && !owner) status = "disconnected";
   else if (!owner) status = "loading";
   else if (registered.data === false) status = "unregistered";
-  else if (registered.data === true) status = session && authorized.data !== false ? "ready" : "needs-key";
+  else if (registered.data === true) {
+    const confirmed =
+      session && fresh === session.address ? authorized.data === true : authorized.data !== false;
+    status = session && confirmed ? "ready" : "needs-key";
+  }
 
   return (
     <SessionContext.Provider

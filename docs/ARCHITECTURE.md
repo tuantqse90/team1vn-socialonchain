@@ -246,10 +246,13 @@ Người dùng không cần ví ngoài: chỉ có **tên + mật khẩu**. Mọi
 | Mã hoá | Trình duyệt | AES-256-GCM (@noble/ciphers, chạy cả trang http LAN), AAD = `socialonchain-keystore-v1:<address>` |
 | Lưu | `app.accounts` | `handle`, `address`, `kdf`, `keystore`, `auth_hash = sha256(authKey)`, `drip_tx`. Server không giải mã được |
 | Tạo tài khoản | `POST /accounts` | Kèm chữ ký owner trên `accountMessage({handle, address, chainId})`. Server từ chối N < 2^15, tên đã có tài khoản hoặc đã có chủ onchain. Giới hạn theo IP/giờ |
-| Tặng gas | Vòi `FAUCET_PRIVATE_KEY` | 1 lần/tài khoản (`GAS_DRIP_WEI`: Fuji 0.001, local 0.05), gửi tuần tự, trần `GAS_DRIP_DAILY_CAP`/ngày; địa chỉ đã có gas thì bỏ qua |
+| Tặng gas | Vòi `FAUCET_PRIVATE_KEY` | 1 lần/tài khoản (`GAS_DRIP_WEI`: Fuji 0.001, local 0.1), gửi tuần tự, trần `GAS_DRIP_DAILY_CAP`/ngày; địa chỉ đã có gas thì bỏ qua |
 | Đăng nhập | `GET /accounts/kdf/{handle}` → `POST /accounts/login` | Client dẫn xuất lại `authKey`; khớp thì nhận keystore, tự giải mã. Sai tên và sai mật khẩu trả cùng lỗi 401; giới hạn 10 lần/phút theo IP và theo tên |
 | Dùng | `localStorage` `soc:wallet:<chainId>` | Ví đã mở khoá nằm trong máy như session key; đăng xuất là trả gas thừa của session key về owner rồi xoá ví, session key, khoá DM khỏi máy |
 | Thiết bị mới | Trình duyệt | Đăng nhập xong thì ví tự gửi `addDelegate` cho session key mới (owner chừa phí, nạp phần còn lại tối đa mức chuẩn) |
 | Xuất khoá | Cài đặt › Tài khoản | Hỏi lại mật khẩu (kiểm qua server), hiện private key để người dùng tự cất |
+| Nhập khoá | Màn đăng nhập › "Nhập khoá" | Cho ví đã đăng ký bằng ví ngoài (Core/MetaMask): dán private key → handle tự điền theo `handleOf` onchain → đặt mật khẩu → đi đúng đường `POST /accounts` (keystore mã hoá). Ví đó đã có tài khoản thì 409 `address_exists`. Chỉ khuyên dùng ví testnet |
+| Mật khẩu yếu | Trình duyệt (`lib/password.ts`) | Server không thấy mật khẩu nên chỉ chặn được ở client: < 8 ký tự, ~60 mật khẩu phổ biến (EN/VI), gần giống handle, một ký tự lặp lại hoặc dãy đều |
+| Ví builder | Cài đặt › Ví builder → `POST/GET/DELETE /me/wallets` | Ví nhúng là địa chỉ mới nên chưa deploy gì. Builder ký `linkWalletMessage({owner, wallet, chainId})` bằng chính ví deployer (ở ngoài app) rồi dán chữ ký; server `verifyMessage` (EOA, fallback ERC-1271). Tối đa 5 ví; chữ ký hợp lệ cho owner mới thì ví chuyển sang owner đó. Worker cộng contract của ví liên kết vào `builder` của owner. `/users/{id}` có thêm `linkedWallets` |
 
 Ví vẫn là EOA bình thường, nên hợp đồng không đổi gì: `registerWithDelegate`, `addDelegate`, permit tUSD, chữ ký DM đều như cũ. wagmi chỉ còn dùng để đọc chain (không connector). Giới hạn: xem `LIMITATIONS.md` › Danh tính và ví.

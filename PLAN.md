@@ -226,7 +226,9 @@
 - [x] Migration `0006_accounts`, API `/accounts` (tạo + tặng gas), `/accounts/kdf/{handle}`, `/accounts/login`, giới hạn theo IP/tên + integration test
 - [x] Web: `lib/embedded.ts` (ví nhúng), `useMainWallet` ký ngầm, bỏ RainbowKit/connector, onboarding tên + mật khẩu (tự lên chain, tự bật thiết bị), Cài đặt › Xuất khoá + Đăng xuất, mức gas theo mạng (`lib/gas.ts`)
 - [x] e2e: tạo tài khoản → tự đăng ký → xuất khoá → đăng xuất → máy khác đăng nhập (sai mật khẩu bị từ chối) → tự bật thiết bị
-- [ ] Fuji: ví vòi riêng có AVAX test (`FAUCET_PRIVATE_KEY`), tạo tài khoản thật trên `pnpm dev:fuji`
+- [x] Nhập khoá ví cũ (tài khoản đăng ký bằng Core/MetaMask chuyển sang mật khẩu), chặn mật khẩu yếu ở client
+- [x] Liên kết ví builder bằng chữ ký (`/me/wallets`, migration `0007_linked_wallets`), worker cộng contract của ví liên kết + e2e
+- [x] Fuji: ví vòi riêng có AVAX test (`FAUCET_PRIVATE_KEY`), tạo tài khoản thật trên `pnpm dev:fuji` (2026-11-13: tạo, đăng bài, máy khác đăng nhập, nhập khoá, liên kết ví)
 - **Xong khi:** lint + typecheck + Vitest + e2e xanh ở local; trên Fuji tạo tài khoản, đăng bài, đăng nhập máy khác mà không có popup nào.
 
 ---
@@ -259,5 +261,5 @@ Giai đoạn 2–3 theo INIT_PROMPT §3:
 - cross-post;
 - quyết định có lên mainnet không.
 - Tin nhắn: push notification (Web Push), báo cáo tin nhắn, forward secrecy (double ratchet), ảnh đính kèm.
-- Ví nhúng: liên kết ví deployer (chữ ký chứng minh sở hữu) để tính `onchain_builder`; nhập tài khoản cũ đã đăng ký bằng ví ngoài (nhập private key); kiểm độ mạnh mật khẩu; khoá lại ví sau một thời gian; passkey.
+- Ví nhúng: danh sách mật khẩu lộ đầy đủ (zxcvbn/HIBP k-anonymity); khoá lại ví sau một thời gian; passkey; ký liên kết ví builder bằng WalletConnect thay vì dán chữ ký.
 - Phần design canvas chưa làm (P15b): mini app (Game/Agent/Dapp, phạm vi chưa chốt trong spec), xuất bản feed onchain + feed trả phí (cần FeedRegistry), upload ảnh, animation xếp hạng lại feed, avatar mini trong thread, quét contract theo yêu cầu (hiện worker quét định kỳ), avatar thành viên kênh (cần API).
