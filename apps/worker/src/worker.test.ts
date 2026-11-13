@@ -90,7 +90,7 @@ describe.skipIf(!DB_URL)("worker jobs (integration, Postgres)", () => {
   beforeAll(async () => {
     ({ db, pool } = createDb((await prepareTestDb("worker")) ?? undefined));
     await db.execute(
-      sql`truncate app.fc_posts, app.fc_users, app.fc_links, app.user_fc, app.builder_stats, app.labels, chain.users, chain.posts`,
+      sql`truncate app.fc_posts, app.fc_users, app.fc_links, app.user_fc, app.builder_stats, app.linked_wallets, app.labels, chain.users, chain.posts`,
     );
   });
   afterAll(async () => pool?.end());
@@ -146,5 +146,32 @@ describe.skipIf(!DB_URL)("worker jobs (integration, Postgres)", () => {
           i.subject === "author:0x1000000000000000000000000000000000000001" && i.label === "author:builder",
       );
     expect(kai?.score).toBeGreaterThanOrEqual(0.9);
+  });
+
+  it("onchain_builder: owner total = own deployments + linked wallets, merged per chain", async () => {
+    const owner = "0x2000000000000000000000000000000000000001";
+    const deployer = "0x2000000000000000000000000000000000000002";
+    const deployer2 = "0x2000000000000000000000000000000000000003";
+    await db.execute(
+      sql`insert into chain.users (address, handle, registered_at, block_number) values (${owner}, 'linked_owner', 1, 1)`,
+    );
+    await db.execute(
+      sql`insert into app.linked_wallets (address, owner, signature) values (${deployer}, ${owner}, '0x01'), (${deployer2}, ${owner}, '0x02')`,
+    );
+    const data = {
+      [owner]: { "43113": 1 },
+      [deployer]: { "43113": 2, "43114": 4 },
+      [deployer2]: { "43114": 3 },
+    };
+    const r = await runBuilder(db, new FixtureBuilderCounter(data), 100);
+    expect(r.checked).toBe(1); // các tác giả khác đã quét ở test trước
+    const rows = await db.execute<{ address: string; contracts_deployed: number; chains: unknown }>(
+      sql`select address, contracts_deployed, chains from app.builder_stats where address in (${owner}, ${deployer}, ${deployer2})`,
+    );
+    expect(rows.rows).toEqual([
+      { address: owner, contracts_deployed: 10, chains: { "43113": 3, "43114": 7 } },
+    ]);
+    // Counter fixture không bị sửa khi cộng dồn.
+    expect(data[owner]).toEqual({ "43113": 1 });
   });
 });

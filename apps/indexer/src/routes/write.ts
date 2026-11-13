@@ -77,6 +77,8 @@ const EVENT_NAMES = new Set([
   "feed_compiled",
   "quota_hit",
   "import_started",
+  "import_done",
+  "reply",
   "pro_purchased",
   "moderation_changed",
 ]);

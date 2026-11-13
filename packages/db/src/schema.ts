@@ -421,3 +421,19 @@ export const accounts = app.table("accounts", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Ví ngoài (vd. ví deployer) đã liên kết vào tài khoản bằng chữ ký của chính ví đó (linkWalletMessage).
+ * Worker cộng số contract các ví này deploy vào `builder_stats` của owner (tín hiệu `onchain_builder`).
+ * Mỗi ví chỉ thuộc 1 owner; liên kết lại với chữ ký hợp lệ thì chuyển sang owner mới. Địa chỉ lưu chữ thường.
+ */
+export const linkedWallets = app.table(
+  "linked_wallets",
+  {
+    address: text("address").primaryKey(),
+    owner: text("owner").notNull(),
+    signature: text("signature").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("linked_wallets_owner_idx").on(t.owner)],
+);

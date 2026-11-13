@@ -6,6 +6,7 @@ import {
   createAccountSecrets,
   decryptKeystore,
   deriveAccountKeys,
+  linkWalletMessage,
 } from "./account";
 
 // N nhỏ cho test nhanh; app dùng DEFAULT_SCRYPT.
@@ -55,5 +56,32 @@ describe("account keystore", () => {
     expect(m).toContain("handle: linh");
     expect(m).toContain("0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC");
     expect(m).toContain("chain: 43113");
+  });
+
+  it("linkWalletMessage binds checksummed owner, wallet and chain in a fixed format", () => {
+    const m = linkWalletMessage({
+      owner: "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+      wallet: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      chainId: 43113,
+    });
+    expect(m).toBe(
+      "socialonchain link wallet v1\n" +
+        "account: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC\n" +
+        "wallet: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8\n" +
+        "chain: 43113",
+    );
+    // Đảo owner/wallet hoặc đổi chain → tin nhắn khác (chữ ký không dùng lại được).
+    const swapped = linkWalletMessage({
+      owner: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      wallet: "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+      chainId: 43113,
+    });
+    expect(swapped).not.toBe(m);
+    const otherChain = linkWalletMessage({
+      owner: "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+      wallet: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      chainId: 43114,
+    });
+    expect(otherChain).not.toBe(m);
   });
 });

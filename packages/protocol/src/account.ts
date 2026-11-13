@@ -77,3 +77,11 @@ export async function createAccountSecrets(
   const { encKey, authKey } = await deriveAccountKeys(password, kdf);
   return { kdf, authKey, keystore: encryptKeystore(encKey, privateKey, address) };
 }
+
+/**
+ * Tin nhắn ví ngoài (vd. ví deployer) ký để liên kết vào tài khoản `owner`: chứng minh người liên kết giữ
+ * private key của `wallet`. Số contract `wallet` đã deploy được cộng vào tín hiệu `onchain_builder` của owner.
+ */
+export function linkWalletMessage(p: { owner: Address; wallet: Address; chainId: number }): string {
+  return `socialonchain link wallet v1\naccount: ${getAddress(p.owner)}\nwallet: ${getAddress(p.wallet)}\nchain: ${p.chainId}`;
+}

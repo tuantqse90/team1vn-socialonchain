@@ -6,6 +6,7 @@ import {
   fcUsers,
   follows,
   indexerState,
+  linkedWallets,
   posts,
   profiles,
   savedFeeds,
@@ -56,7 +57,7 @@ export async function resolveUser(ctx: AppContext, idOrHandle: string): Promise<
 
 async function userView(ctx: AppContext, address: string, viewer: string | null): Promise<UserView> {
   const db = ctx.db;
-  const [[u], [p], [b], [link], counts, al, rel, topics] = await Promise.all([
+  const [[u], [p], [b], [link], counts, al, rel, topics, wallets] = await Promise.all([
     db.select().from(users).where(eq(users.address, address)),
     db.select().from(profiles).where(eq(profiles.address, address)),
     db.select().from(builderStats).where(eq(builderStats.address, address)),
@@ -82,6 +83,11 @@ async function userView(ctx: AppContext, address: string, viewer: string | null)
       select l.label from app.labels l join chain.posts p on p.id = l.post_id
       where p.author = ${address} and not p.deleted and l.label like 'topic:%' and l.score >= 0.5
       group by l.label order by count(*) desc limit 3`),
+    db
+      .select({ address: linkedWallets.address })
+      .from(linkedWallets)
+      .where(eq(linkedWallets.owner, address))
+      .orderBy(linkedWallets.createdAt),
   ]);
   let fc: { fid: number; username: string } | null = null;
   if (link) {
@@ -118,6 +124,7 @@ async function userView(ctx: AppContext, address: string, viewer: string | null)
     farcaster: fc,
     authorLabels: labelsOut,
     topTopics: topics.rows.map((r) => r.label),
+    linkedWallets: wallets.map((w) => w.address),
     viewer: viewer
       ? {
           following: rel.some((r) => r.follower === viewer && r.target === address),

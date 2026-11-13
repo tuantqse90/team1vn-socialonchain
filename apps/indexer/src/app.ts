@@ -5,6 +5,7 @@ import type { AppContext } from "./context";
 import { accountRoutes } from "./routes/accounts";
 import { dmRoutes } from "./routes/dm";
 import { readRoutes } from "./routes/read";
+import { walletRoutes } from "./routes/wallets";
 import { HttpError, writeRoutes } from "./routes/write";
 
 export function createApp(ctx: AppContext) {
@@ -27,6 +28,7 @@ export function createApp(ctx: AppContext) {
   app.route("/", writeRoutes(ctx));
   app.route("/", dmRoutes(ctx));
   app.route("/", accountRoutes(ctx));
+  app.route("/", walletRoutes(ctx));
   app.doc("/openapi.json", {
     openapi: "3.0.0",
     info: {

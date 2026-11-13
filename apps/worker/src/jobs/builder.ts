@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { builderStats, type Db } from "@socialonchain/db";
-import { sql } from "drizzle-orm";
+import { builderStats, type Db, linkedWallets } from "@socialonchain/db";
+import { inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 /**
@@ -77,7 +77,10 @@ export class DataApiBuilderCounter implements BuilderCounter {
   }
 }
 
-/** Cập nhật builder_stats cho tác giả chưa có hoặc đã cũ hơn 24h. */
+/**
+ * Cập nhật builder_stats cho tác giả chưa có hoặc đã cũ hơn 24h. Contract của ví ngoài đã liên kết
+ * (app.linked_wallets) được cộng vào owner theo từng chainId; ví liên kết không có dòng riêng.
+ */
 export async function runBuilder(
   db: Db,
   counter: BuilderCounter,
@@ -95,9 +98,24 @@ export async function runBuilder(
     -- Ưu tiên user đã đăng ký (gợi ý builder, badge trên hồ sơ), rồi tác giả onchain, rồi Farcaster; chưa quét trước.
     order by a.pri, b.checked_at nulls first
     limit ${limit}`);
+  const owners = r.rows.map((x) => x.address);
+  const links = owners.length
+    ? await db
+        .select({ address: linkedWallets.address, owner: linkedWallets.owner })
+        .from(linkedWallets)
+        .where(inArray(linkedWallets.owner, owners))
+    : [];
+  const walletsOf = new Map<string, string[]>();
+  for (const l of links) walletsOf.set(l.owner, [...(walletsOf.get(l.owner) ?? []), l.address]);
+
   let builders = 0;
-  for (const { address } of r.rows) {
-    const chains = await counter.count(address);
+  for (const address of owners) {
+    // Chép ra object mới: counter (fixture) có thể trả về chính object nó giữ.
+    const chains = { ...(await counter.count(address)) };
+    for (const wallet of walletsOf.get(address) ?? []) {
+      for (const [chainId, n] of Object.entries(await counter.count(wallet)))
+        chains[chainId] = (chains[chainId] ?? 0) + n;
+    }
     const total = Object.values(chains).reduce((s, n) => s + n, 0);
     if (total > 0) builders++;
     await db

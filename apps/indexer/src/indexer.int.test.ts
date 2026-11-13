@@ -1,7 +1,7 @@
 import { type ChildProcess, execFileSync, spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { accounts, createDb } from "@socialonchain/db";
+import { accounts, builderStats, createDb } from "@socialonchain/db";
 import { prepareTestDb } from "@socialonchain/db/testing";
 import { FixtureFarcaster } from "@socialonchain/farcaster";
 import {
@@ -22,6 +22,7 @@ import {
   type KdfParams,
   type Keystore,
   type LabelBatch,
+  linkWalletMessage,
   onchainPostId,
   planPaymentsAbi,
   postsAbi,
@@ -142,7 +143,7 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     const created = createDb(testDb);
     pool = created.pool;
     await created.db.execute(
-      "truncate chain.users, chain.delegates, chain.follows, chain.posts, chain.reactions, chain.payments, chain.indexer_state, app.notifications, app.labels, app.author_labels, app.label_batches, app.usage, app.compile_cache, app.saved_feeds, app.events, app.user_settings, app.reports, app.blocklist, app.dm_keys, app.dm_messages, app.dm_threads, app.accounts" as never,
+      "truncate chain.users, chain.delegates, chain.follows, chain.posts, chain.reactions, chain.payments, chain.indexer_state, app.notifications, app.labels, app.author_labels, app.label_batches, app.usage, app.compile_cache, app.saved_feeds, app.events, app.user_settings, app.reports, app.blocklist, app.dm_keys, app.dm_messages, app.dm_threads, app.accounts, app.linked_wallets" as never,
     );
     const env = loadEnv({
       DATABASE_URL: testDb,
@@ -803,5 +804,138 @@ describe.skipIf(!canRun)("indexer + API (integration)", () => {
     }
     // Trước đó đã thử 2 lần với tên này: 8 lần nữa là đủ 10, sau đó 429.
     expect(statuses).toEqual([...Array(8).fill(401), 429, 429]);
+  });
+
+  it("linked wallets: link by wallet signature, list, profile field, move, limit, unlink; builder_stats reset", async () => {
+    type Acc = ReturnType<typeof privateKeyToAccount>;
+    const bobToken = (await login(bob, bob.address)).body.token;
+    const aliceToken = (await login(alice, alice.address)).body.token;
+    const req = async (
+      token: string | null,
+      path: string,
+      init: { method?: string; json?: unknown } = {},
+    ) => {
+      const res = await app.request(path, {
+        method: init.method ?? "GET",
+        headers: {
+          "content-type": "application/json",
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
+        body: init.json === undefined ? undefined : JSON.stringify(init.json),
+      });
+      return { status: res.status, body: (await res.json()) as Record<string, unknown> };
+    };
+    const signLink = (wallet: Acc, owner: Acc, chainId = 31337) =>
+      wallet.signMessage({
+        message: linkWalletMessage({ owner: owner.address, wallet: wallet.address, chainId }),
+      });
+    const link = async (token: string, wallet: Acc, owner: Acc) =>
+      req(token, "/me/wallets", {
+        method: "POST",
+        json: { address: wallet.address, signature: await signLink(wallet, owner) },
+      });
+
+    const deployer = privateKeyToAccount(generatePrivateKey());
+    const { db, pool: p } = createDb(testDb);
+    try {
+      const stats = (address: string) =>
+        db.select().from(builderStats).where(eq(builderStats.address, address.toLowerCase()));
+      const seedStats = (address: string) =>
+        db
+          .insert(builderStats)
+          .values({
+            address: address.toLowerCase(),
+            contractsDeployed: 1,
+            chains: { "43113": 1 },
+            source: "fixture",
+          })
+          .onConflictDoNothing();
+
+      // Chưa đăng nhập → 401; body sai → 400.
+      expect((await req(null, "/me/wallets")).status).toBe(401);
+      expect(
+        (
+          await req(null, "/me/wallets", {
+            method: "POST",
+            json: { address: deployer.address, signature: "0x01" },
+          })
+        ).status,
+      ).toBe(401);
+      expect(
+        (await req(bobToken, "/me/wallets", { method: "POST", json: { address: "0x123" } })).body.error,
+      ).toBe("bad_request");
+
+      // Chữ ký sai: ví khác ký, ký cho owner khác, ký cho chain khác → 401 bad_signature.
+      const other = privateKeyToAccount(generatePrivateKey());
+      for (const signature of [
+        await signLink(other, bob),
+        await signLink(deployer, alice),
+        await signLink(deployer, bob, 43113),
+      ]) {
+        const r = await req(bobToken, "/me/wallets", {
+          method: "POST",
+          json: { address: deployer.address, signature },
+        });
+        expect(r).toEqual({ status: 401, body: { error: "bad_signature" } });
+      }
+      // Liên kết chính mình → 409.
+      expect(await link(bobToken, bob, bob)).toEqual({ status: 409, body: { error: "same_as_owner" } });
+
+      // Liên kết hợp lệ → 201, xoá builder_stats của owner để worker quét lại.
+      await seedStats(bob.address);
+      expect(await link(bobToken, deployer, bob)).toEqual({
+        status: 201,
+        body: { address: deployer.address.toLowerCase() },
+      });
+      expect(await stats(bob.address)).toHaveLength(0);
+      const list = await req(bobToken, "/me/wallets");
+      expect(list.status).toBe(200);
+      const items = list.body.items as { address: string; createdAt: number }[];
+      expect(items.map((i) => i.address)).toEqual([deployer.address.toLowerCase()]);
+      expect(Math.abs((items[0]?.createdAt ?? 0) - now())).toBeLessThan(60);
+      const bobView = (await (await app.request("/users/bob")).json()) as { linkedWallets: string[] };
+      expect(bobView.linkedWallets).toEqual([deployer.address.toLowerCase()]);
+      const aliceView = (await (await app.request("/users/alice")).json()) as { linkedWallets: string[] };
+      expect(aliceView.linkedWallets).toEqual([]);
+
+      // Ví ký cho alice → chuyển sang alice; builder_stats của cả hai bị xoá.
+      await seedStats(bob.address);
+      await seedStats(alice.address);
+      expect((await link(aliceToken, deployer, alice)).status).toBe(201);
+      expect((await req(bobToken, "/me/wallets")).body.items).toEqual([]);
+      expect(await stats(bob.address)).toHaveLength(0);
+      expect(await stats(alice.address)).toHaveLength(0);
+
+      // Tối đa 5 ví; liên kết lại ví đã có vẫn được.
+      for (let i = 0; i < 4; i++)
+        expect((await link(aliceToken, privateKeyToAccount(generatePrivateKey()), alice)).status).toBe(201);
+      expect(await link(aliceToken, privateKeyToAccount(generatePrivateKey()), alice)).toEqual({
+        status: 409,
+        body: { error: "too_many" },
+      });
+      expect((await link(aliceToken, deployer, alice)).status).toBe(201);
+      expect((await req(aliceToken, "/me/wallets")).body.items).toHaveLength(5);
+
+      // Huỷ liên kết: chỉ ví của mình; xong thì 404.
+      const path = `/me/wallets/${deployer.address}`;
+      expect(await req(bobToken, path, { method: "DELETE" })).toEqual({
+        status: 404,
+        body: { error: "not_found" },
+      });
+      await seedStats(alice.address);
+      expect(await req(aliceToken, path, { method: "DELETE" })).toEqual({ status: 200, body: { ok: true } });
+      expect(await stats(alice.address)).toHaveLength(0);
+      expect((await req(aliceToken, path, { method: "DELETE" })).status).toBe(404);
+      expect((await req(aliceToken, "/me/wallets/0x123", { method: "DELETE" })).status).toBe(400);
+      const after = (await (await app.request("/users/alice")).json()) as { linkedWallets: string[] };
+      expect(after.linkedWallets).toHaveLength(4);
+      expect(after.linkedWallets).not.toContain(deployer.address.toLowerCase());
+    } finally {
+      await p.end();
+    }
+
+    // Sự kiện web đang gửi.
+    for (const name of ["import_done", "reply"])
+      expect((await req(null, "/events", { method: "POST", json: { name } })).status).toBe(200);
   });
 });

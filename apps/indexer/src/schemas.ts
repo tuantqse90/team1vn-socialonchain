@@ -90,6 +90,10 @@ export const UserViewSchema = z
     /** Chủ đề (`topic:*`) xuất hiện nhiều nhất trong bài của user, tối đa 3. */
     topTopics: z.array(z.string()),
     viewer: z.object({ following: z.boolean(), followedBy: z.boolean() }).nullable(),
+    linkedWallets: z.array(z.string()).openapi({
+      description:
+        "Ví ngoài đã liên kết bằng chữ ký (chữ thường); số contract của chúng được cộng vào `builder`",
+    }),
   })
   .openapi("User");
 export type UserView = z.infer<typeof UserViewSchema>;
