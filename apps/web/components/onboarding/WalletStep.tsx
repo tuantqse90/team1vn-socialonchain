@@ -465,8 +465,9 @@ export function WalletStep({
           { k: tc("session"), v: tc("days", { n: DEFAULT_SESSION_DAYS }) },
         ];
   } else {
+    const shown = addr ?? importAddr?.toLowerCase();
     fields = [
-      { k: tc("wallet"), v: addr ? shortAddr(addr) : "—" },
+      { k: tc("wallet"), v: shown ? shortAddr(shown) : "—" },
       { k: tc("balance"), v: addr ? avax(balance) : "—" },
       { k: tc("session"), v: addr && enough ? tc("days", { n: DEFAULT_SESSION_DAYS }) : "—" },
     ];
@@ -606,7 +607,7 @@ export function WalletStep({
           <IdCard
             variant={variant}
             handle={cardHandle}
-            address={addr}
+            address={addr ?? importAddr?.toLowerCase()}
             fields={fields}
             minted={registered}
             block={block}
