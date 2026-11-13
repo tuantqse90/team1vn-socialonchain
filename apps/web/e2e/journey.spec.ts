@@ -5,10 +5,22 @@ import {
   dmEncrypt,
   dmKeyFromSignature,
   dmSharedKey,
+  linkWalletMessage,
   sessionAuthMessage,
 } from "@socialonchain/protocol";
-import { type Address, encodeFunctionData, type Hex, keccak256, parseAbi, toBytes } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import {
+  type Address,
+  createWalletClient,
+  encodeFunctionData,
+  type Hex,
+  http,
+  keccak256,
+  parseAbi,
+  parseEther,
+  toBytes,
+} from "viem";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { anvil } from "viem/chains";
 
 /**
  * Hành trình cốt lõi, chạy trên chain + indexer thật ở local:
@@ -409,4 +421,88 @@ test("tài khoản mật khẩu: tạo (app tặng gas, tự lên chain) → xu�
   });
   expect(bAddr?.toLowerCase()).toBe(address);
   await ctx.close();
+});
+
+test("nhập khoá ví cũ (đã đăng ký bằng ví ngoài) → mật khẩu yếu bị chặn → vào lại đúng handle → liên kết ví deployer", async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(240_000);
+  const handle = `ik_${RUN}`.slice(0, 20);
+  const password = `import-${RUN}-ok`;
+  const net = (await (await request.get(`${API}/network`)).json()) as {
+    contracts: { IdentityRegistry: Address };
+  };
+
+  // "Ví Core cũ": key ngẫu nhiên, đăng ký handle onchain trực tiếp (không qua app).
+  const oldPk = generatePrivateKey();
+  const old = privateKeyToAccount(oldPk);
+  await rpc("eth_sendTransaction", [
+    { from: DEPLOYER, to: old.address, value: `0x${parseEther("1").toString(16)}` },
+  ]);
+  await expect
+    .poll(async () => BigInt((await rpc("eth_getBalance", [old.address, "latest"])) as string))
+    .toBeGreaterThan(0n);
+  const wc = createWalletClient({ account: old, chain: anvil, transport: http(RPC) });
+  await wc.writeContract({
+    address: net.contracts.IdentityRegistry,
+    abi: parseAbi(["function register(string handle, string profileURI)"]),
+    functionName: "register",
+    args: [handle, ""],
+  });
+  await expect
+    .poll(
+      async () =>
+        ((await (await request.get(`${API}/users/${old.address}`)).json()) as { handle?: string }).handle,
+      {
+        timeout: 30_000,
+      },
+    )
+    .toBe(handle);
+
+  // Nhập khoá: handle tự điền theo onchain; mật khẩu phổ biến bị chặn ngay ở client.
+  await freshToAccountStep(page);
+  await page.getByTestId("auth-switch").click();
+  await page.getByTestId("auth-import").click();
+  await page.getByTestId("import-key-input").fill("0x1234");
+  await expect(page.getByTestId("account-hint")).toHaveText(/private key/i);
+  await page.getByTestId("import-key-input").fill(oldPk.slice(2));
+  await expect(page.getByTestId("import-address")).toBeVisible();
+  await expect(page.getByTestId("handle-input")).toHaveValue(handle, { timeout: 15_000 });
+  await page.getByTestId("password-input").fill("12345678");
+  await expect(page.getByTestId("account-hint")).toHaveText(/common|phổ biến/i);
+  await expect(page.getByTestId("account-submit")).toBeDisabled();
+  await page.getByTestId("password-input").fill(password);
+  await expect(page.getByTestId("account-submit")).toBeEnabled({ timeout: 15_000 });
+  await page.getByTestId("account-submit").click();
+  // Đã đăng ký sẵn → không đăng ký lại, chỉ bật thiết bị (addDelegate) rồi xong.
+  await expect(page.getByTestId("welcome-done")).toBeVisible({ timeout: 90_000 });
+  const stored = await page.evaluate(() => {
+    const k = Object.keys(localStorage).find((x) => x.startsWith("soc:wallet:"));
+    return k ? (JSON.parse(localStorage.getItem(k) ?? "{}") as { address: string; handle: string }) : null;
+  });
+  expect(stored?.address.toLowerCase()).toBe(old.address.toLowerCase());
+  expect(stored?.handle).toBe(handle);
+  const kdf = await (await fetch(`${API}/accounts/kdf/${handle}`)).json();
+  expect(kdf.kdf.name).toBe("scrypt");
+
+  // Liên kết ví deployer: ký tin nhắn bằng chính ví đó (ở ngoài app), dán vào Cài đặt.
+  const deployer = privateKeyToAccount(generatePrivateKey());
+  const stranger = privateKeyToAccount(generatePrivateKey());
+  const msg = linkWalletMessage({ owner: old.address, wallet: deployer.address, chainId: anvil.id });
+  await page.goto("/settings");
+  await page.getByTestId("settings-builder-wallets").click();
+  await page.getByTestId("link-address").fill(deployer.address);
+  await expect(page.getByTestId("link-message")).toHaveText(msg);
+  // Chữ ký của ví khác → bị từ chối.
+  await page.getByTestId("link-signature").fill(await stranger.signMessage({ message: msg }));
+  await page.getByTestId("link-submit").click();
+  await expect(page.getByText(/doesn't match|không khớp/i)).toBeVisible({ timeout: 15_000 });
+  await page.getByTestId("link-signature").fill(await deployer.signMessage({ message: msg }));
+  await page.getByTestId("link-submit").click();
+  await expect(page.getByTestId("linked-wallet")).toHaveCount(1, { timeout: 15_000 });
+  const user = (await (await request.get(`${API}/users/${old.address}`)).json()) as {
+    linkedWallets: string[];
+  };
+  expect(user.linkedWallets).toEqual([deployer.address.toLowerCase()]);
 });

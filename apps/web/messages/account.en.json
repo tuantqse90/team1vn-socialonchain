@@ -27,11 +27,41 @@
     "exportHint": "Anyone with this key owns your account. Never share it.",
     "reveal": "Reveal key",
     "copyKey": "Copy key",
+    "importTitle": "Use an existing wallet",
+    "importing": "Encrypting key…",
+    "importLink": "Registered with Core or MetaMask? Import key",
+    "importHint": "Testnet wallets only · the key is encrypted with your password before it leaves this device",
+    "privateKey": "Private key (0x…)",
+    "submitImport": "Import wallet",
+    "backToLogin": "Back to log in",
+    "pw": {
+      "common": "Too common · pick something else",
+      "handle": "Too close to your handle",
+      "pattern": "Too easy to guess"
+    },
+    "builderWallets": "Builder wallets",
+    "builderWalletsHint": "Link the wallets you deploy contracts from. Each one counts toward your builder badge.",
+    "linkMessageLabel": "1 · Sign this message with that wallet (personal_sign)",
+    "linkAddress": "2 · Wallet address",
+    "linkSignature": "3 · Signature (0x…)",
+    "linkSubmit": "Link wallet",
+    "linked": "Linked",
+    "unlink": "Remove",
+    "noLinked": "No linked wallets yet",
+    "contractsCount": "{n, plural, =0 {No contracts yet} one {# contract} other {# contracts}}",
+    "linkErrors": {
+      "bad_signature": "Signature doesn't match this address",
+      "same_as_owner": "That's already your account wallet",
+      "too_many": "Up to 5 wallets",
+      "bad_address": "Not a wallet address"
+    },
     "errors": {
       "bad_credentials": "Wrong handle or password",
       "handle_taken": "Handle taken",
       "rate_limited": "Too many tries · wait a minute",
-      "failed": "Something went wrong · try again"
+      "failed": "Something went wrong · try again",
+      "address_exists": "This wallet already has an account · log in instead",
+      "bad_key": "Not a valid private key"
     }
   }
 }

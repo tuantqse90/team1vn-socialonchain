@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { type Hash, keccak256, toBytes, zeroAddress } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import { useBalance, useReadContract, useReadContracts } from "wagmi";
 import { Icon } from "@/components/Icon";
 import { IdCard, type IdCardVariant, type IdField } from "@/components/IdCard";
@@ -13,9 +14,10 @@ import { Burst, CountUp } from "@/components/kit";
 import { clientConfig } from "@/configs";
 import { API_URL, ApiError, api, track } from "@/lib/api";
 import { contracts, FAUCET_URL, network, rpcUrl } from "@/lib/chain";
-import { login, signup, useEmbeddedWallet } from "@/lib/embedded";
+import { login, parsePrivateKey, signup, useEmbeddedWallet } from "@/lib/embedded";
 import { shortAddr } from "@/lib/format";
 import { MIN_OWNER_WEI, OWNER_FEE_RESERVE_WEI, SESSION_FUNDING_WEI } from "@/lib/gas";
+import { passwordProblem } from "@/lib/password";
 import { useSession } from "@/lib/session";
 import { publicClient, useTx } from "@/lib/tx";
 import type { User } from "@/lib/types";
@@ -40,8 +42,9 @@ type Phase =
   | "failed"
   | "device"
   | "done";
-type Mode = "signup" | "login";
-type AuthError = "bad_credentials" | "handle_taken" | "rate_limited" | "failed";
+/** signup: ví mới · login: tài khoản có sẵn · import: dùng ví đã có (vd. đăng ký trước đây bằng Core/MetaMask). */
+type Mode = "signup" | "login" | "import";
+type AuthError = "bad_credentials" | "handle_taken" | "address_exists" | "rate_limited" | "failed";
 
 /** Số AVAX gọn: số nhỏ (Fuji tặng 0.002) thì giữ 4 chữ số. */
 function avax(wei: bigint | undefined): string {
@@ -65,7 +68,7 @@ function revertName(err: unknown): string | null {
 function authErrorOf(e: unknown, mode: Mode): AuthError {
   if (e instanceof ApiError) {
     if (mode === "login" && (e.status === 401 || e.status === 404)) return "bad_credentials";
-    if (e.status === 409) return "handle_taken";
+    if (e.status === 409) return e.body.error === "address_exists" ? "address_exists" : "handle_taken";
     if (e.status === 429) return "rate_limited";
   }
   // Giải mã keystore lỗi (keystore hỏng/bị sửa) → coi như sai mật khẩu.
@@ -115,6 +118,7 @@ export function WalletStep({
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [keyInput, setKeyInput] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
   const [authError, setAuthError] = useState<AuthError | null>(null);
   const [dripSkipped, setDripSkipped] = useState(false);
@@ -142,6 +146,26 @@ export function WalletStep({
     return () => clearTimeout(id);
   }, [handle]);
 
+  const importPk = mode === "import" ? parsePrivateKey(keyInput) : null;
+  const importAddr = useMemo(
+    () => (importPk ? privateKeyToAccount(importPk).address : undefined),
+    [importPk],
+  );
+  /** Ví nhập vào đã có handle onchain: tài khoản phải dùng đúng tên đó. */
+  const importHandle = useReadContract({
+    address: contracts?.IdentityRegistry,
+    abi: identityRegistryAbi,
+    functionName: "handleOf",
+    args: importAddr ? [importAddr] : undefined,
+    query: { enabled: Boolean(contracts && importAddr) },
+  });
+  const lockedHandle = mode === "import" && importHandle.data ? importHandle.data : null;
+  useEffect(() => {
+    if (lockedHandle) setHandle(lockedHandle);
+  }, [lockedHandle]);
+  /** Người sẽ sở hữu handle: ví đang đăng nhập, hoặc ví đang được nhập. */
+  const me = status === "disconnected" && mode === "import" ? importAddr : owner;
+
   const valid = HANDLE_RE.test(debounced) && debounced === handle;
   const ownerOf = useReadContract({
     address: contracts?.IdentityRegistry,
@@ -162,12 +186,11 @@ export function WalletStep({
         throw e;
       }
     },
-    enabled: status === "disconnected" && mode === "signup" && HANDLE_RE.test(debounced),
+    enabled: status === "disconnected" && mode !== "login" && HANDLE_RE.test(debounced),
     retry: false,
     staleTime: 30_000,
   });
-  const ownsHandle = (o: string | undefined) =>
-    Boolean(o && owner && o.toLowerCase() === owner.toLowerCase());
+  const ownsHandle = (o: string | undefined) => Boolean(o && me && o.toLowerCase() === me.toLowerCase());
   const chainFree = ownerOf.data === zeroAddress || ownsHandle(ownerOf.data);
   const available =
     valid &&
@@ -223,7 +246,7 @@ export function WalletStep({
   else if (!enough || fundFlash) phase = "fund";
   else if (takenNow || outcome === "taken") phase = "taken";
   else phase = "register";
-  const showTaken = phase === "account" && mode === "signup" && takenNow;
+  const showTaken = phase === "account" && mode !== "login" && takenNow;
 
   // Lắc thẻ khi vào trạng thái lỗi.
   const prevPhase = useRef<Phase>(phase);
@@ -256,15 +279,18 @@ export function WalletStep({
     e?.preventDefault();
     if (authBusy) return;
     const h = handle;
-    if (!HANDLE_RE.test(h) || password.length < PASSWORD_MIN) return;
-    if (mode === "signup" && !available) return;
+    if (!canSubmit) return;
     setAuthError(null);
     setAuthBusy(true);
     try {
-      if (mode === "signup") {
-        const r = await signup(h, password);
+      if (mode === "signup" || mode === "import") {
+        const r = await signup(h, password, importPk ?? undefined);
         setDripSkipped(!r.drip && r.dripSkipped !== "funded");
-        track("onboarding_step", { step: "account_created", drip: Boolean(r.drip) });
+        setKeyInput("");
+        track("onboarding_step", {
+          step: mode === "import" ? "account_imported" : "account_created",
+          drip: Boolean(r.drip),
+        });
       } else {
         await login(h, password);
         track("onboarding_step", { step: "account_login" });
@@ -450,8 +476,15 @@ export function WalletStep({
     phase === "failed" ? { kind: "err", label: t("failedTitle") } : null;
 
   const titles: Record<Phase, ReactNode> = {
-    account: mode === "signup" ? (showTaken ? t("handleTaken") : ta("signupTitle")) : ta("loginTitle"),
-    creating: mode === "signup" ? ta("creating") : ta("unlocking"),
+    account:
+      mode === "login"
+        ? ta("loginTitle")
+        : showTaken
+          ? t("handleTaken")
+          : mode === "import"
+            ? ta("importTitle")
+            : ta("signupTitle"),
+    creating: mode === "signup" ? ta("creating") : mode === "import" ? ta("importing") : ta("unlocking"),
     loading: t("loadingTitle"),
     fund: t("fundTitle"),
     register: t("handleTitle"),
@@ -464,9 +497,16 @@ export function WalletStep({
 
   const blockUrl = network.explorerUrl && block !== null ? `${network.explorerUrl}/block/${block}` : null;
   const cardAnim = phase === "done" && burst > 0 ? "anim-celebrate" : shake > 0 ? s.shake : "";
-  const pwShort = password.length > 0 && password.length < PASSWORD_MIN;
+  /** Tạo mới / nhập ví: chặn mật khẩu yếu (server không thấy mật khẩu nên chỉ kiểm được ở đây). */
+  const pwProblem =
+    mode === "login" ? (password.length < PASSWORD_MIN ? "short" : null) : passwordProblem(password, handle);
+  const pwBad = password.length > 0 && pwProblem !== null;
+  const keyBad = mode === "import" && keyInput.length > 0 && !importPk;
   const canSubmit =
-    HANDLE_RE.test(handle) && password.length >= PASSWORD_MIN && (mode === "login" || available);
+    HANDLE_RE.test(handle) &&
+    pwProblem === null &&
+    (mode === "login" || available) &&
+    (mode !== "import" || Boolean(importPk));
 
   const handleInput = (
     <div
@@ -484,6 +524,7 @@ export function WalletStep({
         value={handle}
         onChange={(e) => onHandle(e.target.value)}
         disabled={phase === "signing" || phase === "creating"}
+        readOnly={Boolean(lockedHandle)}
         aria-invalid={phase === "taken" || showTaken}
         autoCapitalize="none"
         autoCorrect="off"
@@ -502,7 +543,7 @@ export function WalletStep({
           <Icon name="x" className="h-3.5 w-3.5" strokeWidth={3.4} />
         </span>
       )}
-      {(phase === "register" || (phase === "account" && mode === "signup")) && available && (
+      {(phase === "register" || (phase === "account" && mode !== "login")) && available && (
         <span
           role="img"
           aria-label={t("handleOk")}
@@ -605,11 +646,46 @@ export function WalletStep({
       <div className="mt-5">
         {accountForm && (
           <form id="onb-account" onSubmit={(e) => void submitAccount(e)} className={s.rise} noValidate>
+            {mode === "import" && (
+              <div
+                className={`mb-2 flex items-center gap-2 border-b ${keyBad ? "border-[var(--err)]" : "border-[var(--line)]"}`}
+              >
+                <Icon name="key" className="h-[18px] w-[18px] shrink-0 text-[var(--muted)]" />
+                <label htmlFor="onb-key" className="sr-only">
+                  {ta("privateKey")}
+                </label>
+                <input
+                  id="onb-key"
+                  type="password"
+                  value={keyInput}
+                  onChange={(e) => {
+                    setKeyInput(e.target.value);
+                    if (authError) setAuthError(null);
+                  }}
+                  disabled={phase === "creating"}
+                  placeholder={ta("privateKey")}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="mono h-11 min-w-0 flex-1 text-[14px] font-semibold placeholder:font-sans placeholder:text-[var(--muted)]"
+                  data-testid="import-key-input"
+                />
+                {importAddr && (
+                  <span
+                    className="mono shrink-0 text-[12px] font-semibold text-[var(--muted)]"
+                    data-testid="import-address"
+                  >
+                    {shortAddr(importAddr.toLowerCase())}
+                  </span>
+                )}
+              </div>
+            )}
             {handleInput}
             {showTaken && suggestionChips}
             {mode === "signup" && nameInput}
             <div
-              className={`mt-4 flex items-center gap-2 border-b ${pwShort || authError === "bad_credentials" ? "border-[var(--err)]" : "border-[var(--line)]"}`}
+              className={`mt-4 flex items-center gap-2 border-b ${pwBad || authError === "bad_credentials" ? "border-[var(--err)]" : "border-[var(--line)]"}`}
             >
               <Icon name="lock" className="h-[18px] w-[18px] shrink-0 text-[var(--muted)]" />
               <label htmlFor="onb-password" className="sr-only">
@@ -626,7 +702,7 @@ export function WalletStep({
                 }}
                 disabled={phase === "creating"}
                 placeholder={ta("password")}
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
                 className="h-11 min-w-0 flex-1 text-[16px] font-semibold placeholder:text-[var(--muted)]"
                 data-testid="password-input"
               />
@@ -645,14 +721,28 @@ export function WalletStep({
               data-testid="account-hint"
             >
               <Icon
-                name={authError ? "alert" : mode === "signup" ? "key" : "lock"}
+                name={
+                  authError || keyBad || pwBad
+                    ? "alert"
+                    : mode === "login"
+                      ? "lock"
+                      : mode === "import"
+                        ? "shield"
+                        : "key"
+                }
                 className="h-4 w-4 shrink-0"
               />
               {authError
                 ? ta(`errors.${authError}`)
-                : pwShort || mode === "login"
-                  ? ta("passwordMin", { n: PASSWORD_MIN })
-                  : ta("noRecovery")}
+                : keyBad
+                  ? ta("errors.bad_key")
+                  : pwBad && pwProblem && pwProblem !== "short"
+                    ? ta(`pw.${pwProblem}`)
+                    : pwBad || mode === "login"
+                      ? ta("passwordMin", { n: PASSWORD_MIN })
+                      : mode === "import"
+                        ? ta("importHint")
+                        : ta("noRecovery")}
             </p>
           </form>
         )}
@@ -744,13 +834,29 @@ export function WalletStep({
           <button
             type="button"
             onClick={() => {
-              setMode((m) => (m === "signup" ? "login" : "signup"));
+              setMode((m) => (m === "signup" ? "login" : m === "login" ? "signup" : "login"));
               setAuthError(null);
+              setKeyInput("");
             }}
             className="press mt-1.5 flex h-11 w-full items-center justify-center text-[15px] font-semibold underline decoration-[1.5px] underline-offset-4"
             data-testid="auth-switch"
           >
-            {mode === "signup" ? ta("haveAccount") : ta("newAccount")}
+            {mode === "signup" ? ta("haveAccount") : mode === "login" ? ta("newAccount") : ta("backToLogin")}
+          </button>
+        )}
+        {phase === "account" && mode === "login" && (
+          <button
+            type="button"
+            onClick={() => {
+              setMode("import");
+              setAuthError(null);
+              setHandle("");
+            }}
+            className="press flex h-11 w-full items-center justify-center gap-1.5 text-[14px] font-semibold text-[var(--muted)]"
+            data-testid="auth-import"
+          >
+            <Icon name="key" className="h-4 w-4" />
+            {ta("importLink")}
           </button>
         )}
       </div>
@@ -796,7 +902,7 @@ function BottomAction({
         className={`${s.bigBtn} ${canSubmit ? "" : s.bigOff}`}
         data-testid="account-submit"
       >
-        {mode === "signup" ? ta("submitSignup") : ta("submitLogin")}
+        {mode === "signup" ? ta("submitSignup") : mode === "import" ? ta("submitImport") : ta("submitLogin")}
       </button>
     );
   if (phase === "creating" || phase === "loading")

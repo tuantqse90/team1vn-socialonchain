@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/bits";
 import { DmSettings } from "@/components/dm/DmSettings";
 import { Icon, type IconName } from "@/components/Icon";
+import { BuilderWalletsSheet } from "@/components/settings/BuilderWalletsSheet";
 import { ExportKeySheet } from "@/components/settings/ExportKeySheet";
 import { LicensesSheet } from "@/components/settings/LicensesSheet";
 import { AutoIcon, Group, Row, Seg, Switch } from "@/components/settings/rows";
@@ -46,6 +47,7 @@ export default function SettingsPage() {
   const { status, owner, me, token, session, discardKey } = useSession();
   const wallet = useEmbeddedWallet();
   const [exportOpen, setExportOpen] = useState(false);
+  const [walletsOpen, setWalletsOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const updateSettings = useUpdateSettings();
   const moderation = useMyModeration();
@@ -269,14 +271,24 @@ export default function SettingsPage() {
         </Group>
       )}
 
-      {wallet.handle && (
+      {(wallet.handle || token) && (
         <Group label={ta("account")}>
-          <Row
-            icon="key"
-            label={ta("exportKey")}
-            onClick={() => setExportOpen(true)}
-            testId="settings-export-key"
-          />
+          {token && owner && (
+            <Row
+              icon="cube"
+              label={ta("builderWallets")}
+              onClick={() => setWalletsOpen(true)}
+              testId="settings-builder-wallets"
+            />
+          )}
+          {wallet.handle && (
+            <Row
+              icon="key"
+              label={ta("exportKey")}
+              onClick={() => setExportOpen(true)}
+              testId="settings-export-key"
+            />
+          )}
         </Group>
       )}
 
@@ -303,6 +315,9 @@ export default function SettingsPage() {
       )}
 
       <LicensesSheet open={licenses} onClose={() => setLicenses(false)} />
+      {token && owner && (
+        <BuilderWalletsSheet open={walletsOpen} onClose={() => setWalletsOpen(false)} owner={owner} />
+      )}
       {wallet.handle && (
         <ExportKeySheet open={exportOpen} onClose={() => setExportOpen(false)} handle={wallet.handle} />
       )}

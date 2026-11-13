@@ -58,6 +58,8 @@ export type User = {
   /** Tối đa 3 nhãn `topic:*` hay gặp nhất trong bài của user. */
   topTopics: string[];
   viewer: { following: boolean; followedBy: boolean } | null;
+  /** Ví ngoài liên kết bằng chữ ký (chữ thường); contract của chúng cộng vào `builder`. */
+  linkedWallets?: string[];
 };
 
 export type SavedFeed = {

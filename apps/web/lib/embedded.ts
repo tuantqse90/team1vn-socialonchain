@@ -135,9 +135,13 @@ export type SignupResponse = {
   dripSkipped?: "faucet_off" | "cap" | "funded" | "error";
 };
 
-/** Tạo tài khoản: ví mới + keystore mã hoá + app tặng gas (server chờ tx tặng gas xong mới trả về). */
-export async function signup(handle: string, password: string): Promise<SignupResponse> {
-  const pk = generatePrivateKey();
+/**
+ * Tạo tài khoản: ví mới + keystore mã hoá + app tặng gas (server chờ tx tặng gas xong mới trả về).
+ * `importKey`: dùng ví có sẵn (vd. đã đăng ký bằng Core/MetaMask) thay vì sinh ví mới. Key vẫn chỉ rời máy
+ * ở dạng đã mã hoá bằng mật khẩu.
+ */
+export async function signup(handle: string, password: string, importKey?: Hex): Promise<SignupResponse> {
+  const pk = importKey ?? generatePrivateKey();
   const account = privateKeyToAccount(pk);
   const { kdf, authKey, keystore } = await createAccountSecrets(password, pk, account.address);
   const signature = await account.signMessage({
@@ -149,6 +153,19 @@ export async function signup(handle: string, password: string): Promise<SignupRe
   });
   writeStored({ address: account.address, pk, handle });
   return r;
+}
+
+/** Chuẩn hoá private key người dùng dán vào (có/không có 0x, khoảng trắng). Sai định dạng thì null. */
+export function parsePrivateKey(raw: string): Hex | null {
+  const v = raw.trim().replace(/^0x/i, "").toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(v)) return null;
+  const pk = `0x${v}` as Hex;
+  try {
+    privateKeyToAccount(pk);
+    return pk;
+  } catch {
+    return null;
+  }
 }
 
 /** Mở khoá bằng tên + mật khẩu. Sai thì ném ApiError 401 (bad_credentials). */

@@ -27,11 +27,41 @@
     "exportHint": "Ai có khoá này là có tài khoản của bạn. Không gửi cho ai.",
     "reveal": "Hiện khoá",
     "copyKey": "Chép khoá",
+    "importTitle": "Dùng ví có sẵn",
+    "importing": "Đang mã hoá khoá…",
+    "importLink": "Đã đăng ký bằng Core/MetaMask? Nhập khoá",
+    "importHint": "Chỉ dùng ví testnet · khoá được mã hoá bằng mật khẩu trước khi rời máy",
+    "privateKey": "Private key (0x…)",
+    "submitImport": "Nhập ví",
+    "backToLogin": "Quay lại đăng nhập",
+    "pw": {
+      "common": "Mật khẩu quá phổ biến · chọn cái khác",
+      "handle": "Mật khẩu gần giống tên",
+      "pattern": "Mật khẩu dễ đoán quá"
+    },
+    "builderWallets": "Ví builder",
+    "builderWalletsHint": "Liên kết ví bạn dùng để deploy contract. Mỗi ví được tính vào badge builder.",
+    "linkMessageLabel": "1 · Ký đoạn này bằng ví đó (personal_sign)",
+    "linkAddress": "2 · Địa chỉ ví",
+    "linkSignature": "3 · Chữ ký (0x…)",
+    "linkSubmit": "Liên kết ví",
+    "linked": "Đã liên kết",
+    "unlink": "Gỡ",
+    "noLinked": "Chưa liên kết ví nào",
+    "contractsCount": "{n, plural, =0 {Chưa có contract} other {# contract}}",
+    "linkErrors": {
+      "bad_signature": "Chữ ký không khớp địa chỉ",
+      "same_as_owner": "Đây đã là ví của tài khoản",
+      "too_many": "Tối đa 5 ví",
+      "bad_address": "Không phải địa chỉ ví"
+    },
     "errors": {
       "bad_credentials": "Sai tên hoặc mật khẩu",
       "handle_taken": "Tên đã có chủ",
       "rate_limited": "Thử nhiều quá · đợi 1 phút",
-      "failed": "Có lỗi · thử lại"
+      "failed": "Có lỗi · thử lại",
+      "address_exists": "Ví này đã có tài khoản · đăng nhập thay vì nhập",
+      "bad_key": "Private key không hợp lệ"
     }
   }
 }
