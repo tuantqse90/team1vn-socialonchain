@@ -57,7 +57,7 @@ export function ChannelCard({ stats, lead = false }: { stats: ChannelStats; lead
         </span>
       </span>
       <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="line-clamp-2 break-all text-[16px] font-bold leading-tight tracking-[-0.02em]">
+        <span className="line-clamp-2 break-words text-[16px] font-bold leading-tight tracking-[-0.02em]">
           /{stats.name}
         </span>
         <span

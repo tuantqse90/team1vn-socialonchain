@@ -19,6 +19,8 @@ const config: NextConfig = {
   // E2E chạy song song với `next dev` thường: dùng thư mục build riêng.
   distDir: process.env.NEXT_DIST_DIR || ".next",
   reactStrictMode: true,
+  // Ẩn nút "N" của Next ở góc màn hình (đè lên tab bar khi quay demo).
+  devIndicators: false,
   poweredByHeader: false,
   // CSP có nonce nằm ở proxy.ts (theo từng request); ở đây là các header tĩnh cho mọi đường dẫn.
   async headers() {

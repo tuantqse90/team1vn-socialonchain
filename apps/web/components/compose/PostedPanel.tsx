@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { CSSProperties } from "react";
 import { txUrl } from "@/lib/chain";
 import { formatAvax } from "@/lib/format";
 import type { Author } from "@/lib/types";
@@ -8,7 +9,18 @@ import { Avatar } from "../bits";
 import { Icon } from "../Icon";
 import { NoPopupIcon } from "./parts";
 
-export type Posted = { text: string; channel: string | null; block: bigint; hash: string; fee: bigint };
+export type Posted = {
+  text: string;
+  channel: string | null;
+  block: bigint;
+  hash: string;
+  fee: bigint;
+  /** Thời gian từ lúc bấm đăng tới khi có receipt. */
+  ms?: number;
+};
+
+/** Góc 10 hạt bung quanh dấu check. */
+const BURST = [0, 36, 72, 108, 144, 180, 216, 252, 288, 324];
 
 /** Trạng thái đã đăng (trong sheet, ~1.5 s): thẻ bài + dấu check, block #N → explorer, gas đã trả từ session key. */
 export function PostedPanel({
@@ -25,6 +37,7 @@ export function PostedPanel({
 }) {
   const t = useTranslations("composer");
   const tc = useTranslations("common");
+  const tf = useTranslations("fx");
   const url = txUrl(posted.hash);
   const fee = formatAvax(posted.fee, 4);
   const paid = t("paid", { amount: fee });
@@ -47,10 +60,24 @@ export function PostedPanel({
         </p>
         <span
           aria-hidden
-          className="anim-pop absolute -right-2.5 -top-4 flex h-[52px] w-[52px] items-center justify-center rounded-full border-4 border-[var(--bg)] bg-[var(--ink)] text-[var(--bg)]"
+          className="anim-pop compose-glow absolute -right-2.5 -top-4 flex h-[52px] w-[52px] items-center justify-center rounded-full border-4 border-[var(--bg)]"
           style={{ animationDelay: "150ms" }}
         >
           <Icon name="check" className="h-6 w-6" strokeWidth={3} />
+          <span className="burst">
+            {BURST.map((a, i) => (
+              <i
+                key={a}
+                style={
+                  {
+                    "--a": `${a}deg`,
+                    "--d": `${i % 2 ? 34 : 46}px`,
+                    background: i % 3 === 1 ? "var(--warn)" : "var(--accent)",
+                  } as CSSProperties
+                }
+              />
+            ))}
+          </span>
         </span>
       </div>
 
@@ -71,6 +98,17 @@ export function PostedPanel({
           style={{ animationDelay: "200ms" }}
         >
           {block}
+        </span>
+      )}
+
+      {posted.ms !== undefined && (
+        <span
+          className="anim-rise -mt-3 flex items-center gap-1.5 rounded-full bg-[var(--ok-tint)] px-3 py-1 text-[13px] font-bold text-[var(--ok-ink)]"
+          style={{ animationDelay: "250ms" }}
+          data-testid="posted-time"
+        >
+          <span className="live-dot" style={{ width: 6, height: 6 }} aria-hidden />
+          {tf("confirmedIn", { s: (posted.ms / 1000).toFixed(1) })}
         </span>
       )}
 

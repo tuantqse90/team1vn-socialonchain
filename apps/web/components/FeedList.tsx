@@ -114,14 +114,20 @@ export function FeedList({
               className="absolute left-0 top-0 w-full border-b border-[var(--line)]"
               style={{ transform: `translateY(${it.start - v.options.scrollMargin}px)` }}
             >
-              <PostCard
-                post={row.post}
-                reasons={row.reasons}
-                score={row.score}
-                origins={row.origins}
-                rank={row.score !== undefined ? it.index + 1 : undefined}
-                total={row.score !== undefined ? total : undefined}
-              />
+              {/* Màn đầu trồi lên lần lượt; lớp ngoài giữ transform của virtualizer nên animation nằm ở lớp trong. */}
+              <div
+                className={it.index < 8 ? "feed-in" : undefined}
+                style={it.index < 8 ? { animationDelay: `${it.index * 55}ms` } : undefined}
+              >
+                <PostCard
+                  post={row.post}
+                  reasons={row.reasons}
+                  score={row.score}
+                  origins={row.origins}
+                  rank={row.score !== undefined ? it.index + 1 : undefined}
+                  total={row.score !== undefined ? total : undefined}
+                />
+              </div>
             </div>
           );
         })}

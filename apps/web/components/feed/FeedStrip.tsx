@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
+import { orbBackground } from "@/lib/orb";
 import { Icon, type IconName } from "../Icon";
 
 /** Feed mặc định: icon + nhãn 1 từ. Feed tự tạo dùng icon layers + tên của nó. */
@@ -70,9 +71,13 @@ export function FeedStrip({
             >
               <span
                 className={`relative flex h-[58px] w-[58px] items-center justify-center rounded-full ${
-                  on ? "bg-[var(--ink)] text-[var(--bg)]" : "bg-[var(--soft)] text-[var(--ink)]"
+                  on
+                    ? "text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.16),0_8px_18px_-10px_rgba(0,0,0,.55)]"
+                    : "bg-[var(--soft)] text-[var(--ink)]"
                 }`}
                 style={{
+                  // Đang chọn: cùng orb màu với ô feed ở trang Feeds.
+                  background: on ? orbBackground(`feed:${id}`) : undefined,
                   transform: on ? "none" : "scale(.92)",
                   transition: "transform .45s var(--bouncy), background-color .3s, color .3s",
                 }}
@@ -82,9 +87,10 @@ export function FeedStrip({
                   <span
                     key={`${id}:${n}`}
                     aria-hidden
-                    className="anim-pop absolute -top-0.5 -right-1 flex h-[22px] min-w-[22px] items-center justify-center rounded-full border-2 border-[var(--bg)] bg-[var(--accent)] px-1.5 text-[11px] font-bold text-[var(--accent-ink)] tabular-nums"
+                    className="anim-pop absolute -top-1 -right-2 flex h-[22px] items-center gap-0.5 rounded-full border-2 border-[var(--bg)] bg-[var(--accent)] pr-1.5 pl-1 text-[11px] font-bold text-[var(--accent-ink)] tabular-nums"
                   >
-                    −{n}
+                    <Icon name="eyeoff" className="h-3 w-3" strokeWidth={2.6} />
+                    {n}
                   </span>
                 )}
               </span>

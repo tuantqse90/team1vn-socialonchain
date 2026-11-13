@@ -14,6 +14,7 @@
       "!contracts/lib",
       "!contracts/out",
       "!contracts/cache",
+      "!contracts/broadcast",
       "!packages/protocol/src/abis.ts",
       "!packages/protocol/deployments",
       "!packages/db/drizzle",

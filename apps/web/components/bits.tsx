@@ -2,18 +2,11 @@
 
 import { Icon, type IconName } from "@socialonchain/ui";
 import Link from "next/link";
-import { avatarHue, displayName } from "@/lib/format";
+import { displayName } from "@/lib/format";
+import { orbBackground } from "@/lib/orb";
 import type { Author } from "@/lib/types";
 
 export { Button, Chip, Empty, Ring, Sheet, Spinner } from "@socialonchain/ui";
-
-/** Nền avatar chữ: 4 bảng màu theo token (ink, mist, đỏ, blush), tự đổi theo dark mode. */
-const AVATAR_TONES = [
-  "bg-[var(--ink)] text-[var(--bg)]",
-  "bg-[var(--soft)] text-[var(--ink)]",
-  "bg-[var(--accent)] text-[var(--accent-ink)]",
-  "bg-[var(--blush)] text-[var(--red-ink)]",
-];
 
 /** 1–2 chữ cái đầu: "linh_builds" → "LB", "Gia Bảo" → "GB", địa chỉ → 2 ký tự hex đầu. */
 function initials(a: Pick<Author, "displayName" | "handle" | "fcUsername" | "address">): string {
@@ -26,8 +19,8 @@ function initials(a: Pick<Author, "displayName" | "handle" | "fcUsername" | "add
 }
 
 /**
- * Avatar tròn: ảnh nếu có, không thì chữ cái đầu trên nền token. Không gắn badge:
- * dấu Verified builder đặt cạnh tên (`Verified` trong kit.tsx).
+ * Avatar tròn: ảnh nếu có, không thì chữ cái đầu trên orb gradient tất định theo địa chỉ (`lib/orb.ts`).
+ * Không gắn badge: dấu Verified builder đặt cạnh tên (`Verified` trong kit.tsx).
  */
 export function Avatar({
   author,
@@ -40,7 +33,6 @@ export function Avatar({
   size?: number;
 }) {
   const seed = author.address ?? author.fcUsername ?? String(author.fid ?? "?");
-  const tone = AVATAR_TONES[avatarHue(seed) % AVATAR_TONES.length];
   return (
     <span className="relative inline-flex shrink-0" style={{ width: size, height: size }}>
       {author.avatarUrl ? (
@@ -48,8 +40,8 @@ export function Avatar({
         <img src={author.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
       ) : (
         <span
-          className={`flex h-full w-full items-center justify-center rounded-full font-bold tracking-tight ${tone}`}
-          style={{ fontSize: Math.max(9, Math.round(size * 0.36)) }}
+          className="flex h-full w-full items-center justify-center rounded-full font-bold tracking-tight text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.14)] [text-shadow:0_1px_2px_rgba(0,0,0,.28)]"
+          style={{ fontSize: Math.max(9, Math.round(size * 0.36)), background: orbBackground(seed) }}
           aria-hidden
         >
           {initials(author)}

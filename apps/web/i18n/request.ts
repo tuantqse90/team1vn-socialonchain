@@ -10,11 +10,12 @@ export default getRequestConfig(async () => {
   const accept = ((await headers()).get("accept-language") ?? "").toLowerCase();
   const locale: Locale =
     fromCookie === "vi" || fromCookie === "en" ? fromCookie : accept.startsWith("vi") ? "vi" : "en";
-  // Chuỗi của tin nhắn ("dm") và tài khoản/ví nhúng ("account") nằm file riêng để không đụng en.json/vi.json.
-  const [base, dm, account] = await Promise.all([
+  // Chuỗi của tin nhắn ("dm"), cột phải ("rail") và tài khoản/ví nhúng ("account") nằm file riêng để không đụng en.json/vi.json.
+  const [base, dm, wow, account] = await Promise.all([
     import(`../messages/${locale}.json`),
     import(`../messages/dm.${locale}.json`),
+    import(`../messages/wow.${locale}.json`),
     import(`../messages/account.${locale}.json`),
   ]);
-  return { locale, messages: { ...base.default, ...dm.default, ...account.default } };
+  return { locale, messages: { ...base.default, ...dm.default, ...wow.default, ...account.default } };
 });

@@ -4,7 +4,7 @@ import { postsAbi } from "@socialonchain/protocol";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import { contracts } from "@/lib/chain";
 import { useSession } from "@/lib/session";
 import { useSessionWrite } from "@/lib/tx";
@@ -14,6 +14,8 @@ import { fcUrl, rawId } from "./util";
 
 const KIND_LIKE = 1;
 const KIND_REPOST = 2;
+/** Góc 8 hạt bung khi thả tim. */
+const BURST = [0, 45, 90, 135, 180, 225, 270, 315];
 
 /** Like/repost lạc quan bằng session key: bấm là đổi ngay, tx chạy nền, lỗi thì trả lại. */
 export function useReactions(post: Post) {
@@ -88,9 +90,28 @@ export function LikeButton({
     >
       <span
         key={pop}
-        className={`inline-flex ${pop ? "anim-heart" : ""} ${on ? "text-[var(--accent)]" : ""}`}
+        className={`relative inline-flex ${pop ? "anim-heart" : ""} ${on ? "text-[var(--accent)]" : ""}`}
       >
         <Icon name="heart" filled={on} className={small ? "h-[19px] w-[19px]" : "h-[21px] w-[21px]"} />
+        {pop > 0 && on && (
+          <>
+            <span aria-hidden className="like-ring" />
+            <span aria-hidden className="burst sm">
+              {BURST.map((a, i) => (
+                <i
+                  key={a}
+                  style={
+                    {
+                      "--a": `${a}deg`,
+                      "--d": `${i % 2 ? 15 : 21}px`,
+                      background: i % 3 === 1 ? "var(--warn)" : "var(--accent)",
+                    } as CSSProperties
+                  }
+                />
+              ))}
+            </span>
+          </>
+        )}
       </span>
       {count > 0 && <span className="tabular-nums">{count}</span>}
     </button>

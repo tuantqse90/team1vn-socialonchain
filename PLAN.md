@@ -78,7 +78,7 @@
 - [x] Test unit theo INIT_PROMPT §6, và fuzz cho: độ dài text, handle, kích thước batch, thời hạn delegate — _58 test, có fuzz_
 - [x] `forge test --gas-report`, ghi bảng gas đầu tiên vào `docs/COSTS.md`
 - [x] Slither không còn cảnh báo mức high — _0 high/medium trong `src/`; high/medium còn lại nằm trong OpenZeppelin `Math.sol` (false positive đã biết)_
-- [x] `script/Deploy.s.sol` cho Anvil và Fuji; ghi địa chỉ theo chainId vào `packages/protocol` — _đã chạy trên Anvil; Fuji ⛔ chưa có ví deployer_
+- [x] `script/Deploy.s.sol` cho Anvil và Fuji; ghi địa chỉ theo chainId vào `packages/protocol` — _Anvil ✅; Fuji ✅ 2026-11-12 (startBlock 60950634, source verify trên Snowtrace)_
 - [x] `@wagmi/cli` sinh ABI có kiểu vào `packages/protocol` — _thay bằng `scripts/gen-abis.mjs` (xem Decision log)_
 - [x] Chốt bảng schema event trong `docs/ARCHITECTURE.md` (§6), gồm cả field nào được indexed
 - **Xong khi:** `forge test` xanh; Slither không có high; **người dùng đã duyệt schema event và quyền delegate**.
@@ -102,7 +102,7 @@
 - [x] SSR cho trang bài và trang profile công khai, có OG tags cơ bản
 - [x] `configs/a.ts` và cơ chế chọn config qua `CLIENT_CONFIG`
 - [x] Playwright e2e trên local: ví A đăng bài, ví B thấy bài — _9 test_
-- [ ] Deploy: contract lên Fuji; Postgres + indexer lên Railway; web lên Vercel; secrets đặt trên các nền tảng đó — _⛔ chưa có ví deployer + tài khoản Railway/Vercel_
+- [ ] Deploy: contract lên Fuji; Postgres + indexer lên Railway; web lên Vercel; secrets đặt trên các nền tảng đó — _contract Fuji ✅; Railway/Vercel tạm chưa làm (người dùng chốt chạy localhost: `pnpm dev:fuji`)_
 - **Xong khi:** e2e trên local xanh, và cùng luồng đó chạy được trên URL public với Fuji.
 
 ### P4. Feed engine (chưa cần LLM) · 2 ngày

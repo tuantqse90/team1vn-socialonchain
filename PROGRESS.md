@@ -6,13 +6,13 @@
 > - Sub-task chi tiết của từng phase nằm trong PLAN.md.
 
 **Cập nhật:** 2026-11-12
-**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local, đã ff vào `main` và push (người dùng đồng ý 2026-11-12). **P18 (tài khoản mật khẩu + ví nhúng, không popup)** xong + verify local trên nhánh `phase-18-embedded-wallet`, chưa merge. Phần còn lại cần tài khoản/key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
+**Phase hiện tại:** P0–P14 đã code xong và verify ở **local** (Anvil + Postgres, không key). **P15 (DM) + P15b (đồng bộ UI theo design canvas)** xong + verify local, đã ff vào `main` và push (người dùng đồng ý 2026-11-12). **Contract v1 đã lên Fuji** (2026-11-12, xem `packages/protocol/deployments/43113.json`); chạy app với Fuji ở localhost bằng `pnpm dev:fuji` (người dùng chốt: chưa cần Railway/Vercel, quay clip demo trên localhost). **P18 (tài khoản mật khẩu + ví nhúng, không popup)** xong + verify local. Phần còn lại cần key/người thật (xem Blockers) và 3 lần duyệt [REVIEW].
 
 ## Bước tiếp theo
 
 1. **Người dùng duyệt** (P1, P8, P13 là [REVIEW]): schema event + quyền delegate (`docs/ARCHITECTURE.md` §6), contract thanh toán (`contracts/src/TestUSD.sol`, `PlanPayments.sol`).
-2. Có ví deployer + test AVAX → `forge script` deploy lên Fuji → điền `packages/protocol/deployments/43113.json`.
-3. Railway (Postgres + indexer + worker) và Vercel (web), đặt secrets → chạy lại e2e trên URL public.
+2. Quay clip demo: `pnpm dev:fuji` → tạo tài khoản bằng tên + mật khẩu (app tặng gas, không popup) → đăng bài, follow, feed, DM trên Fuji.
+3. (Khi cần URL public) Railway + Vercel, đặt secrets → chạy lại e2e trên URL public.
 4. Thêm `ANTHROPIC_API_KEY` → `pnpm eval:labeler` bản LLM (heuristic chưa đạt ngưỡng 0.8 của P6).
 5. Thêm `NEYNAR_API_KEY` → xác nhận `FC_CHANNELS`, import 1 tài khoản Farcaster thật (P11).
 6. Dùng thử 1 tuần, rồi mời Alpha.
@@ -26,7 +26,7 @@
 | P0 | Khung dự án | ✅ (CI GitHub xanh: contracts + ts, có integration test) |
 | P1 | Contract lõi **[REVIEW]** | 🟡 forge 58 test ✅, Slither 0 high ✅; **chờ người dùng duyệt** |
 | P2 | Indexer + API cơ bản | ✅ (indexer viem, không Ponder) |
-| P3 | Walking skeleton online | 🟡 e2e local 10/10 ✅; deploy Fuji/Railway/Vercel ⛔ |
+| P3 | Walking skeleton online | 🟡 e2e local 10/10 ✅; contract trên Fuji ✅ (5 contract, source verify trên Snowtrace); `pnpm dev:fuji` chạy ✅ (indexer lag 0); luồng ví thật trên Fuji chưa bấm thử; Railway/Vercel ➖ tạm chưa làm |
 | P4 | Feed engine (chưa LLM) | ✅ |
 | P5 | Đọc Farcaster | 🟡 fixture ✅; Neynar thật ⛔ (thiếu key) |
 | P6 | Labeler LLM + eval | 🟡 heuristic F1 0.776 (chưa đạt ≥ 0.8/nhãn); LLM ⛔ (thiếu key) |
@@ -45,9 +45,10 @@
 
 ## Blockers / câu hỏi mở
 
-- **Cần từ người dùng:** ví deployer có test AVAX (Fuji), tài khoản Railway + Vercel, `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`, `LABELER_PRIVATE_KEY` (ví riêng), `FAUCET_PRIVATE_KEY` (ví vòi riêng có ít AVAX test, cho P18 trên Fuji).
+- **Cần từ người dùng:** `ANTHROPIC_API_KEY`, `NEYNAR_API_KEY`, `SENTRY_DSN`; tài khoản Railway + Vercel khi cần URL public.
+- **Ví deployer** `0x6d1A…4a12` (key trong `.env` local, cũng là owner TestUSD/PlanPayments + treasury): người dùng tự backup `.env`. Labeler `0xAc42…F38B` cũng do Claude tạo, chỉ ký nhãn offchain. Ví vòi tặng gas `0xe88B…42ef` (`FAUCET_PRIVATE_KEY` trong `.env`, chỉ giữ ít AVAX test).
 - **Tên sản phẩm / npm scope:** đang dùng `socialonchain` / `@socialonchain/*`.
-- CSP có nonce đã bật (`apps/web/proxy.ts` + `lib/csp.ts`); chưa bấm thử với ví extension thật (MetaMask/Core) khi có CSP.
+- CSP có nonce đã bật (`apps/web/proxy.ts` + `lib/csp.ts`); không còn ví extension (P18) nên không còn rủi ro CSP chặn ví.
 
 ## Decision log
 
@@ -90,6 +91,9 @@
 | 2026-11-12 | Mọi tx/chữ ký của ví chính đi qua `useMainWallet` (ép `chainId`, đổi mạng trước) | Ví đang ở C-Chain mainnet thì không bao giờ gửi tx thật |
 | 2026-11-12 | Theo design nhưng giữ: quota Pro 200/50 (code), `mod:safety` khoá; bỏ trường "trường học" ở onboarding; quét builder chỉ cho chính owner | Không đổi giá/quyền đã chốt; không thu thông tin cá nhân |
 | 2026-11-12 | Client B đổi tên "Snowfield" → "Phố Builder" (vàng #F5B53D, mặc định tối) | Theo design canvas; chỉ đổi `configs/b.ts` |
+| 2026-11-12 | Deploy contract v1 lên Fuji theo lời người dùng ("chuyển AVAX cho bạn deploy"), trước khi duyệt [REVIEW] P1/P13 | Testnet, trước P8 được deploy lại; review đòi sửa thì deploy bản mới |
+| 2026-11-12 | Chưa làm Railway/Vercel; `pnpm dev:fuji` chạy indexer + worker + web ở localhost với contract Fuji, DB riêng `socialonchain_fuji`, `.next-fuji`, admin từ `FUJI_ADMIN_ADDRESSES` | Người dùng chốt: localhost + quay clip là đủ |
+| 2026-11-12 | Claude tạo ví deployer + key labeler, ghi thẳng vào `.env` (chmod 600), chỉ in địa chỉ | Người dùng nhờ; key không đi qua chat/log |
 | 2026-11-12 | DM gắn vào shell mới: chat full-screen trên mobile như thread; credit Twemoji chuyển vào sheet Giấy phép | Thống nhất với design mới; giữ đúng CC-BY |
 | 2026-11-12 | Config client có `theme.text` / `theme.tint` (sáng/tối) → `--red-ink`/`--blush`; B dùng vàng đậm #8A5A00 (5.9:1) | Chữ thương hiệu của B không còn đỏ Avalanche |
 | 2026-11-12 | Job `onchain-builder` quét user đã đăng ký trước, rồi tác giả onchain, rồi Farcaster | Gợi ý builder + badge hồ sơ có sớm hơn (50 địa chỉ/lượt) |
@@ -107,6 +111,12 @@
 - Sửa thêm: event đo lường `onboarding_started`/`registered` vốn bị server từ chối (400) → `onboarding_step`.
 - **Đã verify thật (local):** lint + typecheck sạch; `pnpm test` (forge 58, protocol 15, feed-sdk 29, worker 7, farcaster 2, indexer 11); e2e **11/11** trên production build (permit tUSD + DM chạy bằng ví nhúng); form tài khoản vừa 1 màn iPhone 15 (overflow 0), chụp sáng/tối.
 - **Chưa verify:** Fuji (cần ví vòi có AVAX); máy thật (iOS Safari: tốc độ scrypt, trình quản lý mật khẩu); tài khoản cũ đăng ký bằng Core (vd. `tuantq`) chưa có đường nhập khoá.
+
+### 2026-11-12 (session 6: contract lên Fuji + chạy localhost với Fuji)
+- Nhánh `phase-3-fuji-local` (từ `main` 52342b9). Tạo ví deployer, người dùng nạp 0.05 AVAX; `forge script` deploy 6 tx đều status 1, ~4.58M gas, tốn chưa tới 0.000001 AVAX; startBlock 60950634.
+- **Đã verify thật (Fuji):** bytecode 5 contract; `SocialGraph.identity`/`Posts.identity` trỏ đúng IdentityRegistry; PlanPayments token = TestUSD, giá gói Pro 5 tUSD, owner/treasury = deployer; tUSD 6 decimals; source verify trên Snowtrace (Routescan) cả 5. `pnpm dev:fuji`: `/status` network fuji, indexer lag 0, `lastError` null; worker ký nhãn bằng key labeler mới, indexer nhận; web hiện "Avalanche Fuji".
+- **Chưa verify:** luồng ví thật (đăng ký + session key, đăng bài, follow, DM, tUSD) trên Fuji; RPC công khai khi có nhiều event.
+- Nhánh `phase-16-wow` (người dùng: "giao diện hơi xấu, làm wow hơn"): avatar orb gradient tất định theo địa chỉ (`lib/orb.ts`), cột phải desktop ≥1280px (block Fuji live + s/block đo được, 3 contract lõi link Snowtrace, kênh nổi, builder), nền ambient đỏ + lưới chấm, nút soạn bài đỏ, thả tim có vòng + hạt, bài màn đầu trồi lên lần lượt, panel đã đăng có "Onchain in X.Xs" (đo từ lúc bấm tới receipt), chip feed + ô feed cùng orb, Explore có empty state khi chưa có builder, ẩn nút dev "N" của Next. Chuỗi mới ở `messages/wow.<locale>.json`. **Verify:** lint + typecheck sạch; e2e **10/10** trên stack Anvil riêng (8565/42089/3120); chụp desktop + mobile, sáng + tối; Fuji: 1.6 s/block. Lưu ý: đổi cổng e2e phải xoá `.next-e2e` (cache Turbopack giữ RPC cũ).
 
 ### 2026-11-12 (session 5: P15b đồng bộ UI theo design canvas + gộp DM)
 - Worktree riêng `../team1vn-socialonchain-ui`, nhánh `phase-15-ui-design-sync`, stack cô lập (Anvil 8555, API 42079, DB `socialonchain_ui`, web 3010, e2e 3110). 5 agent làm song song theo màn, rồi gộp i18n vào `en.json`/`vi.json` (556 key, EN/VI khớp).

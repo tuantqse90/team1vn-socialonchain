@@ -26,7 +26,9 @@ export default defineConfig({
     browserName: "chromium",
   },
   webServer: {
-    // Xoá hẳn .next-e2e: fetch-cache SSR (chain local reset thì id bài lặp lại) và cache Turbopack giữ URL RPC/API cũ.
+    // Build lại từ đầu mỗi lần (tốn 1 lần build, chấp nhận được):
+    // - cache Turbopack giữ NEXT_PUBLIC_* cũ khi đổi E2E_PORT/ANVIL_RPC_URL (client gọi nhầm RPC, kẹt ở splash);
+    // - fetch-cache của SSR: chain local bị reset thì id bài lặp lại, cache cũ trả bài của lần chạy trước.
     command: `rm -rf .next-e2e && pnpm exec next build && pnpm exec next start -p ${PORT}`,
     url: `http://localhost:${PORT}/brand/icon`,
     reuseExistingServer: !process.env.CI,

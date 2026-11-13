@@ -34,7 +34,7 @@ type Ctx = { open: (t?: Target) => void };
 const ComposeCtx = createContext<Ctx | null>(null);
 
 /** Sheet tự đóng sau khi hiện trạng thái "đã đăng" chừng này ms. */
-const POSTED_MS = 1600;
+const POSTED_MS = 2600;
 
 export function useCompose(): Ctx {
   const c = useContext(ComposeCtx);
@@ -235,6 +235,7 @@ export function Composer({
     const body = text.trim();
     setBusy(true);
     setPicker(false);
+    const t0 = performance.now();
     const r = await write(parent ? t("replyShort") : t("post"), {
       address: contracts.Posts,
       abi: postsAbi,
@@ -263,6 +264,8 @@ export function Composer({
         block: r.blockNumber,
         hash: r.hash,
         fee: r.fee,
+        // Từ lúc bấm đăng tới khi có receipt (ký bằng session key + gửi + chờ block).
+        ms: performance.now() - t0,
       });
       later(POSTED_MS, () => onDone?.());
     }
